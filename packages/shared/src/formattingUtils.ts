@@ -369,7 +369,7 @@ export function createXAxisCard(settings: {
                 type: powerbi.visuals.FormattingComponent.Dropdown,
                 properties: {
                     descriptor: { objectName: "xAxisSettings", propertyName: "rotateLabels" },
-                    value: { value: settings.rotateLabels }
+                    value: settings.rotateLabels
                 }
             }
         } as powerbi.visuals.FormattingSlice);
@@ -463,7 +463,7 @@ export function createLegendCard(settings: {
                 type: powerbi.visuals.FormattingComponent.Dropdown,
                 properties: {
                     descriptor: { objectName: "legend", propertyName: "position" },
-                    value: { value: settings.position }
+                    value: settings.position
                 }
             }
         } as powerbi.visuals.FormattingSlice);
@@ -618,7 +618,7 @@ export function createColorSchemeCard(currentScheme: ColorScheme): powerbi.visua
                     type: powerbi.visuals.FormattingComponent.Dropdown,
                     properties: {
                         descriptor: { objectName: "colorScheme", propertyName: "scheme" },
-                        value: { value: currentScheme }
+                        value: currentScheme
                     }
                 }
             } as powerbi.visuals.FormattingSlice]
@@ -776,7 +776,7 @@ export function createHeatmapSettingsCard(settings: {
                         type: powerbi.visuals.FormattingComponent.Dropdown,
                         properties: {
                             descriptor: { objectName: "heatmapSettings", propertyName: "horizontalAlignment" },
-                            value: { value: settings.horizontalAlignment }
+                            value: settings.horizontalAlignment
                         }
                     }
                 } as powerbi.visuals.FormattingSlice,
@@ -787,7 +787,7 @@ export function createHeatmapSettingsCard(settings: {
                         type: powerbi.visuals.FormattingComponent.Dropdown,
                         properties: {
                             descriptor: { objectName: "heatmapSettings", propertyName: "verticalAlignment" },
-                            value: { value: settings.verticalAlignment }
+                            value: settings.verticalAlignment
                         }
                     }
                 } as powerbi.visuals.FormattingSlice,
@@ -952,7 +952,7 @@ export function createBubbleSettingsCard(settings: {
                         type: powerbi.visuals.FormattingComponent.Dropdown,
                         properties: {
                             descriptor: { objectName: "bubbleSettings", propertyName: "labelSizeMode" },
-                            value: { value: settings.labelSizeMode }
+                            value: settings.labelSizeMode
                         }
                     }
                 } as powerbi.visuals.FormattingSlice,
@@ -1016,7 +1016,7 @@ export function createCalendarSettingsCard(settings: {
                         type: powerbi.visuals.FormattingComponent.Dropdown,
                         properties: {
                             descriptor: { objectName: "calendarSettings", propertyName: "cellSize" },
-                            value: { value: settings.cellSize }
+                            value: settings.cellSize
                         }
                     }
                 } as powerbi.visuals.FormattingSlice,
@@ -1027,7 +1027,7 @@ export function createCalendarSettingsCard(settings: {
                         type: powerbi.visuals.FormattingComponent.Dropdown,
                         properties: {
                             descriptor: { objectName: "calendarSettings", propertyName: "weekStartsOn" },
-                            value: { value: settings.weekStartsOn }
+                            value: settings.weekStartsOn
                         }
                     }
                 } as powerbi.visuals.FormattingSlice,

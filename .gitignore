@@ -3,3 +3,5 @@ dist/
 .tmp/
 *.pbiviz
 .DS_Store
+webpack.statistics.*
+*.skill
