@@ -65,6 +65,7 @@ export class Visual implements IVisual {
         // Clear previous content
         this.svg.selectAll("*").remove();
         this.container = this.svg.append("g").classed("chart-container", true);
+        this.target.querySelectorAll('[data-bta-tooltip="true"]').forEach(el => el.remove());
 
         const width = options.viewport.width;
         const height = options.viewport.height;
