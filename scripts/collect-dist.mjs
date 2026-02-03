@@ -19,6 +19,14 @@ const packageNames = fs.readdirSync(packagesDir, { withFileTypes: true })
     .filter(d => d.isDirectory())
     .map(d => d.name);
 
+const prettyNames = {
+    "bump-chart": "BTA-Bump-Chart.pbiviz",
+    "calendar-heatmap": "BTA-Calendar-Heatmap.pbiviz",
+    "heatmap": "BTA-Heatmap.pbiviz",
+    "packed-bubble": "BTA-Packed-Bubble.pbiviz",
+    "streamgraph": "BTA-Streamgraph.pbiviz"
+};
+
 let copied = 0;
 
 for (const pkg of packageNames) {
@@ -36,7 +44,8 @@ for (const pkg of packageNames) {
     const file = files[0].name;
 
     const src = path.join(pkgDist, file);
-    const dst = path.join(rootDistDir, file);
+    const dstName = prettyNames[pkg] ?? file;
+    const dst = path.join(rootDistDir, dstName);
     fs.copyFileSync(src, dst);
     copied++;
 }
