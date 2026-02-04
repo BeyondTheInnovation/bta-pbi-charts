@@ -5,6 +5,7 @@ Monorepo of Power BI custom visuals (pbiviz) plus a shared TypeScript package.
 ## Visuals
 
 - **Bump Chart** (`@pbi-visuals/bump-chart`): category ranks over time
+- **Donut Chart** (`@pbi-visuals/donut-chart`): donut/pie with center total + labels + small multiples
 - **Heatmap** (`@pbi-visuals/heatmap`): matrix heatmap with optional value labels + small multiples
 - **Calendar Heatmap** (`@pbi-visuals/calendar-heatmap`): GitHub-style daily contributions view
 - **Packed Bubble** (`@pbi-visuals/packed-bubble`): sized bubbles with optional clustering
@@ -28,6 +29,7 @@ To regenerate PNG icons on macOS: `scripts/generate-icons.sh`
 - Package everything: `bun run build:all`
 - Package one visual:
   - `bun run package:bump-chart`
+  - `bun run package:donut`
   - `bun run package:heatmap`
   - `bun run package:calendar`
   - `bun run package:bubble`
@@ -40,6 +42,7 @@ Note: `pbiviz` is Node-based. This repo includes a small shim so `pbiviz` works 
 ### Run (dev server)
 
 - `bun run start:bump-chart`
+- `bun run start:donut`
 - `bun run start:heatmap`
 - `bun run start:calendar`
 - `bun run start:bubble`

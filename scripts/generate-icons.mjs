@@ -4,7 +4,7 @@ import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
-const visuals = ["bump-chart", "heatmap", "calendar-heatmap", "packed-bubble", "streamgraph"];
+const visuals = ["bump-chart", "heatmap", "calendar-heatmap", "packed-bubble", "streamgraph", "donut-chart"];
 
 function readPngSize(buffer) {
     if (buffer.length < 24) {
@@ -51,4 +51,3 @@ for (const v of visuals) {
 }
 
 process.exit(ok ? 0 : 1);
-

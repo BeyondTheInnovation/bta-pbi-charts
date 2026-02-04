@@ -27,6 +27,11 @@ const textWidthCache = new Map<string, number>();
  * Falls back to character estimation if canvas is unavailable
  */
 export function measureTextWidth(text: string, fontSize: number, fontFamily: string = "sans-serif"): number {
+    // Multi-line labels: use the widest line.
+    if (text.includes("\n")) {
+        return Math.max(...text.split("\n").map(line => measureTextWidth(line, fontSize, fontFamily)));
+    }
+
     const cacheKey = `${text}|${fontSize}|${fontFamily}`;
 
     if (textWidthCache.has(cacheKey)) {
@@ -144,6 +149,13 @@ export function clearTextWidthCache(): void {
  * Format a label for display, truncating if necessary
  */
 export function formatLabel(text: string, maxWidth: number, fontSize: number): string {
+    if (text.includes("\n")) {
+        return text
+            .split("\n")
+            .map(line => formatLabel(line, maxWidth, fontSize))
+            .join("\n");
+    }
+
     const currentWidth = measureTextWidth(text, fontSize);
 
     if (currentWidth <= maxWidth) {

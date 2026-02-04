@@ -24,7 +24,8 @@ const prettyNames = {
     "calendar-heatmap": "BTA-Calendar-Heatmap.pbiviz",
     "heatmap": "BTA-Heatmap.pbiviz",
     "packed-bubble": "BTA-Packed-Bubble.pbiviz",
-    "streamgraph": "BTA-Streamgraph.pbiviz"
+    "streamgraph": "BTA-Streamgraph.pbiviz",
+    "donut-chart": "BTA-Donut-Chart.pbiviz"
 };
 
 let copied = 0;

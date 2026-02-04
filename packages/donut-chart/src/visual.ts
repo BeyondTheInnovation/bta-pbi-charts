@@ -9,24 +9,28 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import ITooltipService = powerbi.extensibility.ITooltipService;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 import {
     RenderContext,
     createColorSchemeCard,
-    createGradientColorsCard,
+    createDataColorsCard,
+    createDonutLabelsCard,
+    createDonutSettingsCard,
     createGeneralCard,
-    createHeatmapSettingsCard,
     createLegendCard,
     createSmallMultiplesCard,
     createTextSizesCard,
     createTooltipCard,
-    createXAxisCard,
-    createYAxisCard,
+    findCategoryIndex,
+    getSchemeColors,
+    readCategoryColorsFromDataView,
     renderEmptyState
 } from "@pbi-visuals/shared";
-import { IHeatmapVisualSettings, parseSettings } from "./settings";
-import { HeatmapTransformer } from "./HeatmapTransformer";
-import { HeatmapRenderer } from "./HeatmapRenderer";
+
+import { IDonutVisualSettings, parseSettings } from "./settings";
+import { DonutChartTransformer } from "./DonutChartTransformer";
+import { DonutChartRenderer } from "./DonutChartRenderer";
 
 export class Visual implements IVisual {
     private target: HTMLElement;
@@ -34,8 +38,13 @@ export class Visual implements IVisual {
     private container: d3.Selection<SVGGElement, unknown, null, undefined>;
     private host: IVisualHost;
     private tooltipService: ITooltipService;
-    private settings: IHeatmapVisualSettings | null = null;
-    private renderer: HeatmapRenderer | null = null;
+    private settings: IDonutVisualSettings | null = null;
+    private renderer: DonutChartRenderer | null = null;
+
+    private categorySelectionIds: Map<string, ISelectionId> = new Map();
+    private categories: string[] = [];
+    private categoryColors: Map<string, string> = new Map();
+    private categoryFieldIndex: number = -1;
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
@@ -45,35 +54,33 @@ export class Visual implements IVisual {
         this.svg = d3.select(this.target)
             .append("svg")
             .classed("pbi-visual", true)
-            .classed("heatmap-visual", true);
+            .classed("donut-chart-visual", true);
 
         this.container = this.svg.append("g")
             .classed("chart-container", true);
     }
 
     public update(options: VisualUpdateOptions) {
-        // Clear previous content
         this.svg.selectAll("*").remove();
         this.container = this.svg.append("g").classed("chart-container", true);
         this.target.querySelectorAll('[data-bta-tooltip="true"]').forEach(el => el.remove());
 
         const width = options.viewport.width;
         const height = options.viewport.height;
-
         this.svg.attr("width", width).attr("height", height);
 
-        // Validate data
-        if (!options.dataViews || !options.dataViews[0] || !options.dataViews[0].matrix) {
+        if (!options.dataViews || !options.dataViews[0] || !options.dataViews[0].categorical) {
             this.renderNoData(width, height);
             return;
         }
 
         const dataView = options.dataViews[0];
-
-        // Parse settings
         this.settings = parseSettings(dataView);
 
-        // Create render context
+        this.categoryFieldIndex = findCategoryIndex(dataView, "category");
+        this.buildCategorySelectionIds(dataView);
+        this.categoryColors = readCategoryColorsFromDataView(dataView, this.categoryFieldIndex);
+
         const context: RenderContext = {
             svg: this.svg,
             container: this.container,
@@ -83,32 +90,53 @@ export class Visual implements IVisual {
             height
         };
 
-        // Create renderer
-        this.renderer = new HeatmapRenderer(context);
+        this.renderer = new DonutChartRenderer(context);
+        const chartData = DonutChartTransformer.transform(dataView.categorical);
 
-        // Transform data
-        const chartData = HeatmapTransformer.transform(dataView);
-
-        // Check if data is empty
         if (!chartData.dataPoints || chartData.dataPoints.length === 0) {
             this.renderNoData(width, height);
             return;
         }
 
-        // Render the chart
+        chartData.categoryColorMap = this.categoryColors;
         this.renderer.render(chartData, this.settings);
+    }
+
+    private buildCategorySelectionIds(dataView: powerbi.DataView): void {
+        this.categorySelectionIds.clear();
+        this.categories = [];
+
+        if (this.categoryFieldIndex < 0 || !dataView.categorical?.categories?.[this.categoryFieldIndex]) {
+            return;
+        }
+
+        const categoryColumn = dataView.categorical.categories[this.categoryFieldIndex];
+        const seen = new Set<string>();
+
+        for (let i = 0; i < categoryColumn.values.length; i++) {
+            const categoryValue = String(categoryColumn.values[i] ?? "");
+            if (seen.has(categoryValue)) continue;
+            seen.add(categoryValue);
+            this.categories.push(categoryValue);
+
+            const selectionId = this.host.createSelectionIdBuilder()
+                .withCategory(categoryColumn, i)
+                .createSelectionId();
+            this.categorySelectionIds.set(categoryValue, selectionId);
+        }
+
+        this.categories.sort();
     }
 
     private renderNoData(width: number, height: number): void {
         renderEmptyState(this.container, width, height, {
-            title: "Set up Heatmap",
+            title: "Set up Donut Chart",
             lines: [
-                "X-Axis: Column hierarchy (up to 5 levels)",
-                "Y-Axis: Row hierarchy (up to 5 levels)",
-                "Values: Measure (cell intensity)",
+                "Category: Slice labels",
+                "Values: Measure (slice size)",
                 "Group By (optional): Small multiples panels"
             ],
-            hint: "Tip: Turn on Value Labels if you want numbers inside cells."
+            hint: "Tip: Use the Tooltips and Data Labels cards for a polished experience."
         });
     }
 
@@ -117,6 +145,19 @@ export class Visual implements IVisual {
 
         if (!this.settings) {
             return { cards };
+        }
+
+        if (this.categories.length > 0) {
+            const defaultColors = this.settings.useCustomColors && this.settings.customColors?.length > 0
+                ? this.settings.customColors
+                : getSchemeColors(this.settings.colorScheme);
+
+            cards.push(createDataColorsCard(
+                this.categories,
+                this.categorySelectionIds,
+                this.categoryColors,
+                defaultColors
+            ));
         }
 
         cards.push(createGeneralCard({
@@ -128,13 +169,6 @@ export class Visual implements IVisual {
 
         cards.push(createColorSchemeCard(this.settings.colorScheme));
 
-        // Gradient colors live in heatmapSettings (minColor/maxColor)
-        cards.push(createGradientColorsCard(
-            this.settings.heatmap.minColor,
-            this.settings.heatmap.maxColor,
-            "heatmapSettings"
-        ));
-
         cards.push(createLegendCard({
             show: this.settings.showLegend,
             position: this.settings.legendPosition,
@@ -142,24 +176,15 @@ export class Visual implements IVisual {
             maxItems: this.settings.maxLegendItems
         }));
 
-        cards.push(createYAxisCard({
-            show: this.settings.showYAxis,
-            fontSize: this.settings.yAxisFontSize
-        }));
-
-        cards.push(createXAxisCard({
-            show: this.settings.showXAxis,
-            fontSize: this.settings.xAxisFontSize,
-            rotateLabels: this.settings.rotateXLabels
-        }));
-
         cards.push(createTextSizesCard(this.settings.textSizes));
 
-        cards.push(createHeatmapSettingsCard(this.settings.heatmap));
+        cards.push(createDonutSettingsCard(this.settings.donut));
+
+        cards.push(createDonutLabelsCard(this.settings.donutLabels));
 
         cards.push(createSmallMultiplesCard(this.settings.smallMultiples));
 
         return { cards };
     }
-
 }
+

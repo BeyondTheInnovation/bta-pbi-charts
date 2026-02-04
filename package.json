@@ -14,11 +14,13 @@
     "package:bump-chart": "bun run --filter @pbi-visuals/bump-chart package",
     "package:calendar": "bun run --filter @pbi-visuals/calendar-heatmap package",
     "package:bubble": "bun run --filter @pbi-visuals/packed-bubble package",
+    "package:donut": "bun run --filter @pbi-visuals/donut-chart package",
     "start:heatmap": "bun run --filter @pbi-visuals/heatmap start",
     "start:streamgraph": "bun run --filter @pbi-visuals/streamgraph start",
     "start:bump-chart": "bun run --filter @pbi-visuals/bump-chart start",
     "start:calendar": "bun run --filter @pbi-visuals/calendar-heatmap start",
-    "start:bubble": "bun run --filter @pbi-visuals/packed-bubble start"
+    "start:bubble": "bun run --filter @pbi-visuals/packed-bubble start",
+    "start:donut": "bun run --filter @pbi-visuals/donut-chart start"
   },
   "dependencies": {
     "powerbi-visuals-utils-formattingmodel": "^6.2.2"

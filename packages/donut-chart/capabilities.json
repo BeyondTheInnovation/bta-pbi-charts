@@ -1,34 +1,22 @@
 {
   "dataRoles": [
     {
-      "displayName": "X-Axis",
-      "name": "xAxis",
+      "displayName": "Category",
+      "name": "category",
       "kind": "Grouping",
-      "description": "Fields for the horizontal axis (e.g., dates, time periods)"
-    },
-    {
-      "displayName": "Y-Axis",
-      "name": "yAxis",
-      "kind": "Grouping",
-      "description": "Categories displayed as rows"
+      "description": "Slice categories"
     },
     {
       "displayName": "Values",
       "name": "values",
       "kind": "Measure",
-      "description": "The measure to display at each point"
-    },
-    {
-      "displayName": "Legend",
-      "name": "legend",
-      "kind": "Grouping",
-      "description": "Field used to color the series"
+      "description": "Value for each slice"
     },
     {
       "displayName": "Group By",
       "name": "groupBy",
       "kind": "Grouping",
-      "description": "Field used to split into separate panels (small multiples)"
+      "description": "Optional small multiples panels"
     }
   ],
   "tooltips": {
@@ -167,6 +155,7 @@
           "displayName": "Position",
           "type": {
             "enumeration": [
+              { "value": "top", "displayName": "Top" },
               { "value": "right", "displayName": "Right" },
               { "value": "bottom", "displayName": "Bottom" }
             ]
@@ -183,128 +172,122 @@
         }
       }
     },
-    "xAxisSettings": {
-      "displayName": "X-Axis",
+    "donutSettings": {
+      "displayName": "Donut Chart",
       "properties": {
-        "show": {
-          "displayName": "Show X-Axis",
+        "innerRadiusRatio": {
+          "displayName": "Inner Radius",
+          "type": { "numeric": true }
+        },
+        "padAngle": {
+          "displayName": "Slice Padding",
+          "type": { "numeric": true }
+        },
+        "cornerRadius": {
+          "displayName": "Corner Radius",
+          "type": { "numeric": true }
+        },
+        "roundedCorners": {
+          "displayName": "Rounded Corners",
           "type": { "bool": true }
         },
-        "fontSize": {
-          "displayName": "Font Size",
-          "type": { "formatting": { "fontSize": true } }
+        "showCenter": {
+          "displayName": "Show Center",
+          "type": { "bool": true }
         },
-        "rotateLabels": {
-          "displayName": "Rotate Labels",
-          "description": "Control X-axis label rotation",
+        "centerLabel": {
+          "displayName": "Center Label",
+          "type": { "text": true }
+        },
+        "centerValueMode": {
+          "displayName": "Center Value",
           "type": {
             "enumeration": [
-              { "value": "auto", "displayName": "Auto" },
-              { "value": "always", "displayName": "Always" },
-              { "value": "never", "displayName": "Never" }
+              { "value": "total", "displayName": "Total" },
+              { "value": "none", "displayName": "None" }
             ]
           }
+        },
+        "enableHover": {
+          "displayName": "Hover Highlight",
+          "type": { "bool": true }
+        },
+        "showZeroSlices": {
+          "displayName": "Show Zero Slices",
+          "type": { "bool": true }
         }
       }
     },
-    "yAxisSettings": {
-      "displayName": "Y-Axis",
+    "donutLabels": {
+      "displayName": "Data Labels",
       "properties": {
-        "show": {
-          "displayName": "Show Y-Axis",
+        "showLabels": {
+          "displayName": "Show Labels",
           "type": { "bool": true }
         },
-        "fontSize": {
-          "displayName": "Font Size",
-          "type": { "formatting": { "fontSize": true } }
-        }
-      }
-    },
-    "heatmapSettings": {
-      "displayName": "Heatmap",
-      "properties": {
-        "cellPadding": {
-          "displayName": "Cell Padding",
+        "autoFit": {
+          "displayName": "Auto Fit",
+          "description": "Shrink/hide labels to avoid overflow",
+          "type": { "bool": true }
+        },
+        "minFontSize": {
+          "displayName": "Min Font Size",
+          "description": "Minimum font size when auto-fitting labels",
           "type": { "numeric": true }
         },
-        "showValues": {
-          "displayName": "Show Values",
+        "overflowToOutside": {
+          "displayName": "Overflow To Outside",
+          "description": "When labels don't fit inside, render them outside with leader lines",
           "type": { "bool": true }
         },
-        "minColor": {
-          "displayName": "Min Color",
-          "type": { "fill": { "solid": { "color": true } } }
-        },
-        "maxColor": {
-          "displayName": "Max Color",
-          "type": { "fill": { "solid": { "color": true } } }
-        },
-        "horizontalAlignment": {
-          "displayName": "Horizontal Alignment",
+        "labelMode": {
+          "displayName": "Label Content",
           "type": {
             "enumeration": [
-              { "value": "left", "displayName": "Left" },
-              { "value": "center", "displayName": "Center" },
-              { "value": "right", "displayName": "Right" }
+              { "value": "category", "displayName": "Category" },
+              { "value": "value", "displayName": "Value" },
+              { "value": "percent", "displayName": "Percent" },
+              { "value": "categoryPercent", "displayName": "Category + Percent" }
             ]
           }
         },
-        "verticalAlignment": {
-          "displayName": "Vertical Alignment",
+        "labelPosition": {
+          "displayName": "Label Position",
           "type": {
             "enumeration": [
-              { "value": "top", "displayName": "Top" },
-              { "value": "center", "displayName": "Center" },
-              { "value": "bottom", "displayName": "Bottom" }
+              { "value": "inside", "displayName": "Inside" },
+              { "value": "outside", "displayName": "Outside" }
             ]
           }
         },
-        "marginTop": {
-          "displayName": "Top Margin",
-          "type": { "numeric": true }
-        },
-        "marginBottom": {
-          "displayName": "Bottom Margin",
-          "type": { "numeric": true }
-        },
-        "marginLeft": {
-          "displayName": "Left Margin",
-          "type": { "numeric": true }
-        },
-        "marginRight": {
-          "displayName": "Right Margin",
+        "minLabelAngle": {
+          "displayName": "Min Slice Angle",
           "type": { "numeric": true }
         }
       }
     },
     "textSizes": {
       "displayName": "Text Sizes",
-      "description": "Manual font size overrides (0 = auto/responsive)",
       "properties": {
-        "xAxisFontSize": {
-          "displayName": "X-Axis Font Size",
-          "description": "0 = auto, 8-32 = manual size",
-          "type": { "formatting": { "fontSize": true } }
-        },
-        "yAxisFontSize": {
-          "displayName": "Y-Axis Font Size",
-          "description": "0 = auto, 8-32 = manual size",
-          "type": { "formatting": { "fontSize": true } }
-        },
         "legendFontSize": {
           "displayName": "Legend Font Size",
-          "description": "0 = auto, 8-32 = manual size",
-          "type": { "formatting": { "fontSize": true } }
+          "type": { "numeric": true }
         },
         "panelTitleFontSize": {
           "displayName": "Panel Title Font Size",
-          "description": "0 = auto, 8-32 = manual size",
-          "type": { "formatting": { "fontSize": true } }
+          "type": { "numeric": true }
         },
-        "valueLabelFontSize": {
-          "displayName": "Value Label Font Size",
-          "description": "0 = auto, 8-32 = manual size",
-          "type": { "formatting": { "fontSize": true } }
+        "sliceLabelFontSize": {
+          "displayName": "Slice Label Font Size",
+          "type": { "numeric": true }
+        },
+        "centerLabelFontSize": {
+          "displayName": "Center Label Font Size",
+          "type": { "numeric": true }
+        },
+        "centerValueFontSize": {
+          "displayName": "Center Value Font Size",
+          "type": { "numeric": true }
         }
       }
     },
@@ -339,34 +322,26 @@
     {
       "conditions": [
         {
-          "xAxis": { "max": 5 },
-          "yAxis": { "max": 5 },
+          "category": { "max": 1 },
           "values": { "max": 1 },
-          "legend": { "max": 1 },
           "groupBy": { "max": 1 }
         }
       ],
-      "matrix": {
-        "rows": {
+      "categorical": {
+        "categories": {
           "select": [
-            { "for": { "in": "groupBy" } },
-            { "for": { "in": "yAxis" } }
-          ],
-          "dataReductionAlgorithm": {
-            "top": { "count": 30000 }
-          }
-        },
-        "columns": {
-          "for": { "in": "xAxis" },
-          "dataReductionAlgorithm": {
-            "top": { "count": 30000 }
-          }
+            { "for": { "in": "category" } },
+            { "for": { "in": "groupBy" } }
+          ]
         },
         "values": {
-          "for": { "in": "values" }
+          "select": [
+            { "for": { "in": "values" } }
+          ]
         }
       }
     }
   ],
+  "supportsHighlight": true,
   "privileges": []
 }

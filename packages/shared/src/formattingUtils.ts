@@ -182,6 +182,9 @@ export function createTextSizesCard(settings: {
     panelTitleFontSize?: number;
     endLabelFontSize?: number;
     valueLabelFontSize?: number;
+    sliceLabelFontSize?: number;
+    centerLabelFontSize?: number;
+    centerValueFontSize?: number;
     yearLabelFontSize?: number;
     monthLabelFontSize?: number;
     dayLabelFontSize?: number;
@@ -267,6 +270,48 @@ export function createTextSizesCard(settings: {
                 properties: {
                     descriptor: { objectName: "textSizes", propertyName: "valueLabelFontSize" },
                     value: settings.valueLabelFontSize
+                }
+            }
+        } as powerbi.visuals.FormattingSlice);
+    }
+
+    if (settings.sliceLabelFontSize !== undefined) {
+        slices.push({
+            uid: "textSizes_sliceLabel",
+            displayName: "Slice Label Font Size",
+            control: {
+                type: powerbi.visuals.FormattingComponent.NumUpDown,
+                properties: {
+                    descriptor: { objectName: "textSizes", propertyName: "sliceLabelFontSize" },
+                    value: settings.sliceLabelFontSize
+                }
+            }
+        } as powerbi.visuals.FormattingSlice);
+    }
+
+    if (settings.centerLabelFontSize !== undefined) {
+        slices.push({
+            uid: "textSizes_centerLabel",
+            displayName: "Center Label Font Size",
+            control: {
+                type: powerbi.visuals.FormattingComponent.NumUpDown,
+                properties: {
+                    descriptor: { objectName: "textSizes", propertyName: "centerLabelFontSize" },
+                    value: settings.centerLabelFontSize
+                }
+            }
+        } as powerbi.visuals.FormattingSlice);
+    }
+
+    if (settings.centerValueFontSize !== undefined) {
+        slices.push({
+            uid: "textSizes_centerValue",
+            displayName: "Center Value Font Size",
+            control: {
+                type: powerbi.visuals.FormattingComponent.NumUpDown,
+                properties: {
+                    descriptor: { objectName: "textSizes", propertyName: "centerValueFontSize" },
+                    value: settings.centerValueFontSize
                 }
             }
         } as powerbi.visuals.FormattingSlice);
@@ -1162,6 +1207,226 @@ export function createCalendarSettingsCard(settings: {
                         properties: {
                             descriptor: { objectName: "calendarSettings", propertyName: "showMonthLabels" },
                             value: settings.showMonthLabels
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice
+            ]
+        }]
+    };
+}
+
+export function createDonutSettingsCard(settings: {
+    innerRadiusRatio: number;
+    padAngle: number;
+    cornerRadius: number;
+    roundedCorners?: boolean;
+    showCenter: boolean;
+    centerLabel: string;
+    centerValueMode: "total" | "none";
+    enableHover: boolean;
+    showZeroSlices: boolean;
+}): powerbi.visuals.FormattingCard {
+    return {
+        displayName: "Donut Chart",
+        uid: "donut_card",
+        groups: [{
+            displayName: "Appearance",
+            uid: "donut_group",
+            slices: [
+                {
+                    uid: "donut_innerRadiusRatio",
+                    displayName: "Inner Radius",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "innerRadiusRatio" },
+                            value: settings.innerRadiusRatio
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "donut_padAngle",
+                    displayName: "Slice Padding",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "padAngle" },
+                            value: settings.padAngle
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "donut_cornerRadius",
+                    displayName: "Corner Radius",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "cornerRadius" },
+                            value: settings.cornerRadius
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                ...(settings.roundedCorners !== undefined ? [{
+                    uid: "donut_roundedCorners",
+                    displayName: "Rounded Corners",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "roundedCorners" },
+                            value: settings.roundedCorners
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice] : []),
+                {
+                    uid: "donut_showCenter",
+                    displayName: "Show Center",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "showCenter" },
+                            value: settings.showCenter
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "donut_centerLabel",
+                    displayName: "Center Label",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.TextInput,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "centerLabel" },
+                            value: settings.centerLabel
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "donut_centerValueMode",
+                    displayName: "Center Value",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "centerValueMode" },
+                            value: settings.centerValueMode
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "donut_enableHover",
+                    displayName: "Hover Highlight",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "enableHover" },
+                            value: settings.enableHover
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "donut_showZeroSlices",
+                    displayName: "Show Zero Slices",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "donutSettings", propertyName: "showZeroSlices" },
+                            value: settings.showZeroSlices
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice
+            ]
+        }]
+    };
+}
+
+export function createDonutLabelsCard(settings: {
+    showLabels: boolean;
+    autoFit?: boolean;
+    minFontSize?: number;
+    overflowToOutside?: boolean;
+    labelMode: "category" | "value" | "percent" | "categoryPercent";
+    labelPosition: "inside" | "outside";
+    minLabelAngle: number;
+}): powerbi.visuals.FormattingCard {
+    return {
+        displayName: "Data Labels",
+        uid: "donutLabels_card",
+        groups: [{
+            displayName: "Labels",
+            uid: "donutLabels_group",
+            slices: [
+                {
+                    uid: "donutLabels_showLabels",
+                    displayName: "Show Labels",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "donutLabels", propertyName: "showLabels" },
+                            value: settings.showLabels
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                ...(settings.autoFit !== undefined ? [{
+                    uid: "donutLabels_autoFit",
+                    displayName: "Auto Fit",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "donutLabels", propertyName: "autoFit" },
+                            value: settings.autoFit
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice] : []),
+                ...(settings.minFontSize !== undefined ? [{
+                    uid: "donutLabels_minFontSize",
+                    displayName: "Min Font Size",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "donutLabels", propertyName: "minFontSize" },
+                            value: settings.minFontSize
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice] : []),
+                ...(settings.overflowToOutside !== undefined ? [{
+                    uid: "donutLabels_overflowToOutside",
+                    displayName: "Overflow To Outside",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "donutLabels", propertyName: "overflowToOutside" },
+                            value: settings.overflowToOutside
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice] : []),
+                {
+                    uid: "donutLabels_labelMode",
+                    displayName: "Label Content",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "donutLabels", propertyName: "labelMode" },
+                            value: settings.labelMode
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "donutLabels_labelPosition",
+                    displayName: "Label Position",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "donutLabels", propertyName: "labelPosition" },
+                            value: settings.labelPosition
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "donutLabels_minLabelAngle",
+                    displayName: "Min Slice Angle",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "donutLabels", propertyName: "minLabelAngle" },
+                            value: settings.minLabelAngle
                         }
                     }
                 } as powerbi.visuals.FormattingSlice

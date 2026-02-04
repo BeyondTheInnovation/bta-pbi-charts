@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "donutChartVisual",
+    "displayName": "Donut Chart",
+    "guid": "donutChartVisual11223344556677889900AABBCCDDEEFF",
+    "visualClassName": "Visual",
+    "version": "1.0.0.0",
+    "description": "A donut chart visualization for Power BI with customizable labels, center text, tooltips, and legend layout.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.3.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}
