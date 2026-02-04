@@ -26,15 +26,6 @@ export class BubbleRenderer extends BaseRenderer<IBubbleVisualSettings> {
             return;
         }
 
-        const ctx = this.context.canvas?.ctx ?? null;
-        const bubbleHits: Array<{
-            x: number;
-            y: number;
-            r: number;
-            tooltipData: any[];
-            meta: { title: string; subtitle?: string; color?: string };
-        }> = [];
-
         const { nodes, categories, groups, maxValue, minValue } = bubbleData;
 
         const margin = {
@@ -152,16 +143,43 @@ export class BubbleRenderer extends BaseRenderer<IBubbleVisualSettings> {
                 iterations++;
             }
 
-            if (ctx) {
-                const panelOffsetX = Math.round(margin.left);
-                const panelOffsetY = Math.round(currentY);
+            // SVG rendering
+            const bubbles = panelGroup.selectAll(".bubble")
+                .data(groupNodes)
+                .enter()
+                .append("circle")
+                .attr("class", "bubble")
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+                .attr("r", d => d.radius)
+                .attr("fill", d => colorScale(d.category))
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2)
+                .attr("opacity", 0.85);
 
+            // Add tooltips
+            bubbles.each((d, i, nodes) => {
+                const bubble = d3.select(nodes[i]);
+                this.addTooltip(bubble as any, [
+                    { displayName: "Value", value: d.value.toLocaleString() }
+                ], {
+                    title: d.category,
+                    subtitle: groupName !== "All" ? groupName : undefined,
+                    color: colorScale(d.category)
+                });
+            });
+
+            // Draw labels inside bubbles (if enabled and bubble is large enough)
+            if (settings.bubble.showLabels) {
                 // Get user font scale factor (default 1.0)
                 const userScaleFactor = settings.fontScaleFactor ?? 1.0;
+
+                // Helper function to get font size based on settings
                 const getFontSize = (radius: number): number => {
                     if (settings.bubble.labelSizeMode === "fixed") {
                         return Math.round(settings.bubble.labelFontSize * userScaleFactor);
                     }
+                    // Auto mode - scale with bubble size and user scale factor
                     const computed = (radius / 3) * userScaleFactor;
                     return Math.max(
                         settings.bubble.minLabelFontSize,
@@ -169,129 +187,24 @@ export class BubbleRenderer extends BaseRenderer<IBubbleVisualSettings> {
                     );
                 };
 
-                ctx.save();
-                try {
-                    ctx.translate(panelOffsetX, panelOffsetY);
-                    ctx.globalAlpha = 0.85;
-
-                    groupNodes.forEach(node => {
-                        const fill = colorScale(node.category);
-                        ctx.beginPath();
-                        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-                        ctx.fillStyle = fill;
-                        ctx.fill();
-                        ctx.strokeStyle = "#ffffff";
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-
-                        bubbleHits.push({
-                            x: panelOffsetX + node.x,
-                            y: panelOffsetY + node.y,
-                            r: node.radius,
-                            tooltipData: [{ displayName: "Value", value: node.value.toLocaleString() }],
-                            meta: {
-                                title: node.category,
-                                subtitle: groupName !== "All" ? groupName : undefined,
-                                color: fill
-                            }
-                        });
-                    });
-
-                    if (settings.bubble.showLabels) {
-                        ctx.globalAlpha = 1;
-                        groupNodes
-                            .filter(n => n.radius >= 20)
-                            .forEach(n => {
-                                const fontSize = getFontSize(n.radius);
-                                const text = this.truncateLabel(n.category, n.radius, fontSize);
-                                ctx.font = `600 ${fontSize}px Segoe UI, sans-serif`;
-                                ctx.textAlign = "center";
-                                ctx.textBaseline = "middle";
-                                ctx.fillStyle = this.getContrastColor(colorScale(n.category));
-                                ctx.fillText(text, Math.round(n.x), Math.round(n.y));
-                            });
-                    }
-                } finally {
-                    ctx.restore();
-                }
-            } else {
-                // SVG fallback
-                const bubbles = panelGroup.selectAll(".bubble")
-                    .data(groupNodes)
+                panelGroup.selectAll(".bubble-label")
+                    .data(groupNodes.filter(d => d.radius >= 20))
                     .enter()
-                    .append("circle")
-                    .attr("class", "bubble")
-                    .attr("cx", d => d.x)
-                    .attr("cy", d => d.y)
-                    .attr("r", d => d.radius)
-                    .attr("fill", d => colorScale(d.category))
-                    .attr("stroke", "#fff")
-                    .attr("stroke-width", 2)
-                    .attr("opacity", 0.85);
-
-                // Add tooltips
-                bubbles.each((d, i, nodes) => {
-                    const bubble = d3.select(nodes[i]);
-                    this.addTooltip(bubble as any, [
-                        { displayName: "Value", value: d.value.toLocaleString() }
-                    ], {
-                        title: d.category,
-                        subtitle: groupName !== "All" ? groupName : undefined,
-                        color: colorScale(d.category)
-                    });
-                });
-
-                // Draw labels inside bubbles (if enabled and bubble is large enough)
-                if (settings.bubble.showLabels) {
-                    // Get user font scale factor (default 1.0)
-                    const userScaleFactor = settings.fontScaleFactor ?? 1.0;
-
-                    // Helper function to get font size based on settings
-                    const getFontSize = (radius: number): number => {
-                        if (settings.bubble.labelSizeMode === "fixed") {
-                            return Math.round(settings.bubble.labelFontSize * userScaleFactor);
-                        }
-                        // Auto mode - scale with bubble size and user scale factor
-                        const computed = (radius / 3) * userScaleFactor;
-                        return Math.max(
-                            settings.bubble.minLabelFontSize,
-                            Math.min(settings.bubble.maxLabelFontSize * userScaleFactor, computed)
-                        );
-                    };
-
-                    panelGroup.selectAll(".bubble-label")
-                        .data(groupNodes.filter(d => d.radius >= 20))
-                        .enter()
-                        .append("text")
-                        .attr("class", "bubble-label")
-                        .attr("x", d => Math.round(d.x))
-                        .attr("y", d => Math.round(d.y))
-                        .attr("dy", "0.35em")
-                        .attr("text-anchor", "middle")
-                        .attr("font-size", d => getFontSize(d.radius) + "px")
-                        .attr("font-weight", "600")
-                        .attr("fill", d => this.getContrastColor(colorScale(d.category)))
-                        .attr("pointer-events", "none")
-                        .text(d => this.truncateLabel(d.category, d.radius, getFontSize(d.radius)));
-                }
+                    .append("text")
+                    .attr("class", "bubble-label")
+                    .attr("x", d => Math.round(d.x))
+                    .attr("y", d => Math.round(d.y))
+                    .attr("dy", "0.35em")
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", d => getFontSize(d.radius) + "px")
+                    .attr("font-weight", "600")
+                    .attr("fill", d => this.getContrastColor(colorScale(d.category)))
+                    .attr("pointer-events", "none")
+                    .text(d => this.truncateLabel(d.category, d.radius, getFontSize(d.radius)));
             }
 
             currentY += groupHeight + settings.smallMultiples.spacing;
         });
-
-        if (ctx) {
-            this.addCanvasTooltip((mx, my) => {
-                for (let i = bubbleHits.length - 1; i >= 0; i--) {
-                    const b = bubbleHits[i];
-                    const dx = mx - b.x;
-                    const dy = my - b.y;
-                    if ((dx * dx + dy * dy) <= (b.r * b.r)) {
-                        return { tooltipData: b.tooltipData, meta: b.meta };
-                    }
-                }
-                return null;
-            });
-        }
 
         // Categorical legend - use same color scale with overrides
         const legendColorScale = this.getCategoryColors(categories, bubbleData.categoryColorMap);

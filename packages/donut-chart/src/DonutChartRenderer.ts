@@ -34,18 +34,6 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
             return;
         }
 
-        const ctx = this.context.canvas?.ctx ?? null;
-        const arcHits: Array<{
-            cx: number;
-            cy: number;
-            innerR: number;
-            outerR: number;
-            startAngle: number;
-            endAngle: number;
-            tooltipData: any[];
-            meta: { title: string; subtitle?: string; color?: string };
-        }> = [];
-
         const groups = donutData.groups.length ? donutData.groups : ["All"];
         const categories = donutData.xValues;
         const groupCount = groups.length;
@@ -152,90 +140,46 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                 .attr("transform", `translate(${Math.round(centerX)}, ${Math.round(centerY)})`);
 
             const arcs = pie(segments);
-            if (ctx) {
-                const panelOffsetX = Math.round(margin.left);
-                const panelOffsetY = Math.round(currentY);
 
-                const arcCanvas = (d3.arc<d3.PieArcDatum<Segment>>() as any)
-                    .innerRadius(innerRadius)
-                    .outerRadius(radius - 1)
-                    .cornerRadius(effectiveCornerRadius)
-                    .context(ctx);
+            // SVG rendering
+            const paths = g.append("g")
+                .selectAll("path")
+                .data(arcs)
+                .join("path")
+                .attr("class", "donut-slice")
+                .attr("fill", d => colorScale(d.data.category))
+                .attr("d", arc as any)
+                .attr("stroke", "#ffffff")
+                .attr("stroke-width", 1);
 
-                ctx.save();
-                try {
-                    ctx.translate(panelOffsetX + Math.round(centerX), panelOffsetY + Math.round(centerY));
+            paths.each((d, i, nodes) => {
+                const color = colorScale(d.data.category);
+                const percent = total > 0 ? (d.data.value / total) : 0;
+                const tooltipData = [
+                    { displayName: "Value", value: d.data.value.toLocaleString() },
+                    { displayName: "Percent", value: `${(percent * 100).toFixed(1)}%` },
+                    ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
+                ];
+                const subtitle = `${(percent * 100).toFixed(1)}%`;
+                this.addTooltip(d3.select(nodes[i]) as any, tooltipData, { title: d.data.category, subtitle, color });
+            });
 
-                    arcs.forEach(a => {
-                        const color = colorScale(a.data.category);
-                        ctx.beginPath();
-                        arcCanvas(a);
-                        ctx.fillStyle = color;
-                        ctx.fill();
-                        ctx.strokeStyle = "#ffffff";
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-
-                        const percent = total > 0 ? (a.data.value / total) : 0;
-                        const subtitle = `${(percent * 100).toFixed(1)}%`;
-                        arcHits.push({
-                            cx: panelOffsetX + Math.round(centerX),
-                            cy: panelOffsetY + Math.round(centerY),
-                            innerR: innerRadius,
-                            outerR: radius + 2, // small cushion for hit-test
-                            startAngle: a.startAngle,
-                            endAngle: a.endAngle,
-                            tooltipData: [
-                                { displayName: "Value", value: a.data.value.toLocaleString() },
-                                { displayName: "Percent", value: subtitle },
-                                ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
-                            ],
-                            meta: { title: a.data.category, subtitle, color }
-                        });
+            if (settings.donut.enableHover) {
+                paths
+                    .on("mouseenter", function (_event, _d) {
+                        d3.select(this)
+                            .interrupt()
+                            .transition()
+                            .duration(140)
+                            .attr("d", arcHover as any);
+                    })
+                    .on("mouseleave", function (_event, _d) {
+                        d3.select(this)
+                            .interrupt()
+                            .transition()
+                            .duration(160)
+                            .attr("d", arc as any);
                     });
-                } finally {
-                    ctx.restore();
-                }
-            } else {
-                const paths = g.append("g")
-                    .selectAll("path")
-                    .data(arcs)
-                    .join("path")
-                    .attr("class", "donut-slice")
-                    .attr("fill", d => colorScale(d.data.category))
-                    .attr("d", arc as any)
-                    .attr("stroke", "#ffffff")
-                    .attr("stroke-width", 1);
-
-                paths.each((d, i, nodes) => {
-                    const color = colorScale(d.data.category);
-                    const percent = total > 0 ? (d.data.value / total) : 0;
-                    const tooltipData = [
-                        { displayName: "Value", value: d.data.value.toLocaleString() },
-                        { displayName: "Percent", value: `${(percent * 100).toFixed(1)}%` },
-                        ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
-                    ];
-                    const subtitle = `${(percent * 100).toFixed(1)}%`;
-                    this.addTooltip(d3.select(nodes[i]) as any, tooltipData, { title: d.data.category, subtitle, color });
-                });
-
-                if (settings.donut.enableHover) {
-                    paths
-                        .on("mouseenter", function (_event, d) {
-                            d3.select(this)
-                                .interrupt()
-                                .transition()
-                                .duration(140)
-                                .attr("d", arcHover as any);
-                        })
-                        .on("mouseleave", function (_event, d) {
-                            d3.select(this)
-                                .interrupt()
-                                .transition()
-                                .duration(160)
-                                .attr("d", arc as any);
-                        });
-                }
             }
 
             // Labels
@@ -566,36 +510,6 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
 
             currentY += groupHeight + settings.smallMultiples.spacing;
         });
-
-        if (ctx) {
-            const TAU = Math.PI * 2;
-            const norm = (a: number): number => {
-                let v = a % TAU;
-                if (v < 0) v += TAU;
-                return v;
-            };
-
-            this.addCanvasTooltip((mx, my) => {
-                for (let i = 0; i < arcHits.length; i++) {
-                    const h = arcHits[i];
-                    const dx = mx - h.cx;
-                    const dy = my - h.cy;
-                    const r = Math.sqrt(dx * dx + dy * dy);
-                    if (r < h.innerR || r > h.outerR) continue;
-
-                    // Convert canvas atan2 angle (0 at 3 o'clock) to D3 pie angle (0 at 12 o'clock, clockwise).
-                    const a = norm(Math.atan2(dy, dx) + Math.PI / 2);
-                    const start = norm(h.startAngle);
-                    const end = norm(h.endAngle);
-
-                    const inAngle = end >= start ? (a >= start && a <= end) : (a >= start || a <= end);
-                    if (!inAngle) continue;
-
-                    return { tooltipData: h.tooltipData, meta: h.meta };
-                }
-                return null;
-            });
-        }
 
         // Legend (categorical)
         if (settings.showLegend) {

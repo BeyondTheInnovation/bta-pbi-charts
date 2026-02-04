@@ -25,8 +25,6 @@ import {
     getSchemeColors,
     readCategoryColorsFromDataView,
     renderEmptyState,
-    ensureHiDPICanvas,
-    CanvasLayer,
     HtmlTooltip
 } from "@pbi-visuals/shared";
 import { IBubbleVisualSettings, parseSettings } from "./settings";
@@ -38,7 +36,6 @@ export class Visual implements IVisual {
     private target: HTMLElement;
     private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
     private container: d3.Selection<SVGGElement, unknown, null, undefined>;
-    private canvasLayer: CanvasLayer | null = null;
     private host: IVisualHost;
     private tooltipService: ITooltipService;
     private settings: IBubbleVisualSettings | null = null;
@@ -58,8 +55,6 @@ export class Visual implements IVisual {
         this.tooltipService = this.host.tooltipService;
         this.tooltipOwnerId = `bta-bubble-${Visual.instanceCounter++}`;
 
-        this.canvasLayer = ensureHiDPICanvas(this.target, "bta-bubble-canvas");
-
         this.svg = d3.select(this.target)
             .append("svg")
             .classed("pbi-visual", true)
@@ -67,9 +62,7 @@ export class Visual implements IVisual {
 
         this.svg
             .style("position", "absolute")
-            .style("inset", "0")
-            .style("z-index", "1")
-            .style("pointer-events", "none");
+            .style("inset", "0");
 
         this.container = this.svg.append("g")
             .classed("chart-container", true);
@@ -83,14 +76,6 @@ export class Visual implements IVisual {
 
         const width = options.viewport.width;
         const height = options.viewport.height;
-
-        this.canvasLayer?.resize(width, height);
-        this.canvasLayer?.clear();
-        if (this.canvasLayer?.canvas) {
-            this.canvasLayer.canvas.onmousemove = null;
-            this.canvasLayer.canvas.onmouseleave = null;
-            this.canvasLayer.canvas.style.cursor = "default";
-        }
 
         this.svg.attr("width", width).attr("height", height);
 
@@ -123,7 +108,6 @@ export class Visual implements IVisual {
             root: this.target,
             width,
             height,
-            canvas: this.canvasLayer,
             htmlTooltip: this.htmlTooltip
         };
 
@@ -292,17 +276,7 @@ export class Visual implements IVisual {
         } catch {
             // ignore
         }
-        if (this.canvasLayer?.canvas) {
-            this.canvasLayer.canvas.onmousemove = null;
-            this.canvasLayer.canvas.onmouseleave = null;
-            try {
-                this.canvasLayer.canvas.remove();
-            } catch {
-                // ignore
-            }
-        }
         this.renderer = null;
         this.settings = null;
-        this.canvasLayer = null;
     }
 }

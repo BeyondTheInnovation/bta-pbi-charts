@@ -33,8 +33,6 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
             return;
         }
 
-        const ctx = this.context.canvas?.ctx ?? null;
-
         const heatmapData = data as HeatmapMatrixData;
         const { dataPoints, groups, maxValue } = heatmapData;
         const xAxis = heatmapData.xAxis;
@@ -88,21 +86,6 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
         const colorScale = d3.scaleSequential()
             .domain([0, maxValue])
             .interpolator(d3.interpolate(settings.heatmap.minColor, settings.heatmap.maxColor));
-
-        const panelsForHit: Array<{
-            groupName: string;
-            panelOffsetX: number;
-            panelOffsetY: number;
-            yHeaderWidth: number;
-            stepX: number;
-            stepY: number;
-            cellWidth: number;
-            cellHeight: number;
-            xLeafKeys: string[];
-            yLeafKeys: string[];
-            dataLookup: Map<string, typeof dataPoints[0]>;
-            yAxis?: AxisHierarchy;
-        }> = [];
 
         let currentY = margin.top;
 
@@ -178,85 +161,75 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                 dataLookup.set(`${d.xValue}\u001e${d.yValue}`, d);
             });
 
-            const panelOffsetX = Math.round(margin.left + offsetX);
-            const panelOffsetY = Math.round(currentY + offsetY);
+            // Compute font size for value labels
+            const cellFontSize = settings.textSizes.valueLabelFontSize > 0
+                ? settings.textSizes.valueLabelFontSize
+                : this.getProportionalFontSize(
+                    Math.min(cellWidth, cellHeight),
+                    0.4,
+                    8,
+                    16
+                );
 
-            if (ctx) {
-                const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
-                    const rr = Math.max(0, Math.min(r, Math.min(w, h) / 2));
-                    ctx.beginPath();
-                    ctx.moveTo(x + rr, y);
-                    ctx.arcTo(x + w, y, x + w, y + h, rr);
-                    ctx.arcTo(x + w, y + h, x, y + h, rr);
-                    ctx.arcTo(x, y + h, x, y, rr);
-                    ctx.arcTo(x, y, x + w, y, rr);
-                    ctx.closePath();
-                };
+            // Render cells and value labels as SVG (crisp at any DPI, native rendering)
+            for (let yIndex = 0; yIndex < groupYLeafKeys.length; yIndex++) {
+                const yKey = groupYLeafKeys[yIndex];
+                for (let xIndex = 0; xIndex < xLeafKeys.length; xIndex++) {
+                    const xKey = xLeafKeys[xIndex];
+                    const key = `${xKey}\u001e${yKey}`;
+                    const dataPoint = dataLookup.get(key);
+                    const value = dataPoint?.value ?? 0;
 
-                ctx.save();
-                try {
-                    ctx.translate(panelOffsetX, panelOffsetY);
+                    const x = Math.round(yHeaderWidth + xIndex * stepX);
+                    const y = Math.round(yIndex * stepY);
+                    const fill = value === 0 ? "#f0f0f0" : (colorScale(value) as string);
 
-                    // Cells + (optional) value labels on canvas to avoid per-cell SVG DOM.
-                    for (let yIndex = 0; yIndex < groupYLeafKeys.length; yIndex++) {
-                        const yKey = groupYLeafKeys[yIndex];
-                        for (let xIndex = 0; xIndex < xLeafKeys.length; xIndex++) {
-                            const xKey = xLeafKeys[xIndex];
-                            const key = `${xKey}\u001e${yKey}`;
-                            const dataPoint = dataLookup.get(key);
-                            const value = dataPoint?.value ?? 0;
+                    // Cell rectangle
+                    const cell = panelGroup.append("rect")
+                        .attr("class", "heatmap-cell")
+                        .attr("x", x)
+                        .attr("y", y)
+                        .attr("width", Math.round(cellWidth))
+                        .attr("height", Math.round(cellHeight))
+                        .attr("rx", 3)
+                        .attr("fill", fill)
+                        .attr("stroke", "#ffffff")
+                        .attr("stroke-width", 1);
 
-                            const x = Math.round(yHeaderWidth + xIndex * stepX);
-                            const y = Math.round(yIndex * stepY);
+                    // Tooltip for cell
+                    const yPath = yAxis?.keyToPath.get(yKey) ?? [yKey];
+                    const xPath = xAxis.keyToPath.get(xKey) ?? [xKey];
+                    const yDisplay = yPath.join(" • ");
+                    const xDisplay = xPath.join(" • ");
 
-                            const fill = value === 0 ? "#f0f0f0" : (colorScale(value) as string);
-                            roundRect(x, y, cellWidth, cellHeight, 3);
-                            ctx.fillStyle = fill;
-                            ctx.fill();
+                    this.addTooltip(cell as any, [
+                        { displayName: "Value", value: value.toLocaleString() },
+                        { displayName: "Row", value: yDisplay },
+                        { displayName: "Column", value: xDisplay },
+                        ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
+                    ], {
+                        title: yPath[yPath.length - 1] ?? yKey,
+                        subtitle: xDisplay,
+                        color: fill
+                    });
 
-                            ctx.strokeStyle = "#ffffff";
-                            ctx.lineWidth = 1;
-                            ctx.stroke();
+                    // Value label inside cell
+                    if (settings.heatmap.showValues && value > 0) {
+                        const textColor = this.getContrastColor(fill);
 
-                            if (settings.heatmap.showValues && value > 0) {
-                                const textColor = this.getContrastColor(fill);
-                                const cellFontSize = settings.textSizes.valueLabelFontSize > 0
-                                    ? settings.textSizes.valueLabelFontSize
-                                    : this.getProportionalFontSize(
-                                        Math.min(cellWidth, cellHeight),
-                                        0.4,
-                                        8,
-                                        16
-                                    );
-
-                                ctx.fillStyle = textColor;
-                                ctx.font = `600 ${cellFontSize}px Segoe UI, sans-serif`;
-                                ctx.textAlign = "center";
-                                ctx.textBaseline = "middle";
-                                ctx.fillText(String(value), Math.round(x + cellWidth / 2), Math.round(y + cellHeight / 2));
-                            }
-                        }
+                        panelGroup.append("text")
+                            .attr("class", "cell-value")
+                            .attr("x", Math.round(x + cellWidth / 2))
+                            .attr("y", Math.round(y + cellHeight / 2))
+                            .attr("dy", "0.35em")
+                            .attr("text-anchor", "middle")
+                            .attr("font-size", `${cellFontSize}px`)
+                            .attr("font-weight", "600")
+                            .attr("fill", textColor)
+                            .attr("pointer-events", "none")
+                            .text(String(value));
                     }
-                } finally {
-                    ctx.restore();
                 }
-            }
-
-            if (ctx) {
-                panelsForHit.push({
-                    groupName,
-                    panelOffsetX,
-                    panelOffsetY,
-                    yHeaderWidth,
-                    stepX,
-                    stepY,
-                    cellWidth,
-                    cellHeight,
-                    xLeafKeys,
-                    yLeafKeys: groupYLeafKeys,
-                    dataLookup,
-                    yAxis
-                });
             }
 
             // Hierarchical Y-axis headers (span labels)
@@ -317,7 +290,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                     const spans = xAxis.spansByLevel[level] ?? [];
                     const isLeafLevel = level === depth - 1;
 
-                    spans.forEach((span, spanIndex) => {
+                    spans.forEach((span) => {
                         if (isLeafLevel && skipInterval > 1) {
                             // leaf spans are 1:1 with leaves
                             const leafIndex = span.startLeafIndex;
@@ -356,52 +329,6 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
 
             currentY += groupHeight + settings.smallMultiples.spacing;
         });
-
-        if (ctx) {
-            this.addCanvasTooltip((mx, my) => {
-                for (let pIndex = 0; pIndex < panelsForHit.length; pIndex++) {
-                    const panel = panelsForHit[pIndex];
-                    const localX = mx - panel.panelOffsetX - panel.yHeaderWidth;
-                    const localY = my - panel.panelOffsetY;
-                    if (localX < 0 || localY < 0) continue;
-
-                    const col = Math.floor(localX / panel.stepX);
-                    const row = Math.floor(localY / panel.stepY);
-                    if (col < 0 || row < 0 || col >= panel.xLeafKeys.length || row >= panel.yLeafKeys.length) continue;
-
-                    const inCellX = localX - col * panel.stepX;
-                    const inCellY = localY - row * panel.stepY;
-                    if (inCellX > panel.cellWidth || inCellY > panel.cellHeight) continue;
-
-                    const xKey = panel.xLeafKeys[col];
-                    const yKey = panel.yLeafKeys[row];
-                    const key = `${xKey}\u001e${yKey}`;
-                    const dataPoint = panel.dataLookup.get(key);
-                    const value = dataPoint?.value ?? 0;
-
-                    const yPath = panel.yAxis?.keyToPath.get(yKey) ?? [yKey];
-                    const xPath = xAxis.keyToPath.get(xKey) ?? [xKey];
-                    const yDisplay = yPath.join(" • ");
-                    const xDisplay = xPath.join(" • ");
-                    const fill = value === 0 ? "#f0f0f0" : (colorScale(value) as string);
-
-                    return {
-                        tooltipData: [
-                            { displayName: "Value", value: value.toLocaleString() },
-                            { displayName: "Row", value: yDisplay },
-                            { displayName: "Column", value: xDisplay },
-                            ...(panel.groupName !== "All" ? [{ displayName: "Group", value: panel.groupName }] : [])
-                        ],
-                        meta: {
-                            title: yPath[yPath.length - 1] ?? yKey,
-                            subtitle: xDisplay,
-                            color: fill
-                        }
-                    };
-                }
-                return null;
-            });
-        }
 
         // Color legend with custom gradient colors
         this.renderLegend(colorScale, maxValue, false, undefined, undefined, {

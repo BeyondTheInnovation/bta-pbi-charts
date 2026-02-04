@@ -27,15 +27,6 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
             return;
         }
 
-        const ctx = this.context.canvas?.ctx ?? null;
-        const markerHits: Array<{
-            x: number;
-            y: number;
-            r: number;
-            tooltipData: any[];
-            meta: { title: string; subtitle?: string; color?: string };
-        }> = [];
-
         const { xValues, yValues, groups, rankedData, maxRank } = bumpData;
 
         // Safety check
@@ -208,109 +199,44 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                 .y(d => yScale(d.rank))
                 .curve(d3.curveMonotoneX);
 
-            if (ctx) {
-                const panelOffsetX = Math.round(margin.left);
-                const panelOffsetY = Math.round(currentY);
-
-                ctx.save();
-                try {
-                    ctx.translate(panelOffsetX, panelOffsetY);
-
-                    // FIRST: Draw grid lines (behind everything)
-                    if (settings.showYAxis) {
-                        ctx.strokeStyle = "#f0f0f0";
-                        ctx.lineWidth = 1;
-                        for (let rank = 1; rank <= effectiveMaxRank; rank++) {
-                            const y = yScale(rank);
-                            ctx.beginPath();
-                            ctx.moveTo(0, y);
-                            ctx.lineTo(chartWidth, y);
-                            ctx.stroke();
-                        }
-                    }
-
-                    // SECOND: Draw lines for each category
-                    const canvasLine = (d3.line<BumpChartDataPoint>() as any)
-                        .x((d: BumpChartDataPoint) => xScale(d.xValue) ?? 0)
-                        .y((d: BumpChartDataPoint) => yScale(d.rank))
-                        .curve(d3.curveMonotoneX)
-                        .context(ctx);
-
-                    ctx.lineJoin = "round";
-                    ctx.lineCap = "round";
-
-                    groupYValues.forEach(yVal => {
-                        const seriesData = rankedData.get(yVal);
-                        if (!seriesData || seriesData.length === 0) return;
-
-                        const points = seriesData.filter(d => d.groupValue === groupName);
-                        if (points.length === 0) return;
-
-                        const color = colorScale(yVal);
-                        ctx.strokeStyle = color;
-                        ctx.lineWidth = settings.bumpChart.lineThickness;
-                        ctx.beginPath();
-                        canvasLine(points);
-                        ctx.stroke();
-                    });
-
-                    // THIRD: Draw markers (on top of lines)
-                    if (settings.bumpChart.showMarkers) {
-                        const r = Math.max(1, settings.bumpChart.markerSize / 2);
-                        groupYValues.forEach(yVal => {
-                            const seriesData = rankedData.get(yVal);
-                            if (!seriesData || seriesData.length === 0) return;
-
-                            const points = seriesData.filter(d => d.groupValue === groupName);
-                            if (points.length === 0) return;
-
-                            const color = colorScale(yVal);
-                            points.forEach(point => {
-                                const cx = xScale(point.xValue) ?? 0;
-                                const cy = yScale(point.rank);
-                                ctx.beginPath();
-                                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                                ctx.fillStyle = color;
-                                ctx.fill();
-
-                                markerHits.push({
-                                    x: panelOffsetX + cx,
-                                    y: panelOffsetY + cy,
-                                    r: r + 3,
-                                    tooltipData: [
-                                        { displayName: "Rank", value: `#${point.rank}` },
-                                        { displayName: "Value", value: point.value.toLocaleString() },
-                                        ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
-                                    ],
-                                    meta: {
-                                        title: yVal,
-                                        subtitle: xLabelByValue.get(point.xValue) ?? point.xValue,
-                                        color
-                                    }
-                                });
-                            });
-                        });
-                    }
-                } finally {
-                    ctx.restore();
+            // FIRST: Draw grid lines (behind everything)
+            if (settings.showYAxis) {
+                for (let rank = 1; rank <= effectiveMaxRank; rank++) {
+                    const y = yScale(rank);
+                    panelGroup.append("line")
+                        .attr("class", "grid-line")
+                        .attr("x1", 0)
+                        .attr("x2", chartWidth)
+                        .attr("y1", y)
+                        .attr("y2", y)
+                        .attr("stroke", "#f0f0f0")
+                        .attr("stroke-width", 1);
                 }
-            } else {
-                // FIRST: Draw grid lines (behind everything)
-                if (settings.showYAxis) {
-                    for (let rank = 1; rank <= effectiveMaxRank; rank++) {
-                        const y = yScale(rank);
-                        panelGroup.append("line")
-                            .attr("class", "grid-line")
-                            .attr("x1", 0)
-                            .attr("x2", chartWidth)
-                            .attr("y1", y)
-                            .attr("y2", y)
-                            .attr("stroke", "#f0f0f0")
-                            .attr("stroke-width", 1);
-                    }
-                }
+            }
 
-                // SECOND: Draw lines for each category
+            // SECOND: Draw lines for each category
+            groupYValues.forEach(yVal => {
+                const seriesData = rankedData.get(yVal);
+                if (!seriesData || seriesData.length === 0) return;
+
+                const points = seriesData.filter(d => d.groupValue === groupName);
+                if (points.length === 0) return;
+
+                const color = colorScale(yVal);
+
+                panelGroup.append("path")
+                    .datum(points)
+                    .attr("class", "bump-line")
+                    .attr("d", line)
+                    .attr("fill", "none")
+                    .attr("stroke", color)
+                    .attr("stroke-width", settings.bumpChart.lineThickness)
+                    .attr("stroke-linecap", "round")
+                    .attr("stroke-linejoin", "round");
+            });
+
+            // THIRD: Draw markers (on top of lines)
+            if (settings.bumpChart.showMarkers) {
                 groupYValues.forEach(yVal => {
                     const seriesData = rankedData.get(yVal);
                     if (!seriesData || seriesData.length === 0) return;
@@ -320,50 +246,27 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
 
                     const color = colorScale(yVal);
 
-                    panelGroup.append("path")
-                        .datum(points)
-                        .attr("class", "bump-line")
-                        .attr("d", line)
-                        .attr("fill", "none")
-                        .attr("stroke", color)
-                        .attr("stroke-width", settings.bumpChart.lineThickness)
-                        .attr("stroke-linecap", "round")
-                        .attr("stroke-linejoin", "round");
-                });
+                    points.forEach(point => {
+                        const cx = xScale(point.xValue) ?? 0;
+                        const cy = yScale(point.rank);
+                        const periodLabel = xLabelByValue.get(point.xValue) ?? point.xValue;
 
-                // THIRD: Draw markers (on top of lines)
-                if (settings.bumpChart.showMarkers) {
-                    groupYValues.forEach(yVal => {
-                        const seriesData = rankedData.get(yVal);
-                        if (!seriesData || seriesData.length === 0) return;
+                        const marker = panelGroup.append("circle")
+                            .attr("class", "bump-marker")
+                            .attr("cx", cx)
+                            .attr("cy", cy)
+                            .attr("r", settings.bumpChart.markerSize / 2)
+                            .attr("fill", color)
+                            .attr("stroke", color)
+                            .attr("stroke-width", 1);
 
-                        const points = seriesData.filter(d => d.groupValue === groupName);
-                        if (points.length === 0) return;
-
-                        const color = colorScale(yVal);
-
-                        points.forEach(point => {
-                            const cx = xScale(point.xValue) ?? 0;
-                            const cy = yScale(point.rank);
-                            const periodLabel = xLabelByValue.get(point.xValue) ?? point.xValue;
-
-                            const marker = panelGroup.append("circle")
-                                .attr("class", "bump-marker")
-                                .attr("cx", cx)
-                                .attr("cy", cy)
-                                .attr("r", settings.bumpChart.markerSize / 2)
-                                .attr("fill", color)
-                                .attr("stroke", color)
-                                .attr("stroke-width", 1);
-
-                            this.addTooltip(marker as any, [
-                                { displayName: "Rank", value: `#${point.rank}` },
-                                { displayName: "Value", value: point.value.toLocaleString() },
-                                ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
-                            ], { title: yVal, subtitle: periodLabel, color });
-                        });
+                        this.addTooltip(marker as any, [
+                            { displayName: "Rank", value: `#${point.rank}` },
+                            { displayName: "Value", value: point.value.toLocaleString() },
+                            ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
+                        ], { title: yVal, subtitle: periodLabel, color });
                     });
-                }
+                });
             }
 
             // Y-axis: Category labels on LEFT (colored to match lines)
@@ -433,20 +336,6 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
 
             currentY += groupHeight + settings.smallMultiples.spacing;
         });
-
-        if (ctx) {
-            this.addCanvasTooltip((mx, my) => {
-                for (let i = 0; i < markerHits.length; i++) {
-                    const m = markerHits[i];
-                    const dx = mx - m.x;
-                    const dy = my - m.y;
-                    if ((dx * dx + dy * dy) <= (m.r * m.r)) {
-                        return { tooltipData: m.tooltipData, meta: m.meta };
-                    }
-                }
-                return null;
-            });
-        }
 
         // Legend at bottom if configured
         if (settings.showLegend && !legendAtTop) {

@@ -8,7 +8,6 @@ import { IBaseVisualSettings, colorSchemes } from "./settings";
 import { formatLabel } from "./textUtils";
 import { renderEmptyState } from "./emptyState";
 import { HtmlTooltip, TooltipMeta, toTooltipRows } from "./tooltip";
-import { CanvasLayer } from "./canvas";
 
 export interface RenderContext {
     svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
@@ -17,7 +16,6 @@ export interface RenderContext {
     root: HTMLElement;
     width: number;
     height: number;
-    canvas?: CanvasLayer | null;
     htmlTooltip?: HtmlTooltip | null;
 }
 
@@ -50,19 +48,6 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
     }
 
     public abstract render(data: ChartData, settings: TSettings): void;
-
-    private clearCanvasTooltipHandlers(canvas: HTMLCanvasElement): void {
-        canvas.onmousemove = null;
-        canvas.onmouseleave = null;
-        canvas.onpointermove = null;
-        canvas.onpointerleave = null;
-        canvas.onpointerdown = null;
-        canvas.onpointerup = null;
-        canvas.ontouchstart = null;
-        canvas.ontouchmove = null;
-        canvas.ontouchend = null;
-        canvas.ontouchcancel = null;
-    }
 
     private static colorParseCanvas: HTMLCanvasElement | null = null;
     private static colorParseCtx: CanvasRenderingContext2D | null = null;
@@ -275,97 +260,6 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
             .on("mouseout", function () {
                 tooltip.hide();
             });
-    }
-
-    protected addCanvasTooltip(
-        getDataAt?: ((x: number, y: number) => { tooltipData: VisualTooltipDataItem[]; meta?: TooltipMeta } | null) | null
-    ): void {
-        const layer = this.context.canvas;
-        if (!layer) return;
-
-        const canvas = layer.canvas;
-        const tooltipService = this.context.tooltipService;
-        const useCustom = !!(this.settings.tooltip?.style === "custom" && typeof document !== "undefined");
-        const htmlTooltip = this.context.htmlTooltip ?? null;
-
-        const hide = () => {
-            canvas.style.cursor = "default";
-            if (useCustom && htmlTooltip) {
-                htmlTooltip.hide();
-            } else {
-                tooltipService.hide({ immediately: true, isTouchEvent: false });
-            }
-        };
-
-        // If tooltips are disabled (or no hit-test is registered), clear handlers so stale closures don't linger.
-        if (!this.settings.tooltip?.enabled || !getDataAt) {
-            this.clearCanvasTooltipHandlers(canvas);
-            hide();
-            return;
-        }
-
-        if (useCustom && !htmlTooltip) {
-            // Custom tooltip style requested but no HtmlTooltip instance provided by the visual.
-            // Clear handlers to avoid stale interactions.
-            this.clearCanvasTooltipHandlers(canvas);
-            hide();
-            return;
-        }
-
-        const handleMove = (clientX: number, clientY: number, isTouch: boolean) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
-
-            const hit = getDataAt(x, y);
-            if (!hit) {
-                hide();
-                return;
-            }
-
-            canvas.style.cursor = "pointer";
-
-            if (useCustom && htmlTooltip) {
-                htmlTooltip.show({ meta: hit.meta, rows: toTooltipRows(hit.tooltipData) }, clientX, clientY);
-                return;
-            }
-
-            tooltipService.show({
-                dataItems: hit.tooltipData,
-                identities: [],
-                coordinates: [clientX, clientY],
-                isTouchEvent: isTouch
-            });
-        };
-
-        canvas.onmousemove = (event: MouseEvent) => {
-            handleMove(event.clientX, event.clientY, false);
-        };
-
-        canvas.onpointermove = (event: PointerEvent) => {
-            handleMove(event.clientX, event.clientY, event.pointerType === "touch");
-        };
-
-        canvas.onpointerdown = (event: PointerEvent) => {
-            handleMove(event.clientX, event.clientY, event.pointerType === "touch");
-        };
-        canvas.onpointerup = () => hide();
-
-        canvas.ontouchstart = (event: TouchEvent) => {
-            const touch = event.touches[0];
-            if (!touch) return;
-            handleMove(touch.clientX, touch.clientY, true);
-        };
-        canvas.ontouchmove = (event: TouchEvent) => {
-            const touch = event.touches[0];
-            if (!touch) return;
-            handleMove(touch.clientX, touch.clientY, true);
-        };
-        canvas.ontouchend = () => hide();
-        canvas.ontouchcancel = () => hide();
-
-        canvas.onmouseleave = () => hide();
-        canvas.onpointerleave = () => hide();
     }
 
     protected renderLegend(

@@ -19,8 +19,6 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
             return;
         }
 
-        const ctx = this.context.canvas?.ctx ?? null;
-
         const { calendarPoints, years, maxValue, groups } = calendarData;
 
         // Cell sizes based on setting
@@ -74,13 +72,6 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
             .domain([0, maxValue])
             .interpolator(d3.interpolate(settings.calendar.minColor, settings.calendar.maxColor));
 
-        const groupHitModels: Array<{
-            groupName: string;
-            startY: number;
-            height: number;
-            dataLookup: Map<string, CalendarDataPoint>;
-        }> = [];
-
         let currentY = margin.top;
 
         groups.forEach((groupName, groupIndex) => {
@@ -119,15 +110,6 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
                 const key = `${p.year}-${p.month}-${p.date.getDate()}`;
                 dataLookup.set(key, p);
             });
-
-            if (ctx) {
-                groupHitModels.push({
-                    groupName,
-                    startY: currentY,
-                    height: years.length * yearHeight,
-                    dataLookup
-                });
-            }
 
             let yearOffsetY = 0;
 
@@ -192,52 +174,31 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
                     const dataPoint = dataLookup.get(key);
                     const value = dataPoint?.value ?? 0;
 
-                // Tooltip
                     const fill = value === 0 ? "#ebedf0" : (colorScale(value) as string);
 
-                    if (ctx) {
-                        const px = Math.round(margin.left + x);
-                        const py = Math.round(currentY + yearOffsetY + y);
+                    const dateStr = currentDate.toLocaleDateString("en-US", {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric"
+                    });
 
-                        const rr = 2;
-                        ctx.beginPath();
-                        ctx.moveTo(px + rr, py);
-                        ctx.arcTo(px + cellSize, py, px + cellSize, py + cellSize, rr);
-                        ctx.arcTo(px + cellSize, py + cellSize, px, py + cellSize, rr);
-                        ctx.arcTo(px, py + cellSize, px, py, rr);
-                        ctx.arcTo(px, py, px + cellSize, py, rr);
-                        ctx.closePath();
+                    const cell = yearGroup.append("rect")
+                        .attr("class", "calendar-cell")
+                        .attr("x", x)
+                        .attr("y", y)
+                        .attr("width", cellSize)
+                        .attr("height", cellSize)
+                        .attr("rx", 2)
+                        .attr("fill", fill)
+                        .attr("stroke", "#fff")
+                        .attr("stroke-width", 1);
 
-                        ctx.fillStyle = fill;
-                        ctx.fill();
-                        ctx.strokeStyle = "#ffffff";
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-                    } else {
-                        const dateStr = currentDate.toLocaleDateString("en-US", {
-                            weekday: "short",
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric"
-                        });
-
-                        const cell = yearGroup.append("rect")
-                            .attr("class", "calendar-cell")
-                            .attr("x", x)
-                            .attr("y", y)
-                            .attr("width", cellSize)
-                            .attr("height", cellSize)
-                            .attr("rx", 2)
-                            .attr("fill", fill)
-                            .attr("stroke", "#fff")
-                            .attr("stroke-width", 1);
-
-                        this.addTooltip(cell as any, [{ displayName: "Value", value: value.toLocaleString() }], {
-                            title: dateStr,
-                            subtitle: groupName !== "All" ? groupName : undefined,
-                            color: fill
-                        });
-                    }
+                    this.addTooltip(cell as any, [{ displayName: "Value", value: value.toLocaleString() }], {
+                        title: dateStr,
+                        subtitle: groupName !== "All" ? groupName : undefined,
+                        color: fill
+                    });
 
                     // Move to next day
                     currentDate.setDate(currentDate.getDate() + 1);
@@ -266,70 +227,6 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
 
             currentY += yearsPerGroup * yearHeight + settings.smallMultiples.spacing;
         });
-
-        if (ctx) {
-            const step = cellSize + cellPadding;
-            const maxRow = 6;
-            const groupBlockHeight = yearsPerGroup * yearHeight + settings.smallMultiples.spacing;
-
-            this.addCanvasTooltip((mx, my) => {
-                const xInGrid = mx - margin.left - dayGutter;
-                if (xInGrid < 0) return null;
-
-                const week = Math.floor(xInGrid / step);
-                const inCellX = xInGrid - week * step;
-                if (week < 0 || inCellX > cellSize) return null;
-
-                // O(1) group lookup (groups are stacked with constant block height).
-                const groupIndex = Math.floor((my - margin.top) / groupBlockHeight);
-                if (groupIndex < 0 || groupIndex >= groupHitModels.length) return null;
-                const hitGroup = groupHitModels[groupIndex];
-                if (my < hitGroup.startY || my >= (hitGroup.startY + hitGroup.height)) return null;
-
-                const yInGroup = my - hitGroup.startY;
-                if (yInGroup < 0) return null;
-
-                const yearIndex = Math.floor(yInGroup / yearHeight);
-                if (yearIndex < 0 || yearIndex >= years.length) return null;
-
-                const yInYear = yInGroup - (yearIndex * yearHeight);
-                const row = Math.floor(yInYear / step);
-                const inCellY = yInYear - row * step;
-                if (row < 0 || row > maxRow || inCellY > cellSize) return null;
-
-                const year = years[yearIndex];
-                const startOfYear = new Date(year, 0, 1);
-                const startDay = (startOfYear.getDay() - weekStartOffset + 7) % 7;
-                const dayOfYear = week * 7 + row - startDay;
-                if (dayOfYear < 0) return null;
-
-                const date = new Date(year, 0, 1 + dayOfYear);
-                if (date.getFullYear() !== year) return null;
-
-                // Sanity check: ensure row matches the rendered day-of-week.
-                const renderedRow = (date.getDay() - weekStartOffset + 7) % 7;
-                if (renderedRow !== row) return null;
-
-                const key = `${year}-${date.getMonth()}-${date.getDate()}`;
-                const dataPoint = hitGroup.dataLookup.get(key);
-                const value = dataPoint?.value ?? 0;
-
-                const dateStr = date.toLocaleDateString("en-US", {
-                    weekday: "short",
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric"
-                });
-
-                const fill = value === 0 ? "#ebedf0" : (colorScale(value) as string);
-                const subtitle = hitGroup.groupName !== "All" ? hitGroup.groupName : undefined;
-
-                return {
-                    tooltipData: [{ displayName: "Value", value: value.toLocaleString() }],
-                    meta: { title: dateStr, subtitle, color: fill }
-                };
-            });
-        }
 
         // Legend (gradient) - use shared positioning logic (top-right when legend position is Right)
         this.renderLegend(colorScale, maxValue, false, undefined, undefined, {

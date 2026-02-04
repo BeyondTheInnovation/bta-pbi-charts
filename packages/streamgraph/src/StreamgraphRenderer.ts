@@ -19,22 +19,6 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
             return;
         }
 
-        const ctx = this.context.canvas?.ctx ?? null;
-        const panelHits: Array<{
-            x0: number;
-            y0: number;
-            width: number;
-            height: number;
-            xScale: d3.ScaleLinear<number, number, never>;
-            yScale: d3.ScaleLinear<number, number, never>;
-            xValues: string[];
-            xDisplayLabels: string[];
-            stackInput: Array<Record<string, number>>;
-            series: d3.Series<Record<string, number>, string>[];
-            groupName: string;
-            colorScale: d3.ScaleOrdinal<string, string, never>;
-        }> = [];
-
         const { xValues, yValues, groups, stackedData } = streamData;
 
         // Streamgraph doesn't render a Y-axis yet; avoid reserving empty left space.
@@ -147,86 +131,42 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
                 area.curve(d3.curveLinear);
             }
 
-            if (ctx) {
-                const panelOffsetX = Math.round(margin.left);
-                const panelOffsetY = Math.round(currentY);
+            // SVG rendering
+            series.forEach((s, i) => {
+                const category = groupYValues[i];
+                const categoryColor = colorScale(category);
 
-                const canvasArea = (d3.area<d3.SeriesPoint<Record<string, number>>>() as any)
-                    .x((d: any) => xScale(d.data.x))
-                    .y0((d: any) => yScale(d[0]))
-                    .y1((d: any) => yScale(d[1]))
-                    .curve(settings.streamgraph.curveSmoothing ? d3.curveBasis : d3.curveLinear)
-                    .context(ctx);
+                const path = panelGroup.append("path")
+                    .datum(s)
+                    .attr("class", "stream-layer")
+                    .attr("d", area)
+                    .attr("fill", categoryColor)
+                    .attr("opacity", settings.streamgraph.opacity)
+                    .attr("stroke", "none");
 
-                ctx.save();
-                try {
-                    ctx.translate(panelOffsetX, panelOffsetY);
-                    ctx.globalAlpha = settings.streamgraph.opacity;
+                if (settings.tooltip.style === "custom") {
+                    this.addTooltipDynamic(path as any, (event: MouseEvent) => {
+                        const node = panelGroup.node() as any;
+                        const [px] = d3.pointer(event, node);
+                        const rawIndex = Math.round(xScale.invert(px));
+                        const index = Math.max(0, Math.min(xValues.length - 1, rawIndex));
+                        const rawValue = (stackInput[index]?.[category] ?? 0) as number;
 
-                    series.forEach(s => {
-                        const key = (s as any).key as string;
-                        const categoryColor = colorScale(key);
-                        ctx.fillStyle = categoryColor;
-                        ctx.beginPath();
-                        canvasArea(s);
-                        ctx.fill();
+                        return {
+                            meta: { title: category, subtitle: xDisplayLabels[index], color: categoryColor },
+                            tooltipData: [
+                                { displayName: "Value", value: rawValue.toLocaleString() },
+                                ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
+                            ]
+                        };
                     });
-                } finally {
-                    ctx.restore();
+                } else {
+                    this.addTooltip(path as any, [
+                        { displayName: "Category", value: category },
+                        ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
+                    ]);
                 }
-
-                panelHits.push({
-                    x0: panelOffsetX,
-                    y0: panelOffsetY,
-                    width: chartWidth,
-                    height: groupHeight,
-                    xScale,
-                    yScale,
-                    xValues,
-                    xDisplayLabels,
-                    stackInput,
-                    series,
-                    groupName,
-                    colorScale
-                });
-            } else {
-                // SVG fallback
-                series.forEach((s, i) => {
-                    const category = groupYValues[i];
-                    const categoryColor = colorScale(category);
-
-                    const path = panelGroup.append("path")
-                        .datum(s)
-                        .attr("class", "stream-layer")
-                        .attr("d", area)
-                        .attr("fill", categoryColor)
-                        .attr("opacity", settings.streamgraph.opacity)
-                        .attr("stroke", "none");
-
-                    if (settings.tooltip.style === "custom") {
-                        this.addTooltipDynamic(path as any, (event: MouseEvent) => {
-                            const node = panelGroup.node() as any;
-                            const [px] = d3.pointer(event, node);
-                            const rawIndex = Math.round(xScale.invert(px));
-                            const index = Math.max(0, Math.min(xValues.length - 1, rawIndex));
-                            const rawValue = (stackInput[index]?.[category] ?? 0) as number;
-
-                            return {
-                                meta: { title: category, subtitle: xDisplayLabels[index], color: categoryColor },
-                                tooltipData: [
-                                    { displayName: "Value", value: rawValue.toLocaleString() },
-                                    ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
-                                ]
-                            };
-                        });
-                    } else {
-                        this.addTooltip(path as any, [
-                            { displayName: "Category", value: category },
-                            ...(groupName !== "All" ? [{ displayName: "Group", value: groupName }] : [])
-                        ]);
-                    }
-                });
-            }
+            });
 
             // X-axis (only on last group) with smart rotation
             if (settings.showXAxis && groupIndex === groups.length - 1) {
@@ -283,46 +223,6 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
 
             currentY += groupHeight + settings.smallMultiples.spacing;
         });
-
-        if (ctx) {
-            this.addCanvasTooltip((mx, my) => {
-                for (let p = 0; p < panelHits.length; p++) {
-                    const panel = panelHits[p];
-                    if (mx < panel.x0 || mx > (panel.x0 + panel.width) || my < panel.y0 || my > (panel.y0 + panel.height)) {
-                        continue;
-                    }
-
-                    const localX = mx - panel.x0;
-                    const localY = my - panel.y0;
-                    const rawIndex = Math.round(panel.xScale.invert(localX));
-                    const index = Math.max(0, Math.min(panel.xValues.length - 1, rawIndex));
-
-                    for (let sIdx = 0; sIdx < panel.series.length; sIdx++) {
-                        const s = panel.series[sIdx];
-                        const key = (s as any).key as string;
-                        const point = s[index] as any;
-                        if (!point) continue;
-
-                        const y0p = panel.yScale(point[0]);
-                        const y1p = panel.yScale(point[1]);
-                        const top = Math.min(y0p, y1p);
-                        const bottom = Math.max(y0p, y1p);
-                        if (localY < top || localY > bottom) continue;
-
-                        const value = (panel.stackInput[index]?.[key] ?? 0) as number;
-                        const color = panel.colorScale(key);
-                        return {
-                            tooltipData: [
-                                { displayName: "Value", value: value.toLocaleString() },
-                                ...(panel.groupName !== "All" ? [{ displayName: "Group", value: panel.groupName }] : [])
-                            ],
-                            meta: { title: key, subtitle: panel.xDisplayLabels[index], color }
-                        };
-                    }
-                }
-                return null;
-            });
-        }
 
         // Legend
         if (settings.showLegend) {
