@@ -20,6 +20,8 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
 
         const { xValues, yValues, groups, stackedDataByGroup, maxStackSum } = streamData;
         const legendCategories = streamData.hasLegendRoleData ? yValues : [];
+        const yAxisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.yAxisColor || "#111827") : settings.yAxisColor;
+        const xAxisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.xAxisColor || "#111827") : settings.xAxisColor;
 
         const yAxisFontSize = this.getEffectiveFontSize(
             settings.textSizes.yAxisFontSize > 0 ? settings.textSizes.yAxisFontSize : settings.yAxisFontSize,
@@ -98,7 +100,7 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
                     .attr("y", -Math.round(titleSpacing))
                     .attr("font-size", `${titleFontSize}px`)
                     .attr("font-weight", "600")
-                    .attr("fill", "#333")
+                    .attr("fill", this.getTitleTextColor("#333"))
                     .text(displayTitle);
 
                 if (displayTitle !== groupName) {
@@ -107,8 +109,8 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
             }
 
             // Prepare data for d3.stack
-            const stackInput: Array<Record<string, number>> = xValues.map(x => {
-                const row: Record<string, number> = { x: xValues.indexOf(x) };
+            const stackInput: Array<Record<string, number>> = xValues.map((x, index) => {
+                const row: Record<string, number> = { x: index };
                 groupYValues.forEach(y => {
                     const yMap = groupStack.get(y);
                     row[y] = yMap ? (yMap.get(x) ?? 0) : 0;
@@ -162,7 +164,7 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
                         .style("font-weight", settings.yAxisBold ? "700" : "400")
                         .style("font-style", settings.yAxisItalic ? "italic" : "normal")
                         .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
-                        .attr("fill", settings.yAxisColor)
+                        .attr("fill", yAxisColor)
                         .text(formatTick(tick));
                 });
             }
@@ -191,10 +193,11 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
                 const path = panelGroup.append("path")
                     .datum(s)
                     .attr("class", "stream-layer")
+                    .attr("data-selection-key", category)
                     .attr("d", area)
                     .attr("fill", categoryColor)
-                    .attr("opacity", settings.streamgraph.opacity)
-                    .attr("stroke", "none");
+                    .attr("opacity", this.isHighContrastMode() ? 1 : settings.streamgraph.opacity)
+                    .attr("stroke", this.isHighContrastMode() ? this.getThemeBackground("#ffffff") : "none");
 
                 if (settings.tooltip.style === "custom") {
                     this.addTooltipDynamic(path as any, (event: MouseEvent) => {
@@ -207,14 +210,14 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
                         return {
                             meta: { title: category, subtitle: xDisplayLabels[index], color: categoryColor },
                             tooltipData: [
-                                { displayName: "Value", value: formatMeasureValue(rawValue, streamData.valueFormatString) },
+                                { displayName: "Value", value: formatMeasureValue(rawValue, streamData.valueFormatString), color: categoryColor },
                                 ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
                             ]
                         };
                     });
                 } else {
                     this.addTooltip(path as any, [
-                        { displayName: "Category", value: category },
+                        { displayName: "Category", value: category, color: categoryColor },
                         ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
                     ]);
                 }
@@ -280,7 +283,7 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
                         .style("font-weight", settings.xAxisBold ? "700" : "400")
                         .style("font-style", settings.xAxisItalic ? "italic" : "normal")
                         .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
-                        .attr("fill", settings.xAxisColor)
+                        .attr("fill", xAxisColor)
                         .text(xDisplayLabels[i]);
 
                     if (shouldRotate) {

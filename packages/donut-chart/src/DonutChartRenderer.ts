@@ -75,6 +75,9 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
         }
 
         const colorScale = this.getCategoryColors(categories, donutData.categoryColorMap);
+        const sliceStrokeColor = this.isHighContrastMode() ? this.getThemeBackground("#ffffff") : "#ffffff";
+        const labelTextColor = this.getThemeForeground("#111827");
+        const connectorStrokeColor = this.isHighContrastMode() ? this.getThemeForeground("#111827") : "rgba(17,24,39,0.35)";
         const sliceFontSize = this.getEffectiveFontSize(
             settings.textSizes.sliceLabelFontSize > 0 ? settings.textSizes.sliceLabelFontSize : 11,
             6,
@@ -112,7 +115,7 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                     .attr("y", -Math.round(titleSpacing))
                     .attr("font-size", `${titleFontSize}px`)
                     .attr("font-weight", "600")
-                    .attr("fill", "#333")
+                    .attr("fill", this.getTitleTextColor("#333"))
                     .text(displayTitle);
 
                 if (displayTitle !== groupName) {
@@ -139,7 +142,7 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                         .attr("y", centerY)
                         .attr("text-anchor", "middle")
                         .attr("font-size", `${sliceFontSize}px`)
-                        .attr("fill", "#9ca3af")
+                        .attr("fill", this.getThemeForeground("#9ca3af"))
                         .text("No data");
 
                 currentY += groupHeight + interPanelGap;
@@ -178,17 +181,18 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                 .data(arcs)
                 .join("path")
                 .attr("class", "donut-slice")
+                .attr("data-selection-key", d => d.data.category)
                 .attr("fill", d => colorScale(d.data.category))
                 .attr("d", arc as any)
-                .attr("stroke", "#ffffff")
+                .attr("stroke", sliceStrokeColor)
                 .attr("stroke-width", 1);
 
             paths.each((d, i, nodes) => {
                 const color = colorScale(d.data.category);
                 const percent = total > 0 ? (d.data.value / total) : 0;
                 const tooltipData = [
-                    { displayName: "Value", value: formatMeasureValue(d.data.value, this.valueFormatString) },
-                    { displayName: "Percent", value: `${(percent * 100).toFixed(1)}%` },
+                    { displayName: "Value", value: formatMeasureValue(d.data.value, this.valueFormatString), color },
+                    { displayName: "Percent", value: `${(percent * 100).toFixed(1)}%`, color },
                     ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
                 ];
                 const subtitle = `${(percent * 100).toFixed(1)}%`;
@@ -336,14 +340,14 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                         g.append("path")
                             .attr("d", line([p1 as any, p2 as any, [elbow, p.y] as any, [labelX, p.y] as any]) as any)
                             .attr("fill", "none")
-                            .attr("stroke", "rgba(17,24,39,0.35)")
+                            .attr("stroke", connectorStrokeColor)
                             .attr("stroke-width", 1);
 
                         const text = labelGroup.append("text")
                             .attr("x", Math.round(labelX + (p.side === "right" ? 2 : -2)))
                             .attr("y", Math.round(p.y))
                             .attr("text-anchor", anchor)
-                            .attr("fill", "#111827");
+                            .attr("fill", labelTextColor);
 
                         const primaryText = formatLabel(p.primary, maxLabelWidth, sliceFontSize);
                         text.append("tspan")
@@ -527,6 +531,7 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                     .attr("text-anchor", "middle")
                     .attr("y", settings.donut.centerValueMode === "total" ? -4 : 4)
                     .attr("font-size", `${centerLabelFontSize}px`)
+                    .attr("fill", this.getThemeForeground("#111827"))
                     .text(label);
 
                 if (settings.donut.centerValueMode === "total") {
@@ -535,6 +540,7 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                         .attr("text-anchor", "middle")
                         .attr("y", centerValueFontSize * 0.9)
                         .attr("font-size", `${centerValueFontSize}px`)
+                        .attr("fill", this.getThemeForeground("#111827"))
                         .text(formatMeasureValue(total, this.valueFormatString));
                 }
             }

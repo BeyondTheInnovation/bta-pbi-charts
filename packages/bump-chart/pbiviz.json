@@ -4,7 +4,7 @@
     "displayName": "Bump Chart",
     "guid": "bumpChartVisualC3D4E5F6789012345678901234567CDE",
     "visualClassName": "Visual",
-    "version": "1.1.0.0",
+    "version": "1.2.0.0",
     "description": "A bump chart visualization for Power BI showing category rankings over time with customizable line thickness and markers.",
     "supportUrl": "https://github.com/example/bta-pbi-charts",
     "gitHubUrl": ""

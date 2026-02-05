@@ -59,6 +59,7 @@ export class BubbleRenderer extends BaseRenderer<IBubbleVisualSettings> {
             ? this.getCategoryColors(legendItems, bubbleData.categoryColorMap)
             : null;
         const fallbackColor = this.getCategoryColor(0);
+        const bubbleStroke = this.isHighContrastMode() ? this.getThemeForeground("#111827") : "#ffffff";
 
         // Radius scale based on values
         const radiusScale = d3.scaleSqrt()
@@ -99,7 +100,7 @@ export class BubbleRenderer extends BaseRenderer<IBubbleVisualSettings> {
                     .attr("y", -Math.round(titleSpacing))
                     .attr("font-size", `${titleFontSize}px`)
                     .attr("font-weight", "600")
-                    .attr("fill", "#333")
+                    .attr("fill", this.getTitleTextColor("#333"))
                     .text(displayTitle);
 
                 if (displayTitle !== groupName) {
@@ -153,10 +154,9 @@ export class BubbleRenderer extends BaseRenderer<IBubbleVisualSettings> {
 
             // Run simulation synchronously
             simulation.stop();
-            let iterations = 0;
-            while (simulation.alpha() > 0.001 && iterations < 500) {
+            const maxTicks = Math.min(220, Math.max(80, Math.round(groupNodes.length * 1.8)));
+            for (let iterations = 0; iterations < maxTicks; iterations++) {
                 simulation.tick();
-                iterations++;
             }
 
             // SVG rendering
@@ -165,23 +165,25 @@ export class BubbleRenderer extends BaseRenderer<IBubbleVisualSettings> {
                 .enter()
                 .append("circle")
                 .attr("class", "bubble")
+                .attr("data-selection-key", d => d.category)
                 .attr("cx", d => this.snapToPixelInt(d.x))
                 .attr("cy", d => this.snapToPixelInt(d.y))
                 .attr("r", d => d.radius)
                 .attr("fill", d => (colorScale ? colorScale(d.legendKey) : fallbackColor))
-                .attr("stroke", "#fff")
+                .attr("stroke", bubbleStroke)
                 .attr("stroke-width", 2)
-                .attr("opacity", 0.85);
+                .attr("opacity", this.isHighContrastMode() ? 1 : 0.85);
 
             // Add tooltips
             bubbles.each((d, i, nodes) => {
                 const bubble = d3.select(nodes[i]);
+                const bubbleColor = colorScale ? colorScale(d.legendKey) : fallbackColor;
                 this.addTooltip(bubble as any, [
-                    { displayName: "Value", value: formatMeasureValue(d.value, bubbleData.valueFormatString) }
+                    { displayName: "Value", value: formatMeasureValue(d.value, bubbleData.valueFormatString), color: bubbleColor }
                 ], {
                     title: d.category,
                     subtitle: (groupName !== "All" && groupName !== "(Blank)") ? groupName : undefined,
-                    color: colorScale ? colorScale(d.legendKey) : fallbackColor
+                    color: bubbleColor
                 });
             });
 

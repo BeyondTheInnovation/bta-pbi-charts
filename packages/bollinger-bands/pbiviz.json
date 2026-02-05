@@ -4,7 +4,7 @@
     "displayName": "Bollinger Bands",
     "guid": "bollingerBandsVisualA1B2C3D4E5F67890123456789012345ABC",
     "visualClassName": "Visual",
-    "version": "1.1.0.0",
+    "version": "1.2.0.0",
     "description": "A Bollinger Bands visualization for Power BI showing price volatility through upper/lower bands around a moving average.",
     "supportUrl": "https://github.com/example/bta-pbi-charts",
     "gitHubUrl": ""

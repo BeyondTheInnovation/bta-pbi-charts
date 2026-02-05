@@ -379,7 +379,10 @@ export class HeatmapTransformer {
                     const colKey = columnLeafKeyByIndex[colIndex];
                     if (!colKey) continue;
 
-                    const value = Number(nodeValue?.value) || 0;
+                    const rawValue = nodeValue?.highlight !== undefined && nodeValue?.highlight !== null
+                        ? nodeValue.highlight
+                        : nodeValue?.value;
+                    const value = Number(rawValue) || 0;
                     if (value > maxValue) maxValue = value;
                     if (value > 0 && value < minValue) minValue = value;
 

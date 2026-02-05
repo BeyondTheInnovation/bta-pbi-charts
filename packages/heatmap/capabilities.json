@@ -349,5 +349,10 @@
       }
     }
   ],
+  "supportsHighlight": true,
+  "supportsKeyboardFocus": true,
+  "supportsLandingPage": true,
+  "supportsEmptyDataView": true,
+  "supportsMultiVisualSelection": true,
   "privileges": []
 }

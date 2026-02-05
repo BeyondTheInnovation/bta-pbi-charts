@@ -1,6 +1,6 @@
 {
   "name": "@pbi-visuals/bump-chart",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "scripts": {
     "start": "node ../../scripts/pbiviz-wrapper.mjs start",
     "package": "node ../../scripts/pbiviz-wrapper.mjs package",

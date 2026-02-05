@@ -19,6 +19,9 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
         }
 
         const { calendarPoints, years, maxValue, groups } = calendarData;
+        const axisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.yAxisColor || "#111827") : settings.yAxisColor;
+        const emptyCellColor = this.isHighContrastMode() ? this.getThemeBackground("#ebedf0") : "#ebedf0";
+        const cellStroke = this.isHighContrastMode() ? this.getThemeForeground("#111827") : "#fff";
 
         // Cell sizes: fit-to-frame (native-like), capped by the user's preference.
         const cellSizeCapMap = { small: 12, medium: 16, large: 20 };
@@ -111,7 +114,9 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
         // Use custom colors from settings
         const colorScale = d3.scaleSequential()
             .domain([0, maxValue])
-            .interpolator(d3.interpolate(settings.calendar.minColor, settings.calendar.maxColor));
+            .interpolator(this.isHighContrastMode()
+                ? d3.interpolate(this.getThemeBackground("#ffffff"), this.getThemeForeground("#111827"))
+                : d3.interpolate(settings.calendar.minColor, settings.calendar.maxColor));
 
         let currentY = margin.top;
 
@@ -138,7 +143,7 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
                     .attr("y", -Math.round(titleSpacing))
                     .attr("font-size", `${titleFontSize}px`)
                     .attr("font-weight", "600")
-                    .attr("fill", "#333")
+                    .attr("fill", this.getTitleTextColor("#333"))
                     .text(displayTitle);
 
                 if (displayTitle !== groupName) {
@@ -172,7 +177,7 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
                     .style("font-weight", settings.yAxisBold ? "700" : "400")
                     .style("font-style", settings.yAxisItalic ? "italic" : "normal")
                     .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
-                    .attr("fill", settings.yAxisColor)
+                    .attr("fill", axisColor)
                     .text(year.toString());
 
                 // Day labels (Y-axis) - manual override or responsive font size
@@ -189,7 +194,7 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
                                 .style("font-weight", settings.yAxisBold ? "700" : "400")
                                 .style("font-style", settings.yAxisItalic ? "italic" : "normal")
                                 .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
-                                .attr("fill", settings.yAxisColor)
+                                .attr("fill", axisColor)
                                 .text(day.substring(0, 1));
                         }
                     });
@@ -223,7 +228,7 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
                     const dataPoint = dataLookup.get(key);
                     const value = dataPoint?.value ?? 0;
 
-                    const fill = value === 0 ? "#ebedf0" : (colorScale(value) as string);
+                    const fill = value === 0 ? emptyCellColor : (colorScale(value) as string);
 
                     const dateStr = currentDate.toLocaleDateString("en-US", {
                         weekday: "short",
@@ -234,16 +239,17 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
 
                     const cell = yearGroup.append("rect")
                         .attr("class", "calendar-cell")
+                        .attr("data-selection-key", dataPoint?.xValue ?? "")
                         .attr("x", x)
                         .attr("y", y)
                         .attr("width", cellSize)
                         .attr("height", cellSize)
                         .attr("rx", 2)
                         .attr("fill", fill)
-                        .attr("stroke", "#fff")
+                        .attr("stroke", cellStroke)
                         .attr("stroke-width", 1);
 
-                    this.addTooltip(cell as any, [{ displayName: "Value", value: formatMeasureValue(value, calendarData.valueFormatString) }], {
+                    this.addTooltip(cell as any, [{ displayName: "Value", value: formatMeasureValue(value, calendarData.valueFormatString), color: fill }], {
                         title: dateStr,
                         subtitle: (groupName !== "All" && groupName !== "(Blank)") ? groupName : undefined,
                         color: fill
@@ -265,7 +271,7 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
                                 .attr("x", Math.round(x))
                                 .attr("y", -5)
                                 .attr("font-size", `${monthFontSize}px`)
-                                .attr("fill", "#666")
+                                .attr("fill", this.getThemeForeground("#666"))
                                 .text(monthNames[month]);
                         }
                     });

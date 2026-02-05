@@ -28,6 +28,8 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
         }
 
         const { xValues, yValues, groups, rankedData, maxRank } = bumpData;
+        const yAxisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.yAxisColor || "#111827") : settings.yAxisColor;
+        const xAxisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.xAxisColor || "#111827") : settings.xAxisColor;
 
         // Safety check
         if (!xValues || xValues.length === 0 || !yValues || yValues.length === 0) {
@@ -199,7 +201,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                     .attr("y", -Math.round(titleSpacing))
                     .attr("font-size", `${titleFontSize}px`)
                     .attr("font-weight", "600")
-                    .attr("fill", "#333")
+                    .attr("fill", this.getTitleTextColor("#333"))
                     .text(displayTitle);
 
                 if (displayTitle !== groupName) {
@@ -234,7 +236,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                         .attr("x2", chartWidth)
                         .attr("y1", y)
                         .attr("y2", y)
-                        .attr("stroke", "#f0f0f0")
+                        .attr("stroke", this.getGridStroke("#f0f0f0"))
                         .attr("stroke-width", 1);
                 }
             }
@@ -252,6 +254,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                 panelGroup.append("path")
                     .datum(points)
                     .attr("class", "bump-line")
+                    .attr("data-selection-key", yVal)
                     .attr("d", line)
                     .attr("fill", "none")
                     .attr("stroke", color)
@@ -278,6 +281,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
 
                         const marker = panelGroup.append("circle")
                             .attr("class", "bump-marker")
+                            .attr("data-selection-key", yVal)
                             .attr("cx", cx)
                             .attr("cy", cy)
                             .attr("r", settings.bumpChart.markerSize / 2)
@@ -286,8 +290,8 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                             .attr("stroke-width", 1);
 
                         this.addTooltip(marker as any, [
-                            { displayName: "Rank", value: `#${point.rank}` },
-                            { displayName: "Value", value: formatMeasureValue(point.value, bumpData.valueFormatString) },
+                            { displayName: "Rank", value: `#${point.rank}`, color },
+                            { displayName: "Value", value: formatMeasureValue(point.value, bumpData.valueFormatString), color },
                             ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
                         ], { title: yVal, subtitle: periodLabel, color });
                     });
@@ -323,7 +327,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                         .style("font-weight", settings.yAxisBold ? "700" : "400")
                         .style("font-style", settings.yAxisItalic ? "italic" : "normal")
                         .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
-                        .attr("fill", overrideYAxisColor ? settings.yAxisColor : seriesColor)
+                        .attr("fill", overrideYAxisColor ? yAxisColor : seriesColor)
                         .text(displayLabel);
 
                     if (displayLabel !== yVal) {
@@ -355,7 +359,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                         .style("font-weight", settings.yAxisBold ? "700" : "400")
                         .style("font-style", settings.yAxisItalic ? "italic" : "normal")
                         .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
-                        .attr("fill", overrideYAxisColor ? settings.yAxisColor : color)
+                        .attr("fill", overrideYAxisColor ? yAxisColor : color)
                         .text(displayLabel);
 
                     if (displayLabel !== yVal) {
@@ -412,7 +416,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                         .style("font-weight", settings.xAxisBold ? "700" : "400")
                         .style("font-style", settings.xAxisItalic ? "italic" : "normal")
                         .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
-                        .attr("fill", settings.xAxisColor)
+                        .attr("fill", xAxisColor)
                         .text(xDisplayLabels[i]);
 
                     if (shouldRotate) {

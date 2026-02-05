@@ -8,6 +8,7 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import ITooltipService = powerbi.extensibility.ITooltipService;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 import {
     d3,
@@ -18,8 +19,10 @@ import {
     createTooltipCard,
     createXAxisCard,
     createYAxisCard,
+    findCategoryIndex,
     renderEmptyState,
-    HtmlTooltip
+    HtmlTooltip,
+    bindSelectionByDataKey
 } from "@pbi-visuals/shared";
 import { IBollingerVisualSettings, parseSettings } from "./settings";
 import { BollingerTransformer } from "./BollingerTransformer";
@@ -119,16 +122,29 @@ export class Visual implements IVisual {
     private container: d3.Selection<SVGGElement, unknown, null, undefined>;
     private host: IVisualHost;
     private tooltipService: ITooltipService;
+    private selectionManager: powerbi.extensibility.ISelectionManager;
     private settings: IBollingerVisualSettings | null = null;
     private renderer: BollingerRenderer | null = null;
     private htmlTooltip: HtmlTooltip | null = null;
     private tooltipOwnerId: string;
+    private emptySelectionId: ISelectionId;
+    private applySelectionState: ((ids: ISelectionId[]) => void) | null = null;
+    private seriesSelectionIds: Map<string, ISelectionId> = new Map();
+    private legendFieldIndex: number = -1;
+    private allowInteractions: boolean;
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
         this.target = options.element;
         this.tooltipService = this.host.tooltipService;
+        this.selectionManager = this.host.createSelectionManager();
         this.tooltipOwnerId = `bta-bollinger-${Visual.instanceCounter++}`;
+        this.emptySelectionId = this.host.createSelectionIdBuilder().createSelectionId();
+        this.allowInteractions = this.host.hostCapabilities?.allowInteractions !== false;
+
+        this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
+            this.applySelectionState?.(ids);
+        });
 
         this.svg = d3.select(this.target)
             .append("svg")
@@ -144,6 +160,11 @@ export class Visual implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
+        const eventService = this.host.eventService;
+        eventService?.renderingStarted(options);
+        let completed = true;
+
+        try {
         this.svg.selectAll("*").remove();
         this.container = this.svg.append("g").classed("chart-container", true);
         this.htmlTooltip?.hide();
@@ -167,15 +188,20 @@ export class Visual implements IVisual {
         const dataView = options.dataViews[0];
         this.settings = parseSettings(dataView);
         this.syncHtmlTooltip();
+        this.legendFieldIndex = findCategoryIndex(dataView, "legend");
+        this.buildSeriesSelectionIds(dataView);
 
         const context: RenderContext = {
             svg: this.svg,
             container: this.container,
             tooltipService: this.tooltipService,
+            selectionManager: this.selectionManager,
             root: this.target,
             width,
             height,
-            htmlTooltip: this.htmlTooltip
+            htmlTooltip: this.htmlTooltip,
+            colorPalette: this.host.colorPalette,
+            isHighContrast: Boolean((this.host.colorPalette as any)?.isHighContrast)
         };
 
         this.renderer = new BollingerRenderer(context);
@@ -191,6 +217,16 @@ export class Visual implements IVisual {
         }
 
         this.renderer.render(chartData, this.settings);
+        this.bindInteractions();
+        } catch (error) {
+            completed = false;
+            eventService?.renderingFailed(options, error instanceof Error ? error.message : String(error));
+            throw error;
+        } finally {
+            if (completed) {
+                eventService?.renderingFinished(options);
+            }
+        }
     }
 
     private renderNoData(width: number, height: number): void {
@@ -294,5 +330,69 @@ export class Visual implements IVisual {
         }
         this.renderer = null;
         this.settings = null;
+    }
+
+    private buildSeriesSelectionIds(dataView: powerbi.DataView): void {
+        this.seriesSelectionIds.clear();
+
+        if (this.legendFieldIndex < 0 || !dataView.categorical?.categories?.[this.legendFieldIndex]) {
+            return;
+        }
+
+        const categoryColumn = dataView.categorical.categories[this.legendFieldIndex];
+        const seen = new Set<string>();
+        for (let i = 0; i < categoryColumn.values.length; i++) {
+            const rawCategoryValue = String(categoryColumn.values[i] ?? "");
+            const categoryValue = rawCategoryValue.trim() ? rawCategoryValue.trim() : "All";
+            if (seen.has(categoryValue)) continue;
+            seen.add(categoryValue);
+
+            const selectionId = this.host.createSelectionIdBuilder()
+                .withCategory(categoryColumn, i)
+                .createSelectionId();
+
+            this.seriesSelectionIds.set(categoryValue, selectionId);
+        }
+    }
+
+    private bindInteractions(): void {
+        this.applySelectionState = null;
+        if (!this.allowInteractions) {
+            return;
+        }
+
+        if (this.seriesSelectionIds.size > 0) {
+            const binding = bindSelectionByDataKey({
+                root: this.target,
+                selectionManager: this.selectionManager,
+                markSelector: ".price-line[data-selection-key], .middle-band[data-selection-key], .upper-band[data-selection-key], .lower-band[data-selection-key], .band-fill[data-selection-key]",
+                selectionIdsByKey: this.seriesSelectionIds,
+                dimOpacity: 0.2,
+                selectedOpacity: 1
+            });
+            this.applySelectionState = binding.applySelection;
+            binding.applySelection(this.selectionManager.getSelectionIds());
+        }
+
+        this.svg.on("click", async (event: MouseEvent) => {
+            const target = event.target as Element | null;
+            if (target?.closest(".price-line[data-selection-key], .middle-band[data-selection-key], .upper-band[data-selection-key], .lower-band[data-selection-key], .band-fill[data-selection-key]")) {
+                return;
+            }
+
+            await this.selectionManager.clear();
+            this.applySelectionState?.([]);
+        });
+
+        this.svg.on("contextmenu", (event: MouseEvent) => {
+            const target = event.target as Element | null;
+            if (target?.closest(".price-line[data-selection-key], .middle-band[data-selection-key], .upper-band[data-selection-key], .lower-band[data-selection-key], .band-fill[data-selection-key]")) {
+                return;
+            }
+
+            event.preventDefault();
+            this.selectionManager.showContextMenu(this.emptySelectionId, { x: event.clientX, y: event.clientY })
+                .catch(() => undefined);
+        });
     }
 }

@@ -51,16 +51,22 @@ export class BubbleTransformer {
         }
 
         const groupedValues = (categorical.values as any)?.grouped?.() as Array<any> | undefined;
-        const valueGroups: Array<{ groupValue: string; values: any[] }> = [];
+        const valueGroups: Array<{ groupValue: string; values: any[]; highlights?: any[] }> = [];
 
         if (groupedValues && groupedValues.length > 0) {
             for (const g of groupedValues) {
                 const groupValue = formatGroupValue(g?.name);
-                const groupValues = (g?.values?.[0]?.values as any[]) ?? [];
-                valueGroups.push({ groupValue, values: groupValues });
+                const valueColumn = g?.values?.[0];
+                const groupValues = (valueColumn?.values as any[]) ?? [];
+                const groupHighlights = (valueColumn?.highlights as any[]) ?? undefined;
+                valueGroups.push({ groupValue, values: groupValues, highlights: groupHighlights });
             }
         } else {
-            valueGroups.push({ groupValue: "All", values: (categorical.values?.[0]?.values as any[]) ?? [] });
+            valueGroups.push({
+                groupValue: "All",
+                values: (categorical.values?.[0]?.values as any[]) ?? [],
+                highlights: (categorical.values?.[0]?.highlights as any[]) ?? undefined
+            });
         }
 
         const valueFormatString =
@@ -71,6 +77,7 @@ export class BubbleTransformer {
         valueGroups.forEach((vg, groupIdx) => {
             const groupValue = vg.groupValue;
             const values = vg.values ?? [];
+            const highlights = vg.highlights;
             groupsSet.add(groupValue);
 
             for (let i = 0; i < values.length; i++) {
@@ -81,7 +88,10 @@ export class BubbleTransformer {
                     : "All";
                 const legendKeyRaw = legendIndex >= 0 ? categorical.categories![legendIndex].values[i] : null;
                 const legendKey = legendIndex >= 0 ? String(legendKeyRaw ?? "") : "All";
-                const value = Number(values[i]) || 0;
+                const rawValue = Number(values[i]) || 0;
+                const hasHighlight = highlights && highlights[i] !== null && highlights[i] !== undefined;
+                const highlightValue = hasHighlight ? (Number(highlights![i]) || 0) : 0;
+                const value = hasHighlight ? highlightValue : rawValue;
 
                 if (value > 0) {
                     if (value > maxValue) maxValue = value;

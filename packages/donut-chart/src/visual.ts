@@ -25,7 +25,8 @@ import {
     getSchemeColors,
     readCategoryColorsFromDataView,
     renderEmptyState,
-    HtmlTooltip
+    HtmlTooltip,
+    bindSelectionByDataKey
 } from "@pbi-visuals/shared";
 
 import { IDonutVisualSettings, parseSettings } from "./settings";
@@ -39,10 +40,14 @@ export class Visual implements IVisual {
     private container: d3.Selection<SVGGElement, unknown, null, undefined>;
     private host: IVisualHost;
     private tooltipService: ITooltipService;
+    private selectionManager: powerbi.extensibility.ISelectionManager;
     private settings: IDonutVisualSettings | null = null;
     private renderer: DonutChartRenderer | null = null;
     private htmlTooltip: HtmlTooltip | null = null;
     private tooltipOwnerId: string;
+    private emptySelectionId: ISelectionId;
+    private applySelectionState: ((ids: ISelectionId[]) => void) | null = null;
+    private allowInteractions: boolean;
 
     private categorySelectionIds: Map<string, ISelectionId> = new Map();
     private categories: string[] = [];
@@ -53,7 +58,14 @@ export class Visual implements IVisual {
         this.host = options.host;
         this.target = options.element;
         this.tooltipService = this.host.tooltipService;
+        this.selectionManager = this.host.createSelectionManager();
         this.tooltipOwnerId = `bta-donut-${Visual.instanceCounter++}`;
+        this.emptySelectionId = this.host.createSelectionIdBuilder().createSelectionId();
+        this.allowInteractions = this.host.hostCapabilities?.allowInteractions !== false;
+
+        this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
+            this.applySelectionState?.(ids);
+        });
 
         this.svg = d3.select(this.target)
             .append("svg")
@@ -69,6 +81,11 @@ export class Visual implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
+        const eventService = this.host.eventService;
+        eventService?.renderingStarted(options);
+        let completed = true;
+
+        try {
         this.svg.selectAll("*").remove();
         this.container = this.svg.append("g").classed("chart-container", true);
         this.htmlTooltip?.hide();
@@ -101,10 +118,13 @@ export class Visual implements IVisual {
             svg: this.svg,
             container: this.container,
             tooltipService: this.tooltipService,
+            selectionManager: this.selectionManager,
             root: this.target,
             width,
             height,
-            htmlTooltip: this.htmlTooltip
+            htmlTooltip: this.htmlTooltip,
+            colorPalette: this.host.colorPalette,
+            isHighContrast: Boolean((this.host.colorPalette as any)?.isHighContrast)
         };
 
         this.renderer = new DonutChartRenderer(context);
@@ -117,6 +137,16 @@ export class Visual implements IVisual {
 
         chartData.categoryColorMap = this.categoryColors;
         this.renderer.render(chartData, this.settings);
+        this.bindInteractions();
+        } catch (error) {
+            completed = false;
+            eventService?.renderingFailed(options, error instanceof Error ? error.message : String(error));
+            throw error;
+        } finally {
+            if (completed) {
+                eventService?.renderingFinished(options);
+            }
+        }
     }
 
     private buildCategorySelectionIds(dataView: powerbi.DataView): void {
@@ -242,5 +272,46 @@ export class Visual implements IVisual {
         }
         this.renderer = null;
         this.settings = null;
+    }
+
+    private bindInteractions(): void {
+        this.applySelectionState = null;
+        if (!this.allowInteractions) {
+            return;
+        }
+
+        if (this.categorySelectionIds.size > 0) {
+            const binding = bindSelectionByDataKey({
+                root: this.target,
+                selectionManager: this.selectionManager,
+                markSelector: ".donut-slice[data-selection-key]",
+                selectionIdsByKey: this.categorySelectionIds,
+                dimOpacity: 0.28,
+                selectedOpacity: 1
+            });
+            this.applySelectionState = binding.applySelection;
+            binding.applySelection(this.selectionManager.getSelectionIds());
+        }
+
+        this.svg.on("click", async (event: MouseEvent) => {
+            const target = event.target as Element | null;
+            if (target?.closest(".donut-slice[data-selection-key]")) {
+                return;
+            }
+
+            await this.selectionManager.clear();
+            this.applySelectionState?.([]);
+        });
+
+        this.svg.on("contextmenu", (event: MouseEvent) => {
+            const target = event.target as Element | null;
+            if (target?.closest(".donut-slice[data-selection-key]")) {
+                return;
+            }
+
+            event.preventDefault();
+            this.selectionManager.showContextMenu(this.emptySelectionId, { x: event.clientX, y: event.clientY })
+                .catch(() => undefined);
+        });
     }
 }

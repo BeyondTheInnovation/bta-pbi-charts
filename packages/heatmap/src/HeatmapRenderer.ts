@@ -36,6 +36,8 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
         const { dataPoints, groups, maxValue } = heatmapData;
         const xAxis = heatmapData.xAxis;
         const xLeafKeys = xAxis.leafKeys;
+        const yAxisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.yAxisColor || "#111827") : settings.yAxisColor;
+        const xAxisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.xAxisColor || "#111827") : settings.xAxisColor;
 
         const yAxisFontSize = this.getEffectiveFontSize(
             settings.textSizes.yAxisFontSize || settings.yAxisFontSize,
@@ -153,7 +155,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                     .attr("y", -6)
                     .attr("font-size", `${titleFontSize}px`)
                     .attr("font-weight", "600")
-                    .attr("fill", "#333")
+                    .attr("fill", this.getTitleTextColor("#333"))
                     .text(displayTitle);
 
                 if (displayTitle !== groupName) {
@@ -188,18 +190,21 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
 
                     const x = this.snapToPixelInt(yHeaderWidth + xIndex * stepX);
                     const y = this.snapToPixelInt(yIndex * stepY);
-                    const fill = value === 0 ? "#f0f0f0" : (colorScale(value) as string);
+                    const fill = value === 0
+                        ? (this.isHighContrastMode() ? this.getThemeBackground("#f0f0f0") : "#f0f0f0")
+                        : (colorScale(value) as string);
 
                     // Cell rectangle
                     const cell = panelGroup.append("rect")
                         .attr("class", "heatmap-cell")
+                        .attr("data-selection-key", `${xKey}\u001e${yKey}`)
                         .attr("x", x)
                         .attr("y", y)
                         .attr("width", this.snapToPixelInt(cellWidth))
                         .attr("height", this.snapToPixelInt(cellHeight))
                         .attr("rx", 3)
                         .attr("fill", fill)
-                        .attr("stroke", "#ffffff")
+                        .attr("stroke", this.getThemeBackground("#ffffff"))
                         .attr("stroke-width", 1);
 
                     // Tooltip for cell
@@ -209,7 +214,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                     const xDisplay = xPath.join(" • ");
 
                     this.addTooltip(cell as any, [
-                        { displayName: "Value", value: formatMeasureValue(value, heatmapData.valueFormatString) },
+                        { displayName: "Value", value: formatMeasureValue(value, heatmapData.valueFormatString), color: fill },
                         { displayName: "Row", value: yDisplay },
                         { displayName: "Column", value: xDisplay },
                         ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
@@ -269,7 +274,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                             .style("font-weight", settings.yAxisBold ? "700" : "400")
                             .style("font-style", settings.yAxisItalic ? "italic" : "normal")
                             .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
-                            .attr("fill", settings.yAxisColor)
+                            .attr("fill", yAxisColor)
                             .text(textValue);
 
                         if (textValue !== span.label) {
@@ -328,7 +333,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                             .style("font-weight", settings.xAxisBold ? "700" : "400")
                             .style("font-style", settings.xAxisItalic ? "italic" : "normal")
                             .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
-                            .attr("fill", settings.xAxisColor)
+                            .attr("fill", xAxisColor)
                             .text(displayText);
 
                         if (displayText !== span.label) {

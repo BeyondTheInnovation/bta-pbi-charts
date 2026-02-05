@@ -98,7 +98,7 @@ export const defaultTooltipSettings: ITooltipSettings = {
     borderColor: "#e5e7eb",
     textColor: "#111827",
     borderRadius: 10,
-    shadow: false,
+    shadow: true,
     maxWidth: 320,
     showColorSwatch: true
 };

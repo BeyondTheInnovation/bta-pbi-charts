@@ -4,7 +4,7 @@
     "displayName": "Calendar Heatmap",
     "guid": "calendarHeatmapVisualD4E5F67890123456789012345678DEF",
     "visualClassName": "Visual",
-    "version": "1.1.0.0",
+    "version": "1.2.0.0",
     "description": "A calendar heatmap visualization for Power BI showing data by date in a GitHub-style contribution graph format.",
     "supportUrl": "https://github.com/example/bta-pbi-charts",
     "gitHubUrl": ""

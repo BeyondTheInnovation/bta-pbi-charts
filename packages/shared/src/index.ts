@@ -11,3 +11,4 @@ export * from './formattingUtils';
 export * from './textUtils';
 export * from './emptyState';
 export * from './tooltip';
+export * from './selection';

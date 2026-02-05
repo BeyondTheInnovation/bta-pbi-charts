@@ -123,7 +123,7 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                     .attr("y", -Math.round(titleSpacing))
                     .attr("font-size", `${titleFontSize}px`)
                     .attr("font-weight", "600")
-                    .attr("fill", "#333")
+                    .attr("fill", this.getTitleTextColor("#333"))
                     .text(displayTitle);
 
                 if (displayTitle !== groupName) {
@@ -185,6 +185,7 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                         panelGroup.append("path")
                             .datum(pts)
                             .attr("class", "band-fill")
+                            .attr("data-selection-key", seriesKey)
                             .attr("d", areaGenerator)
                             .attr("fill", seriesColorScale(seriesKey))
                             .attr("opacity", baseOpacity)
@@ -212,14 +213,14 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                 .attr("x2", chartWidth)
                 .attr("y1", d => this.snapToPixel(yScale(d)))
                 .attr("y2", d => this.snapToPixel(yScale(d)))
-                .attr("stroke", "#e5e7eb")
+                .attr("stroke", this.getGridStroke("#e5e7eb"))
                 .attr("stroke-width", 1)
                 .attr("stroke-dasharray", "3,3");
 
-            const renderSeries = (pts: BollingerDataPoint[], stroke: string) => {
+            const renderSeries = (pts: BollingerDataPoint[], stroke: string, seriesKey?: string) => {
                 // 3. Lower band line
                 if (bollinger.showBands) {
-                    panelGroup.append("path")
+                    const lower = panelGroup.append("path")
                         .datum(pts)
                         .attr("class", "lower-band")
                         .attr("d", lowerLineGenerator)
@@ -227,11 +228,12 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                         .attr("stroke", stroke)
                         .attr("opacity", hasLegendRoleData ? 0.35 : 1)
                         .attr("stroke-width", bollinger.lineWidth);
+                    if (seriesKey) lower.attr("data-selection-key", seriesKey);
                 }
 
                 // 4. Upper band line
                 if (bollinger.showBands) {
-                    panelGroup.append("path")
+                    const upper = panelGroup.append("path")
                         .datum(pts)
                         .attr("class", "upper-band")
                         .attr("d", upperLineGenerator)
@@ -239,11 +241,12 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                         .attr("stroke", stroke)
                         .attr("opacity", hasLegendRoleData ? 0.35 : 1)
                         .attr("stroke-width", bollinger.lineWidth);
+                    if (seriesKey) upper.attr("data-selection-key", seriesKey);
                 }
 
                 // 5. Middle band / SMA line
                 if (bollinger.showMiddleBand) {
-                    panelGroup.append("path")
+                    const middle = panelGroup.append("path")
                         .datum(pts)
                         .attr("class", "middle-band")
                         .attr("d", smaLineGenerator)
@@ -252,17 +255,19 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                         .attr("opacity", hasLegendRoleData ? 0.7 : 1)
                         .attr("stroke-dasharray", hasLegendRoleData ? "3,2" : null)
                         .attr("stroke-width", bollinger.lineWidth);
+                    if (seriesKey) middle.attr("data-selection-key", seriesKey);
                 }
 
                 // 6. Price line
                 if (bollinger.showPriceLine) {
-                    panelGroup.append("path")
+                    const price = panelGroup.append("path")
                         .datum(pts)
                         .attr("class", "price-line")
                         .attr("d", priceLineGenerator)
                         .attr("fill", "none")
                         .attr("stroke", stroke)
                         .attr("stroke-width", bollinger.lineWidth + 0.5);
+                    if (seriesKey) price.attr("data-selection-key", seriesKey);
                 }
             };
 
@@ -270,7 +275,7 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                 seriesKeys.forEach(seriesKey => {
                     const pts = pointsBySeries.get(seriesKey) ?? [];
                     if (!pts.length) return;
-                    renderSeries(pts, seriesColorScale(seriesKey));
+                    renderSeries(pts, seriesColorScale(seriesKey), seriesKey);
                 });
             } else {
                 // Single-series defaults
@@ -326,7 +331,7 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                 .attr("class", "hover-line")
                 .attr("y1", 0)
                 .attr("y2", groupHeight)
-                .attr("stroke", "#666")
+                .attr("stroke", this.getThemeForeground("#666"))
                 .attr("stroke-width", 1)
                 .attr("stroke-dasharray", "4,4")
                 .style("opacity", 0);
@@ -336,7 +341,7 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                 .attr("class", "hover-dot")
                 .attr("r", 4)
                 .attr("fill", bollinger.priceLineColor)
-                .attr("stroke", "#fff")
+                .attr("stroke", this.getThemeBackground("#fff"))
                 .attr("stroke-width", 2)
                 .style("opacity", 0);
 
@@ -549,7 +554,7 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                         .style("font-weight", settings.yAxisBold ? "700" : "400")
                         .style("font-style", settings.yAxisItalic ? "italic" : "normal")
                         .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
-                        .attr("fill", settings.yAxisColor)
+                        .attr("fill", this.isHighContrastMode() ? this.getThemeForeground(settings.yAxisColor || "#111827") : settings.yAxisColor)
                         .text(formatMeasureValue(tick, bollingerData.valueFormatString));
                 });
             }
@@ -614,7 +619,7 @@ export class BollingerRenderer extends BaseRenderer<IBollingerVisualSettings> {
                         .style("font-weight", settings.xAxisBold ? "700" : "400")
                         .style("font-style", settings.xAxisItalic ? "italic" : "normal")
                         .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
-                        .attr("fill", settings.xAxisColor)
+                        .attr("fill", this.isHighContrastMode() ? this.getThemeForeground(settings.xAxisColor || "#111827") : settings.xAxisColor)
                         .text(xDisplayLabels[i]);
 
                     if (shouldRotate) {

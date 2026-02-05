@@ -3,6 +3,9 @@
 import * as d3 from "./d3";
 import powerbi from "powerbi-visuals-api";
 import ITooltipService = powerbi.extensibility.ITooltipService;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
+import IColorPalette = powerbi.extensibility.IColorPalette;
+import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import { IBaseVisualSettings, colorSchemes } from "./settings";
 import { formatLabel, measureMaxLabelWidth } from "./textUtils";
@@ -14,10 +17,13 @@ export interface RenderContext {
     svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
     container: d3.Selection<SVGGElement, unknown, null, undefined>;
     tooltipService: ITooltipService;
+    selectionManager?: ISelectionManager;
     root: HTMLElement;
     width: number;
     height: number;
     htmlTooltip?: HtmlTooltip | null;
+    colorPalette?: IColorPalette | ISandboxExtendedColorPalette;
+    isHighContrast?: boolean;
 }
 
 export interface ChartData {
@@ -117,7 +123,46 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
         return { r, g, b };
     }
 
+    protected isHighContrastMode(): boolean {
+        if (typeof this.context.isHighContrast === "boolean") {
+            return this.context.isHighContrast;
+        }
+        return Boolean((this.context.colorPalette as ISandboxExtendedColorPalette | undefined)?.isHighContrast);
+    }
+
+    protected getThemeForeground(fallback: string = "#111827"): string {
+        const palette = this.context.colorPalette as ISandboxExtendedColorPalette | undefined;
+        return palette?.foreground?.value || fallback;
+    }
+
+    protected getThemeForegroundSelected(fallback: string = "#1f2937"): string {
+        const palette = this.context.colorPalette as ISandboxExtendedColorPalette | undefined;
+        return palette?.foregroundSelected?.value || palette?.foreground?.value || fallback;
+    }
+
+    protected getThemeBackground(fallback: string = "#ffffff"): string {
+        const palette = this.context.colorPalette as ISandboxExtendedColorPalette | undefined;
+        return palette?.background?.value || fallback;
+    }
+
+    protected getGridStroke(fallback: string = "#e5e7eb"): string {
+        if (this.isHighContrastMode()) {
+            return this.getThemeForeground("#111827");
+        }
+        return fallback;
+    }
+
+    protected getTitleTextColor(fallback: string = "#333333"): string {
+        return this.isHighContrastMode() ? this.getThemeForeground(fallback) : fallback;
+    }
+
     protected getColorScale(minValue: number, maxValue: number): d3.ScaleSequential<string, never> {
+        if (this.isHighContrastMode()) {
+            return d3.scaleSequential()
+                .domain([minValue, maxValue])
+                .interpolator(d3.interpolate(this.getThemeBackground("#ffffff"), this.getThemeForeground("#111827")));
+        }
+
         const scheme = colorSchemes[this.settings.colorScheme];
         return d3.scaleSequential()
             .domain([minValue, maxValue])
@@ -128,10 +173,35 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
         categories: string[],
         colorOverrides?: Map<string, string>
     ): d3.ScaleOrdinal<string, string, never> {
+        if (this.isHighContrastMode()) {
+            const primary = this.getThemeForeground("#111827");
+            const accent = this.getThemeForegroundSelected(primary);
+            const colors = categories.map((cat, index) => {
+                const override = colorOverrides?.get(cat);
+                if (override) return override;
+                return index % 2 === 0 ? primary : accent;
+            });
+
+            return d3.scaleOrdinal<string, string>()
+                .domain(categories)
+                .range(colors);
+        }
+
+        const palette = this.context.colorPalette;
+        const hostColors = categories
+            .map(cat => {
+                try {
+                    return palette?.getColor?.(cat)?.value;
+                } catch {
+                    return undefined;
+                }
+            })
+            .filter((c): c is string => Boolean(c));
+
         // Use custom colors if enabled and provided
         const baseColors = this.settings.useCustomColors && this.settings.customColors?.length > 0
             ? this.settings.customColors
-            : this.getSchemeColors();
+            : (hostColors.length > 0 ? hostColors : this.getSchemeColors());
 
         // If we have color overrides, build a custom color array that respects them
         if (colorOverrides && colorOverrides.size > 0) {
@@ -152,6 +222,12 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
 
     // Get color for a specific category index (useful for per-data-group coloring)
     protected getCategoryColor(categoryIndex: number): string {
+        if (this.isHighContrastMode()) {
+            return categoryIndex % 2 === 0
+                ? this.getThemeForeground("#111827")
+                : this.getThemeForegroundSelected("#1f2937");
+        }
+
         if (this.settings.useCustomColors && this.settings.customColors?.length > 0) {
             return this.settings.customColors[categoryIndex % this.settings.customColors.length];
         }
@@ -605,7 +681,7 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
                     .attr("x", textOffsetX)
                     .attr("y", Math.round(metrics.rowHeight / 2 + legendFontSize / 2 - 2))
                     .attr("font-size", `${legendFontSize}px`)
-                    .attr("fill", "#6b7280")
+                    .attr("fill", this.getThemeForeground("#6b7280"))
                     .text(displayText);
 
                 if (displayText !== cat) {
@@ -633,7 +709,12 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
                 .attr("x1", "0%")
                 .attr("x2", "100%");
 
-            const gradientColors = customGradientColors || colorSchemes[this.settings.colorScheme];
+            const gradientColors = this.isHighContrastMode()
+                ? {
+                    min: this.getThemeBackground("#ffffff"),
+                    max: this.getThemeForeground("#111827")
+                }
+                : (customGradientColors || colorSchemes[this.settings.colorScheme]);
             gradient.append("stop").attr("offset", "0%").attr("stop-color", gradientColors.min);
             gradient.append("stop").attr("offset", "100%").attr("stop-color", gradientColors.max);
 
@@ -642,7 +723,7 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
                 .attr("height", legendHeight)
                 .attr("rx", 3)
                 .attr("fill", `url(#${gradientId})`)
-                .attr("stroke", "#e0e0e0")
+                .attr("stroke", this.getGridStroke("#e0e0e0"))
                 .attr("stroke-width", 1);
 
             const minLabel = "0";
@@ -653,7 +734,7 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
                 .attr("x", 0)
                 .attr("y", Math.round(labelY))
                 .attr("font-size", `${legendFontSize}px`)
-                .attr("fill", "#6b7280")
+                .attr("fill", this.getThemeForeground("#6b7280"))
                 .text(minLabel);
 
             legendGroup.append("text")
@@ -661,7 +742,7 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
                 .attr("y", Math.round(labelY))
                 .attr("text-anchor", "end")
                 .attr("font-size", `${legendFontSize}px`)
-                .attr("fill", "#6b7280")
+                .attr("fill", this.getThemeForeground("#6b7280"))
                 .text(maxLabel);
         }
     }

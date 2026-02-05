@@ -36,16 +36,22 @@ export class StreamgraphTransformer {
         }
 
         const groupedValues = (categorical.values as any)?.grouped?.() as Array<any> | undefined;
-        const valueGroups: Array<{ groupValue: string; values: any[] }> = [];
+        const valueGroups: Array<{ groupValue: string; values: any[]; highlights?: any[] }> = [];
 
         if (groupedValues && groupedValues.length > 0) {
             for (const g of groupedValues) {
                 const groupValue = formatGroupValue(g?.name);
-                const groupValues = (g?.values?.[0]?.values as any[]) ?? [];
-                valueGroups.push({ groupValue, values: groupValues });
+                const valueColumn = g?.values?.[0];
+                const groupValues = (valueColumn?.values as any[]) ?? [];
+                const groupHighlights = (valueColumn?.highlights as any[]) ?? undefined;
+                valueGroups.push({ groupValue, values: groupValues, highlights: groupHighlights });
             }
         } else {
-            valueGroups.push({ groupValue: "All", values: (categorical.values?.[0]?.values as any[]) ?? [] });
+            valueGroups.push({
+                groupValue: "All",
+                values: (categorical.values?.[0]?.values as any[]) ?? [],
+                highlights: (categorical.values?.[0]?.highlights as any[]) ?? undefined
+            });
         }
 
         const valueFormatString =
@@ -64,13 +70,17 @@ export class StreamgraphTransformer {
         for (const vg of valueGroups) {
             const groupValue = vg.groupValue;
             const values = vg.values ?? [];
+            const highlights = vg.highlights;
             groupsSet.add(groupValue);
 
             for (let i = 0; i < values.length; i++) {
                 const rawXValue = xAxisIndex >= 0 ? categorical.categories![xAxisIndex].values[i] : null;
                 const xValue = formatDataValue(rawXValue, i);
                 const yValue = seriesIndex >= 0 ? String(categorical.categories![seriesIndex].values[i] ?? "") : "Series";
-                const value = Number(values[i]) || 0;
+                const rawValue = Number(values[i]) || 0;
+                const hasHighlight = highlights && highlights[i] !== null && highlights[i] !== undefined;
+                const highlightValue = hasHighlight ? (Number(highlights![i]) || 0) : 0;
+                const value = hasHighlight ? highlightValue : rawValue;
 
                 if (value > maxValue) maxValue = value;
                 if (value < minValue && value > 0) minValue = value;

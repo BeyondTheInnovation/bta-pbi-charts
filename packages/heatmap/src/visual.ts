@@ -8,6 +8,7 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import ITooltipService = powerbi.extensibility.ITooltipService;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 import {
     d3,
@@ -34,16 +35,22 @@ export class Visual implements IVisual {
     private container: d3.Selection<SVGGElement, unknown, null, undefined>;
     private host: IVisualHost;
     private tooltipService: ITooltipService;
+    private selectionManager: powerbi.extensibility.ISelectionManager;
     private settings: IHeatmapVisualSettings | null = null;
     private renderer: HeatmapRenderer | null = null;
     private htmlTooltip: HtmlTooltip | null = null;
     private tooltipOwnerId: string;
+    private emptySelectionId: ISelectionId;
+    private allowInteractions: boolean;
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
         this.target = options.element;
         this.tooltipService = this.host.tooltipService;
+        this.selectionManager = this.host.createSelectionManager();
         this.tooltipOwnerId = `bta-heatmap-${Visual.instanceCounter++}`;
+        this.emptySelectionId = this.host.createSelectionIdBuilder().createSelectionId();
+        this.allowInteractions = this.host.hostCapabilities?.allowInteractions !== false;
 
         this.svg = d3.select(this.target)
             .append("svg")
@@ -59,6 +66,11 @@ export class Visual implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
+        const eventService = this.host.eventService;
+        eventService?.renderingStarted(options);
+        let completed = true;
+
+        try {
         // Clear previous content
         this.svg.selectAll("*").remove();
         this.container = this.svg.append("g").classed("chart-container", true);
@@ -92,10 +104,13 @@ export class Visual implements IVisual {
             svg: this.svg,
             container: this.container,
             tooltipService: this.tooltipService,
+            selectionManager: this.selectionManager,
             root: this.target,
             width,
             height,
-            htmlTooltip: this.htmlTooltip
+            htmlTooltip: this.htmlTooltip,
+            colorPalette: this.host.colorPalette,
+            isHighContrast: Boolean((this.host.colorPalette as any)?.isHighContrast)
         };
 
         // Create renderer
@@ -112,6 +127,16 @@ export class Visual implements IVisual {
 
         // Render the chart
         this.renderer.render(chartData, this.settings);
+        this.bindInteractions();
+        } catch (error) {
+            completed = false;
+            eventService?.renderingFailed(options, error instanceof Error ? error.message : String(error));
+            throw error;
+        } finally {
+            if (completed) {
+                eventService?.renderingFinished(options);
+            }
+        }
     }
 
     private renderNoData(width: number, height: number): void {
@@ -218,6 +243,22 @@ export class Visual implements IVisual {
         }
         this.renderer = null;
         this.settings = null;
+    }
+
+    private bindInteractions(): void {
+        if (!this.allowInteractions) {
+            return;
+        }
+
+        this.svg.on("click", async () => {
+            await this.selectionManager.clear();
+        });
+
+        this.svg.on("contextmenu", (event: MouseEvent) => {
+            event.preventDefault();
+            this.selectionManager.showContextMenu(this.emptySelectionId, { x: event.clientX, y: event.clientY })
+                .catch(() => undefined);
+        });
     }
 
 }

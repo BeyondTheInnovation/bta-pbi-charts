@@ -4,7 +4,7 @@
     "displayName": "Streamgraph",
     "guid": "streamgraphVisualB2C3D4E5F67890123456789012345BCD",
     "visualClassName": "Visual",
-    "version": "1.1.0.0",
+    "version": "1.2.0.0",
     "description": "A streamgraph visualization for Power BI showing stacked area charts with smooth curves and customizable opacity.",
     "supportUrl": "https://github.com/example/bta-pbi-charts",
     "gitHubUrl": ""

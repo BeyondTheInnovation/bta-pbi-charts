@@ -8,6 +8,7 @@ export interface DonutChartData extends ChartData {
     segmentsByGroup: Map<string, Array<{ category: string; value: number }>>;
     totalsByGroup: Map<string, number>;
     hasLegendRoleData: boolean;
+    hasHighlights: boolean;
 }
 
 export class DonutChartTransformer {
@@ -16,6 +17,7 @@ export class DonutChartTransformer {
         const categoriesSet = new Set<string>();
         const groupsSet = new Set<string>();
         const segmentsByGroup = new Map<string, Map<string, number>>();
+        let hasHighlights = false;
 
         let maxValue = 0;
         let minValue = Infinity;
@@ -32,16 +34,22 @@ export class DonutChartTransformer {
         }
 
         const groupedValues = (categorical.values as any)?.grouped?.() as Array<any> | undefined;
-        const valueGroups: Array<{ groupValue: string; values: any[] }> = [];
+        const valueGroups: Array<{ groupValue: string; values: any[]; highlights?: any[] }> = [];
 
         if (groupedValues && groupedValues.length > 0) {
             for (const g of groupedValues) {
                 const groupValue = formatGroupValue(g?.name);
-                const groupValues = (g?.values?.[0]?.values as any[]) ?? [];
-                valueGroups.push({ groupValue, values: groupValues });
+                const valueColumn = g?.values?.[0];
+                const groupValues = (valueColumn?.values as any[]) ?? [];
+                const groupHighlights = (valueColumn?.highlights as any[]) ?? undefined;
+                valueGroups.push({ groupValue, values: groupValues, highlights: groupHighlights });
             }
         } else {
-            valueGroups.push({ groupValue: "All", values: (categorical.values?.[0]?.values as any[]) ?? [] });
+            valueGroups.push({
+                groupValue: "All",
+                values: (categorical.values?.[0]?.values as any[]) ?? [],
+                highlights: (categorical.values?.[0]?.highlights as any[]) ?? undefined
+            });
         }
 
         const valueFormatString =
@@ -51,13 +59,20 @@ export class DonutChartTransformer {
         for (const vg of valueGroups) {
             const groupValue = vg.groupValue;
             const values = vg.values ?? [];
+            const highlights = vg.highlights;
             groupsSet.add(groupValue);
 
             for (let i = 0; i < values.length; i++) {
                 const category = legendIndex >= 0
                     ? String(categorical.categories![legendIndex].values[i] ?? "")
                     : "All";
-                const value = Number(values[i]) || 0;
+                const rawValue = Number(values[i]) || 0;
+                const hasPointHighlight = highlights && highlights[i] !== null && highlights[i] !== undefined;
+                const highlightValue = hasPointHighlight ? (Number(highlights![i]) || 0) : 0;
+                const value = hasPointHighlight ? highlightValue : rawValue;
+                if (hasPointHighlight) {
+                    hasHighlights = true;
+                }
 
                 categoriesSet.add(category);
 
@@ -114,6 +129,7 @@ export class DonutChartTransformer {
             segmentsByGroup: segmentsOut,
             totalsByGroup,
             hasLegendRoleData: legendIndex >= 0,
+            hasHighlights,
             valueFormatString
         };
     }

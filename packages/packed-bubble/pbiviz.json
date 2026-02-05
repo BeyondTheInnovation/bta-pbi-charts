@@ -4,7 +4,7 @@
     "displayName": "Packed Bubble",
     "guid": "packedBubbleVisualE5F678901234567890123456789EFG01",
     "visualClassName": "Visual",
-    "version": "1.1.0.0",
+    "version": "1.2.0.0",
     "description": "A packed bubble chart visualization for Power BI with force simulation, category clustering, and customizable bubble sizes.",
     "supportUrl": "https://github.com/example/bta-pbi-charts",
     "gitHubUrl": ""
