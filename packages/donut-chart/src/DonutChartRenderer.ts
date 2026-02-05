@@ -203,14 +203,12 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                 paths
                     .on("mouseenter", function (_event, _d) {
                         d3.select(this)
-                            .interrupt()
                             .transition()
                             .duration(140)
                             .attr("d", arcHover as any);
                     })
                     .on("mouseleave", function (_event, _d) {
                         d3.select(this)
-                            .interrupt()
                             .transition()
                             .duration(160)
                             .attr("d", arc as any);
