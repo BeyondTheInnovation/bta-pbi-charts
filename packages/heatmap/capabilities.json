@@ -223,6 +223,21 @@
           "displayName": "Show Values",
           "type": { "bool": true }
         },
+        "enableHorizontalScroll": {
+          "displayName": "Enable Horizontal Scroll",
+          "description": "Allow the heatmap to extend horizontally and show a scrollbar when needed",
+          "type": { "bool": true }
+        },
+        "enableVerticalScroll": {
+          "displayName": "Enable Vertical Scroll",
+          "description": "Allow the heatmap to extend vertically and show a scrollbar when there are many rows",
+          "type": { "bool": true }
+        },
+        "minCellWidth": {
+          "displayName": "Minimum Cell Width (0 = Fit)",
+          "description": "Set 0 to fit the visual width, or set a pixel minimum to preserve label readability with horizontal scroll",
+          "type": { "numeric": true }
+        },
         "minColor": {
           "displayName": "Min Color",
           "type": { "fill": { "solid": { "color": true } } }

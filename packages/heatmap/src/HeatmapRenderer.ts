@@ -83,13 +83,46 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
             top: 12 + legendReserve.top + settings.heatmap.marginTop + titleReserve,
             right: 12 + legendReserve.right + settings.heatmap.marginRight,
             bottom: 12 + legendReserve.bottom + xAxisHierarchyHeight + settings.heatmap.marginBottom,
-            left: 12 + legendReserve.left + settings.heatmap.marginLeft
+            left: (settings.heatmap.enableHorizontalScroll ? 0 : 12) + legendReserve.left + (settings.heatmap.enableHorizontalScroll ? 0 : settings.heatmap.marginLeft)
         };
 
-        const chartWidth = this.context.width - margin.left - margin.right;
+        const viewportWidth = this.context.width;
+        const viewportHeight = this.context.height;
+        const baseChartWidth = Math.max(40, viewportWidth - margin.left - margin.right);
+        const requestedMinCellWidth = Math.max(0, settings.heatmap.minCellWidth);
+        const hasMinCellWidth = requestedMinCellWidth > 0;
+        const minCellWidth = hasMinCellWidth ? Math.max(26, requestedMinCellWidth) : 0;
+        const minColumnStep = hasMinCellWidth ? (minCellWidth + settings.heatmap.cellPadding) : 0;
+        const requiredPanelWidth = maxYHeaderWidthAcrossGroups + Math.max(1, xLeafKeys.length) * minColumnStep;
+        const chartWidth = settings.heatmap.enableHorizontalScroll && hasMinCellWidth
+            ? Math.max(baseChartWidth, requiredPanelWidth)
+            : baseChartWidth;
+        const renderWidth = Math.max(viewportWidth, Math.ceil(margin.left + chartWidth + margin.right));
+
         const groupCount = groups.length;
         const totalSpacing = (groupCount - 1) * interPanelGap;
-        const availableHeight = this.context.height - margin.top - margin.bottom - totalSpacing;
+        const baseAvailableHeight = Math.max(40, viewportHeight - margin.top - margin.bottom - totalSpacing);
+        const baseGroupHeight = baseAvailableHeight / Math.max(1, groupCount);
+
+        const minCellHeight = 18;
+        const groupHeights = groups.map((groupName) => {
+            const yAxis = heatmapData.yAxisByGroup.get(groupName);
+            const rowCount = yAxis?.leafKeys?.length
+                ? yAxis.leafKeys.length
+                : Math.max(1, new Set(dataPoints.filter(d => d.groupValue === groupName).map(d => d.yValue)).size);
+            if (!settings.heatmap.enableVerticalScroll) {
+                return baseGroupHeight;
+            }
+            const requiredHeight = rowCount * (minCellHeight + settings.heatmap.cellPadding);
+            return Math.max(baseGroupHeight, requiredHeight);
+        });
+        const plotHeight = groupHeights.reduce((sum, h) => sum + h, 0) + totalSpacing;
+        const renderHeight = Math.max(viewportHeight, Math.ceil(margin.top + plotHeight + margin.bottom));
+
+        this.context.svg
+            .attr("width", renderWidth)
+            .attr("height", renderHeight)
+            .attr("viewBox", `0 0 ${renderWidth} ${renderHeight}`);
 
         // Use custom min/max colors from settings
         const colorScale = d3.scaleSequential()
@@ -102,7 +135,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
             const groupData = dataPoints.filter(d => d.groupValue === groupName);
             const yAxis = heatmapData.yAxisByGroup.get(groupName);
             const groupYLeafKeys = yAxis?.leafKeys ?? [...new Set(groupData.map(d => d.yValue))];
-            const groupHeight = availableHeight / groupCount;
+            const groupHeight = groupHeights[groupIndex] ?? baseGroupHeight;
 
             const yHeaderWidths = settings.showYAxis && yAxis
                 ? this.getAxisLevelWidths(yAxis, yAxisFontSize, maxYHeaderPerLevel)
@@ -110,7 +143,8 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
             const yHeaderWidth = settings.showYAxis ? maxYHeaderWidthAcrossGroups : 0;
 
             const gridAvailableWidth = Math.max(40, chartWidth - yHeaderWidth);
-            const cellWidth = Math.max(26, gridAvailableWidth / Math.max(1, xLeafKeys.length) - settings.heatmap.cellPadding);
+            const minRenderedCellWidth = settings.heatmap.enableHorizontalScroll && hasMinCellWidth ? minCellWidth : 26;
+            const cellWidth = Math.max(minRenderedCellWidth, gridAvailableWidth / Math.max(1, xLeafKeys.length) - settings.heatmap.cellPadding);
             const cellHeight = Math.max(18, groupHeight / Math.max(1, groupYLeafKeys.length) - settings.heatmap.cellPadding);
             const stepX = cellWidth + settings.heatmap.cellPadding;
             const stepY = cellHeight + settings.heatmap.cellPadding;
@@ -137,9 +171,19 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                 offsetY = Math.max(0, groupHeight - chartActualHeight);
             }
 
+            const panelBaseX = Math.round(margin.left + offsetX);
+            const panelBaseY = Math.round(currentY + offsetY);
+            const pinnedLeftX = settings.heatmap.enableHorizontalScroll ? 0 : panelBaseX;
+
             const panelGroup = this.context.container.append("g")
-                .attr("class", "panel")
-                .attr("transform", `translate(${Math.round(margin.left + offsetX)}, ${Math.round(currentY + offsetY)})`);
+                .attr("class", "panel panel-scroll-layer")
+                .attr("transform", `translate(${panelBaseX}, ${panelBaseY})`);
+
+            const pinnedLayer = this.context.container.append("g")
+                .attr("class", "panel panel-fixed pinned-y-layer")
+                .attr("data-pin-left", `${pinnedLeftX}`)
+                .attr("data-base-y", `${panelBaseY}`)
+                .attr("transform", `translate(${pinnedLeftX}, ${panelBaseY})`);
 
             // Group title — placed just above the grid with a small gap
             if (settings.smallMultiples.showTitle && groups.length > 1 && groupName !== "All" && groupName !== "(Blank)") {
@@ -149,7 +193,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                 );
                 const displayTitle = formatLabel(groupName, chartWidth, titleFontSize);
                 // Position the text baseline so the title sits a few px above the grid
-                const title = panelGroup.append("text")
+                const title = pinnedLayer.append("text")
                     .attr("class", "panel-title")
                     .attr("x", 0)
                     .attr("y", -6)
@@ -245,6 +289,17 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
 
             // Hierarchical Y-axis headers (span labels)
             if (settings.showYAxis && yAxis && yAxis.depth > 0) {
+                if (settings.heatmap.enableHorizontalScroll && yHeaderWidth > 0) {
+                    pinnedLayer.append("rect")
+                        .attr("class", "pinned-y-background")
+                        .attr("x", 0)
+                        .attr("y", 0)
+                        .attr("width", Math.round(yHeaderWidth + 1))
+                        .attr("height", Math.max(0, Math.round(gridActualHeight)))
+                        .attr("fill", this.getThemeBackground("#ffffff"))
+                        .attr("pointer-events", "none");
+                }
+
                 const columnStarts: number[] = [];
                 let acc = 0;
                 for (let i = 0; i < yHeaderWidths.length; i++) {
@@ -263,7 +318,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                         const yCenter = Math.round((yTop + yBottom) / 2);
                         const textValue = formatLabel(span.label, Math.max(0, colW - 8), yAxisFontSize);
 
-                        const t = panelGroup.append("text")
+                        const t = pinnedLayer.append("text")
                             .attr("class", "y-axis-label")
                             .attr("x", Math.round(colX + 4))
                             .attr("y", yCenter)
@@ -286,64 +341,91 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
 
             // Hierarchical X-axis headers (only on last group)
             if (settings.showXAxis && groupIndex === groups.length - 1 && xAxis.depth > 0) {
-                const axisBaseY = Math.round(gridActualHeight + 12);
-                const depth = xAxis.depth;
+                const renderXAxisHeaders = (
+                    axisLayer: d3.Selection<SVGGElement, unknown, null, undefined>,
+                    axisStartY: number
+                ) => {
+                    const depth = xAxis.depth;
 
-                // Smart rotation/skip for leaf level only (deepest)
-                const leafLabels = xAxis.leafPaths.map(p => p[p.length - 1] ?? "");
-                const rotationResult = calculateLabelRotation({
-                    mode: settings.rotateXLabels,
-                    labels: leafLabels,
-                    availableWidth: gridActualWidth,
-                    fontSize: xAxisFontSize,
-                    fontFamily: settings.xAxisFontFamily
-                });
-                const shouldRotate = rotationResult.shouldRotate;
-                const skipInterval = rotationResult.skipInterval;
-
-                for (let level = 0; level < depth; level++) {
-                    const y = axisBaseY + level * xAxisLineHeight;
-                    const spans = xAxis.spansByLevel[level] ?? [];
-                    const isLeafLevel = level === depth - 1;
-
-                    spans.forEach((span) => {
-                        if (isLeafLevel && skipInterval > 1) {
-                            // leaf spans are 1:1 with leaves
-                            const leafIndex = span.startLeafIndex;
-                            if (leafIndex !== xLeafKeys.length - 1 && leafIndex % skipInterval !== 0) {
-                                return;
-                            }
-                        }
-
-                        const x1 = yHeaderWidth + span.startLeafIndex * stepX + cellWidth / 2;
-                        const x2 = yHeaderWidth + span.endLeafIndex * stepX + cellWidth / 2;
-                        const x = Math.round((x1 + x2) / 2);
-
-                        const spanWidth = Math.max(0, (span.endLeafIndex - span.startLeafIndex + 1) * stepX - 6);
-                        const displayText = formatLabel(span.label, spanWidth, xAxisFontSize);
-
-                        const t = panelGroup.append("text")
-                            .attr("class", "x-axis-label")
-                            .attr("x", x)
-                            .attr("y", y)
-                            .attr("dy", "0.8em")
-                            .attr("text-anchor", "middle")
-                            .attr("font-size", `${xAxisFontSize}px`)
-                            .attr("font-family", settings.xAxisFontFamily)
-                            .style("font-weight", settings.xAxisBold ? "700" : "400")
-                            .style("font-style", settings.xAxisItalic ? "italic" : "normal")
-                            .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
-                            .attr("fill", xAxisColor)
-                            .text(displayText);
-
-                        if (displayText !== span.label) {
-                            this.addTooltip(t as any, [{ displayName: "Column", value: span.label }]);
-                        }
-
-                        if (isLeafLevel && shouldRotate) {
-                            t.attr("transform", `rotate(-45, ${x}, ${y})`).attr("text-anchor", "end");
-                        }
+                    // Smart rotation/skip for leaf level only (deepest)
+                    const leafLabels = xAxis.leafPaths.map(p => p[p.length - 1] ?? "");
+                    const rotationResult = calculateLabelRotation({
+                        mode: settings.rotateXLabels,
+                        labels: leafLabels,
+                        availableWidth: gridActualWidth,
+                        fontSize: xAxisFontSize,
+                        fontFamily: settings.xAxisFontFamily
                     });
+                    const shouldRotate = rotationResult.shouldRotate;
+                    const skipInterval = rotationResult.skipInterval;
+
+                    for (let level = 0; level < depth; level++) {
+                        const y = axisStartY + level * xAxisLineHeight;
+                        const spans = xAxis.spansByLevel[level] ?? [];
+                        const isLeafLevel = level === depth - 1;
+
+                        spans.forEach((span) => {
+                            if (isLeafLevel && skipInterval > 1) {
+                                // leaf spans are 1:1 with leaves
+                                const leafIndex = span.startLeafIndex;
+                                if (leafIndex !== xLeafKeys.length - 1 && leafIndex % skipInterval !== 0) {
+                                    return;
+                                }
+                            }
+
+                            const x1 = yHeaderWidth + span.startLeafIndex * stepX + cellWidth / 2;
+                            const x2 = yHeaderWidth + span.endLeafIndex * stepX + cellWidth / 2;
+                            const x = Math.round((x1 + x2) / 2);
+
+                            const spanWidth = Math.max(0, (span.endLeafIndex - span.startLeafIndex + 1) * stepX - 6);
+                            const displayText = formatLabel(span.label, spanWidth, xAxisFontSize);
+
+                            const t = axisLayer.append("text")
+                                .attr("class", "x-axis-label")
+                                .attr("x", x)
+                                .attr("y", y)
+                                .attr("dy", "0.8em")
+                                .attr("text-anchor", "middle")
+                                .attr("font-size", `${xAxisFontSize}px`)
+                                .attr("font-family", settings.xAxisFontFamily)
+                                .style("font-weight", settings.xAxisBold ? "700" : "400")
+                                .style("font-style", settings.xAxisItalic ? "italic" : "normal")
+                                .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
+                                .attr("fill", xAxisColor)
+                                .text(displayText);
+
+                            if (displayText !== span.label) {
+                                this.addTooltip(t as any, [{ displayName: "Column", value: span.label }]);
+                            }
+
+                            if (isLeafLevel && shouldRotate) {
+                                t.attr("transform", `rotate(-45, ${x}, ${y})`).attr("text-anchor", "end");
+                            }
+                        });
+                    }
+                };
+
+                if (settings.heatmap.enableVerticalScroll) {
+                    const pinnedAxisY = Math.round(this.context.height - margin.bottom + 12);
+                    const pinnedXAxisLayer = this.context.container.append("g")
+                        .attr("class", "panel pinned-x-layer")
+                        .attr("data-base-x", `${panelBaseX}`)
+                        .attr("data-pin-y", `${pinnedAxisY}`)
+                        .attr("transform", `translate(${panelBaseX}, ${pinnedAxisY})`);
+
+                    pinnedXAxisLayer.append("rect")
+                        .attr("class", "pinned-x-background")
+                        .attr("x", 0)
+                        .attr("y", -4)
+                        .attr("width", Math.max(0, Math.round(chartActualWidth + 2)))
+                        .attr("height", Math.max(0, xAxisHierarchyHeight + 8))
+                        .attr("fill", this.getThemeBackground("#ffffff"))
+                        .attr("pointer-events", "none");
+
+                    renderXAxisHeaders(pinnedXAxisLayer, 0);
+                } else {
+                    const axisBaseY = Math.round(gridActualHeight + 12);
+                    renderXAxisHeaders(panelGroup, axisBaseY);
                 }
             }
 

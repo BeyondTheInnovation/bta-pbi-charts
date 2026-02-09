@@ -42,6 +42,7 @@ export class Visual implements IVisual {
     private tooltipOwnerId: string;
     private emptySelectionId: ISelectionId;
     private allowInteractions: boolean;
+    private readonly onTargetScroll: () => void;
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
@@ -51,6 +52,15 @@ export class Visual implements IVisual {
         this.tooltipOwnerId = `bta-heatmap-${Visual.instanceCounter++}`;
         this.emptySelectionId = this.host.createSelectionIdBuilder().createSelectionId();
         this.allowInteractions = this.host.hostCapabilities?.allowInteractions !== false;
+        this.onTargetScroll = () => {
+            this.syncPinnedLayers();
+            this.htmlTooltip?.hide();
+            this.host.tooltipService.hide({ immediately: true, isTouchEvent: false });
+        };
+        this.target.style.position = "relative";
+        this.target.style.overflowX = "hidden";
+        this.target.style.overflowY = "hidden";
+        this.target.addEventListener("scroll", this.onTargetScroll, { passive: true });
 
         this.svg = d3.select(this.target)
             .append("svg")
@@ -59,7 +69,8 @@ export class Visual implements IVisual {
 
         this.svg
             .style("position", "absolute")
-            .style("inset", "0");
+            .style("left", "0")
+            .style("top", "0");
 
         this.container = this.svg.append("g")
             .classed("chart-container", true);
@@ -79,6 +90,9 @@ export class Visual implements IVisual {
         const width = options.viewport.width;
         const height = options.viewport.height;
 
+        this.target.style.overflowX = "hidden";
+        this.target.style.overflowY = "hidden";
+
         this.svg.attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
 
         // Hide tooltip when mouse leaves the chart entirely
@@ -97,6 +111,14 @@ export class Visual implements IVisual {
 
         // Parse settings
         this.settings = parseSettings(dataView);
+        this.target.style.overflowX = this.settings.heatmap.enableHorizontalScroll ? "auto" : "hidden";
+        this.target.style.overflowY = this.settings.heatmap.enableVerticalScroll ? "auto" : "hidden";
+        if (!this.settings.heatmap.enableHorizontalScroll) {
+            this.target.scrollLeft = 0;
+        }
+        if (!this.settings.heatmap.enableVerticalScroll) {
+            this.target.scrollTop = 0;
+        }
         this.syncHtmlTooltip();
 
         // Create render context
@@ -127,6 +149,7 @@ export class Visual implements IVisual {
 
         // Render the chart
         this.renderer.render(chartData, this.settings);
+        this.syncPinnedLayers();
         this.bindInteractions();
         } catch (error) {
             completed = false;
@@ -169,6 +192,24 @@ export class Visual implements IVisual {
         } else {
             this.htmlTooltip.updateSettings(tooltip!);
         }
+    }
+
+    private syncPinnedLayers(): void {
+        const scrollLeft = this.target.scrollLeft || 0;
+        const scrollTop = this.target.scrollTop || 0;
+        const pinnedLayers = this.target.querySelectorAll<SVGGElement>("g.pinned-y-layer");
+        pinnedLayers.forEach((layer) => {
+            const pinLeft = Number(layer.getAttribute("data-pin-left") ?? "0");
+            const baseY = Number(layer.getAttribute("data-base-y") ?? "0");
+            layer.setAttribute("transform", `translate(${Math.round(pinLeft + scrollLeft)}, ${Math.round(baseY)})`);
+        });
+
+        const pinnedXAxisLayers = this.target.querySelectorAll<SVGGElement>("g.pinned-x-layer");
+        pinnedXAxisLayers.forEach((layer) => {
+            const baseX = Number(layer.getAttribute("data-base-x") ?? "0");
+            const pinY = Number(layer.getAttribute("data-pin-y") ?? "0");
+            layer.setAttribute("transform", `translate(${Math.round(baseX)}, ${Math.round(pinY + scrollTop)})`);
+        });
     }
 
     public getFormattingModel(): powerbi.visuals.FormattingModel {
@@ -229,6 +270,7 @@ export class Visual implements IVisual {
     }
 
     public destroy(): void {
+        this.target.removeEventListener("scroll", this.onTargetScroll);
         try {
             this.htmlTooltip?.destroy();
             this.htmlTooltip = null;

@@ -21,6 +21,9 @@ export interface IHeatmapSettings {
     showValues: boolean;
     minColor: string;
     maxColor: string;
+    enableHorizontalScroll: boolean;
+    enableVerticalScroll: boolean;
+    minCellWidth: number;
     horizontalAlignment: "left" | "center" | "right";  // NEW
     verticalAlignment: "top" | "center" | "bottom";    // NEW
     marginTop: number;     // NEW
@@ -69,6 +72,9 @@ export const defaultSettings: IHeatmapVisualSettings = {
         showValues: true,
         minColor: "#f7fbff",
         maxColor: "#08519c",
+        enableHorizontalScroll: false,
+        enableVerticalScroll: false,
+        minCellWidth: 80,
         horizontalAlignment: "left",
         verticalAlignment: "top",
         marginTop: 0,
@@ -203,6 +209,9 @@ export function parseSettings(dataView: DataView): IHeatmapVisualSettings {
     if (heatmapObj) {
         settings.heatmap.cellPadding = (heatmapObj["cellPadding"] as number) ?? defaultSettings.heatmap.cellPadding;
         settings.heatmap.showValues = (heatmapObj["showValues"] as boolean) ?? defaultSettings.heatmap.showValues;
+        settings.heatmap.enableHorizontalScroll = (heatmapObj["enableHorizontalScroll"] as boolean) ?? defaultSettings.heatmap.enableHorizontalScroll;
+        settings.heatmap.enableVerticalScroll = (heatmapObj["enableVerticalScroll"] as boolean) ?? defaultSettings.heatmap.enableVerticalScroll;
+        settings.heatmap.minCellWidth = (heatmapObj["minCellWidth"] as number) ?? defaultSettings.heatmap.minCellWidth;
 
         const minColorObj = heatmapObj["minColor"] as any;
         const maxColorObj = heatmapObj["maxColor"] as any;
@@ -228,6 +237,8 @@ export function parseSettings(dataView: DataView): IHeatmapVisualSettings {
         settings.heatmap.marginBottom = Math.max(0, Math.min(100, settings.heatmap.marginBottom));
         settings.heatmap.marginLeft = Math.max(0, Math.min(100, settings.heatmap.marginLeft));
         settings.heatmap.marginRight = Math.max(0, Math.min(100, settings.heatmap.marginRight));
+        // 0 means "Fit" (no enforced minimum cell width)
+        settings.heatmap.minCellWidth = Math.max(0, Math.min(240, settings.heatmap.minCellWidth));
     }
 
     // Small Multiples settings

@@ -89,10 +89,12 @@ export class HtmlTooltip {
         if (!this.visible) return;
 
         const rootRect = this.root.getBoundingClientRect();
+        const scrollLeft = this.root.scrollLeft || 0;
+        const scrollTop = this.root.scrollTop || 0;
         const pad = 12;
 
-        let x = clientX - rootRect.left + pad;
-        let y = clientY - rootRect.top + pad;
+        let x = clientX - rootRect.left + scrollLeft + pad;
+        let y = clientY - rootRect.top + scrollTop + pad;
 
         // constrain inside root
         const maxW = Math.max(160, Math.min(560, this.settings.maxWidth || 320));
@@ -103,14 +105,14 @@ export class HtmlTooltip {
         const w = ttRect.width;
         const h = ttRect.height;
 
-        const right = rootRect.width;
-        const bottom = rootRect.height;
+        const right = scrollLeft + this.root.clientWidth;
+        const bottom = scrollTop + this.root.clientHeight;
 
         if (x + w + 8 > right) {
-            x = Math.max(8, clientX - rootRect.left - w - pad);
+            x = Math.max(scrollLeft + 8, clientX - rootRect.left + scrollLeft - w - pad);
         }
         if (y + h + 8 > bottom) {
-            y = Math.max(8, clientY - rootRect.top - h - pad);
+            y = Math.max(scrollTop + 8, clientY - rootRect.top + scrollTop - h - pad);
         }
 
         this.el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;

@@ -1026,6 +1026,9 @@ export function createBumpChartSettingsCard(settings: {
 export function createHeatmapSettingsCard(settings: {
     cellPadding: number;
     showValues: boolean;
+    enableHorizontalScroll: boolean;
+    enableVerticalScroll: boolean;
+    minCellWidth: number;
     horizontalAlignment: "left" | "center" | "right";
     verticalAlignment: "top" | "center" | "bottom";
     marginTop: number;
@@ -1059,6 +1062,39 @@ export function createHeatmapSettingsCard(settings: {
                         properties: {
                             descriptor: { objectName: "heatmapSettings", propertyName: "showValues" },
                             value: settings.showValues
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "heatmap_enableHorizontalScroll",
+                    displayName: "Enable Horizontal Scroll",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "heatmapSettings", propertyName: "enableHorizontalScroll" },
+                            value: settings.enableHorizontalScroll
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "heatmap_enableVerticalScroll",
+                    displayName: "Enable Vertical Scroll",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "heatmapSettings", propertyName: "enableVerticalScroll" },
+                            value: settings.enableVerticalScroll
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "heatmap_minCellWidth",
+                    displayName: "Minimum Cell Width (0 = Fit)",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "heatmapSettings", propertyName: "minCellWidth" },
+                            value: settings.minCellWidth
                         }
                     }
                 } as powerbi.visuals.FormattingSlice,
