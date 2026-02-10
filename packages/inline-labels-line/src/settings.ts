@@ -22,6 +22,8 @@ export type MarkerMode = "none" | "last" | "last2";
 export type InlineLabelContent = "name_value_delta" | "name_value" | "name_only" | "value_delta";
 export type InlineDeltaMode = "percent" | "absolute" | "both" | "none";
 export type PointValueLabelDensity = "auto" | "all";
+export type PointValueLabelPlacement = "floating" | "insideLine";
+export type PointValue2Position = "below" | "above";
 export type DateLogicCutoff = "today" | "now" | "custom";
 export type DateLogicFutureStyle = "dotted" | "solid";
 export type DateLogicPastStyle = "dimSeries" | "grey";
@@ -54,13 +56,21 @@ export interface IInlineLabelSettings {
 
 export interface IPointValueLabelSettings {
     enabled: boolean;
+    placement: PointValueLabelPlacement;
+    showValue2: boolean;
+    value2Position: PointValue2Position;
     density: PointValueLabelDensity;
     fontSize: number;
     color: string;
+    value2FontSize: number;
+    value2Color: string;
+    valueLineGap: number;
     showBackground: boolean;
     backgroundColor: string;
     backgroundOpacity: number;
     offset: number;
+    insideOffset: number;
+    haloWidth: number;
 }
 
 export interface IDateLogicSettings {
@@ -76,6 +86,14 @@ export interface IDateLogicSettings {
 export interface IInlineLabelsLineVisualSettings extends IBaseVisualSettings {
     // Legend add-on
     showLegend: boolean;
+    // Secondary Y axis (Value 2)
+    showYAxis2: boolean;
+    yAxis2FontSize: number;
+    yAxis2FontFamily: string;
+    yAxis2Bold: boolean;
+    yAxis2Italic: boolean;
+    yAxis2Underline: boolean;
+    yAxis2Color: string;
     // Shared text sizes (0 = auto)
     textSizes: ITextSizeSettings;
     // Custom settings
@@ -108,6 +126,15 @@ export const defaultSettings: IInlineLabelsLineVisualSettings = {
     yAxisItalic: false,
     yAxisUnderline: false,
     yAxisColor: "#374151",
+
+    // Auto-show when Value 2 is bound; user can still turn it off in formatting.
+    showYAxis2: true,
+    yAxis2FontSize: 11,
+    yAxis2FontFamily: "Segoe UI",
+    yAxis2Bold: false,
+    yAxis2Italic: false,
+    yAxis2Underline: false,
+    yAxis2Color: "#6b7280",
 
     rotateXLabels: "auto" as RotateLabelsMode,
 
@@ -143,13 +170,21 @@ export const defaultSettings: IInlineLabelsLineVisualSettings = {
     },
     pointValueLabels: {
         enabled: true,
+        placement: "floating",
+        showValue2: false,
+        value2Position: "below",
         density: "auto",
         fontSize: 10,
         color: "#111827",
+        value2FontSize: 10,
+        value2Color: "#6b7280",
+        valueLineGap: 2,
         showBackground: true,
         backgroundColor: "#ffffff",
         backgroundOpacity: 0.85,
-        offset: 8
+        offset: 8,
+        insideOffset: 2,
+        haloWidth: 3
     },
     dateLogic: {
         enabled: false,
@@ -231,6 +266,20 @@ export function parseSettings(dataView: DataView): IInlineLabelsLineVisualSettin
         const yColor = yAxisObj["color"] as any;
         if (yColor?.solid?.color) settings.yAxisColor = yColor.solid.color;
         settings.yAxisFontSize = Math.max(6, Math.min(40, Number(settings.yAxisFontSize) || defaultSettings.yAxisFontSize));
+    }
+
+    // Y-Axis (Value 2)
+    const yAxis2Obj = objects["yAxis2Settings"];
+    if (yAxis2Obj) {
+        settings.showYAxis2 = (yAxis2Obj["show"] as boolean) ?? defaultSettings.showYAxis2;
+        settings.yAxis2FontSize = (yAxis2Obj["fontSize"] as number) ?? defaultSettings.yAxis2FontSize;
+        settings.yAxis2FontFamily = (yAxis2Obj["fontFamily"] as string) ?? defaultSettings.yAxis2FontFamily;
+        settings.yAxis2Bold = (yAxis2Obj["bold"] as boolean) ?? defaultSettings.yAxis2Bold;
+        settings.yAxis2Italic = (yAxis2Obj["italic"] as boolean) ?? defaultSettings.yAxis2Italic;
+        settings.yAxis2Underline = (yAxis2Obj["underline"] as boolean) ?? defaultSettings.yAxis2Underline;
+        const y2Color = yAxis2Obj["color"] as any;
+        if (y2Color?.solid?.color) settings.yAxis2Color = y2Color.solid.color;
+        settings.yAxis2FontSize = Math.max(6, Math.min(40, Number(settings.yAxis2FontSize) || defaultSettings.yAxis2FontSize));
     }
 
     // Text Sizes
@@ -341,15 +390,31 @@ export function parseSettings(dataView: DataView): IInlineLabelsLineVisualSettin
     const pointLabelsObj = objects["pointValueLabels"];
     if (pointLabelsObj) {
         settings.pointValueLabels.enabled = (pointLabelsObj["enabled"] as boolean) ?? defaultSettings.pointValueLabels.enabled;
+        settings.pointValueLabels.placement = (pointLabelsObj["placement"] as PointValueLabelPlacement) ?? defaultSettings.pointValueLabels.placement;
+        settings.pointValueLabels.showValue2 = (pointLabelsObj["showValue2"] as boolean) ?? defaultSettings.pointValueLabels.showValue2;
+        settings.pointValueLabels.value2Position = (pointLabelsObj["value2Position"] as PointValue2Position) ?? defaultSettings.pointValueLabels.value2Position;
         settings.pointValueLabels.density = (pointLabelsObj["density"] as PointValueLabelDensity) ?? defaultSettings.pointValueLabels.density;
         settings.pointValueLabels.fontSize = (pointLabelsObj["fontSize"] as number) ?? defaultSettings.pointValueLabels.fontSize;
         const c = pointLabelsObj["color"] as any;
         if (c?.solid?.color) settings.pointValueLabels.color = c.solid.color;
+        settings.pointValueLabels.value2FontSize = (pointLabelsObj["value2FontSize"] as number) ?? defaultSettings.pointValueLabels.value2FontSize;
+        const c2 = pointLabelsObj["value2Color"] as any;
+        if (c2?.solid?.color) settings.pointValueLabels.value2Color = c2.solid.color;
+        settings.pointValueLabels.valueLineGap = (pointLabelsObj["valueLineGap"] as number) ?? defaultSettings.pointValueLabels.valueLineGap;
         settings.pointValueLabels.showBackground = (pointLabelsObj["showBackground"] as boolean) ?? defaultSettings.pointValueLabels.showBackground;
         const bg = pointLabelsObj["backgroundColor"] as any;
         if (bg?.solid?.color) settings.pointValueLabels.backgroundColor = bg.solid.color;
         settings.pointValueLabels.backgroundOpacity = (pointLabelsObj["backgroundOpacity"] as number) ?? defaultSettings.pointValueLabels.backgroundOpacity;
         settings.pointValueLabels.offset = (pointLabelsObj["offset"] as number) ?? defaultSettings.pointValueLabels.offset;
+        settings.pointValueLabels.insideOffset = (pointLabelsObj["insideOffset"] as number) ?? defaultSettings.pointValueLabels.insideOffset;
+        settings.pointValueLabels.haloWidth = (pointLabelsObj["haloWidth"] as number) ?? defaultSettings.pointValueLabels.haloWidth;
+
+        if (settings.pointValueLabels.placement !== "floating" && settings.pointValueLabels.placement !== "insideLine") {
+            settings.pointValueLabels.placement = defaultSettings.pointValueLabels.placement;
+        }
+        if (settings.pointValueLabels.value2Position !== "below" && settings.pointValueLabels.value2Position !== "above") {
+            settings.pointValueLabels.value2Position = defaultSettings.pointValueLabels.value2Position;
+        }
 
         const clampFont = (v: number, fallback: number): number => {
             const n = Number(v);
@@ -357,6 +422,7 @@ export function parseSettings(dataView: DataView): IInlineLabelsLineVisualSettin
             return Math.max(6, Math.min(40, n));
         };
         settings.pointValueLabels.fontSize = clampFont(settings.pointValueLabels.fontSize, defaultSettings.pointValueLabels.fontSize);
+        settings.pointValueLabels.value2FontSize = clampFont(settings.pointValueLabels.value2FontSize, defaultSettings.pointValueLabels.value2FontSize);
 
         const clampOpacity = (v: number, fallback: number): number => {
             const n = Number(v);
@@ -371,6 +437,9 @@ export function parseSettings(dataView: DataView): IInlineLabelsLineVisualSettin
             return Math.max(0, Math.min(24, n));
         };
         settings.pointValueLabels.offset = clampOffset(settings.pointValueLabels.offset, defaultSettings.pointValueLabels.offset);
+        settings.pointValueLabels.valueLineGap = Math.max(0, Math.min(24, Number(settings.pointValueLabels.valueLineGap) || defaultSettings.pointValueLabels.valueLineGap));
+        settings.pointValueLabels.insideOffset = Math.max(0, Math.min(24, Number(settings.pointValueLabels.insideOffset) || defaultSettings.pointValueLabels.insideOffset));
+        settings.pointValueLabels.haloWidth = Math.max(0, Math.min(12, Number(settings.pointValueLabels.haloWidth) || defaultSettings.pointValueLabels.haloWidth));
 
         if (settings.pointValueLabels.density !== "auto" && settings.pointValueLabels.density !== "all") {
             settings.pointValueLabels.density = defaultSettings.pointValueLabels.density;

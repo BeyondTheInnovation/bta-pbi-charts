@@ -18,7 +18,8 @@ import { InlineLabelsLineChartData } from "./InlineLabelsLineTransformer";
 
 type DensePoint = {
     xValue: string;
-    value: number; // NaN allowed (missing)
+    value: number; // primary measure (NaN allowed)
+    value2: number; // secondary measure (NaN allowed)
 };
 
 type LabelNode = {
@@ -77,6 +78,11 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
         );
         const yAxisFontSize = this.getEffectiveFontSize(
             (settings.textSizes.yAxisFontSize || settings.yAxisFontSize) as number,
+            6,
+            40
+        );
+        const yAxis2FontSize = this.getEffectiveFontSize(
+            settings.yAxis2FontSize as number,
             6,
             40
         );
@@ -170,13 +176,29 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
 
         const labelZoneWidth = computeLabelZoneWidth();
 
+        const showYAxis2 = Boolean(settings.showYAxis2 && lineData.hasValue2);
+        const computeYAxis2Width = (): number => {
+            if (!showYAxis2) return 0;
+            const min2 = lineData.minValue2 ?? 0;
+            const max2 = lineData.maxValue2 ?? 1;
+            const fmt = lineData.secondaryValueFormatString || lineData.valueFormatString;
+            const samples = [
+                formatMeasureValue(min2, fmt),
+                formatMeasureValue(max2, fmt),
+                formatMeasureValue(0, fmt)
+            ];
+            const maxW = Math.max(0, ...samples.map(s => measureTextWidth(String(s), yAxis2FontSize, settings.yAxis2FontFamily)));
+            return Math.max(36, Math.min(120, Math.ceil(maxW + 14)));
+        };
+        const yAxis2Width = computeYAxis2Width();
+
         // Left margin: reserve enough room for numeric tick labels.
         const yAxisWidth = settings.showYAxis ? 62 : 10;
 
         // Rotation decision based on plot width (after legend + label zone)
         const baseMargin = {
             top: 12 + titleReserve,
-            right: 12 + (inlineEnabled ? labelZoneWidth : 0),
+            right: 12 + (inlineEnabled ? labelZoneWidth : 0) + (showYAxis2 ? yAxis2Width : 0),
             bottom: settings.showXAxis ? 28 : 12,
             left: yAxisWidth
         };
@@ -270,6 +292,15 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                 .domain([yMin - yPadding, yMax + yPadding])
                 .range([groupHeight, 0]);
 
+            const yScale2 = showYAxis2
+                ? d3.scaleLinear()
+                    .domain([
+                        (lineData.minValue2 ?? 0) - (((lineData.maxValue2 ?? 1) - (lineData.minValue2 ?? 0)) || 1) * 0.05,
+                        (lineData.maxValue2 ?? 1) + (((lineData.maxValue2 ?? 1) - (lineData.minValue2 ?? 0)) || 1) * 0.05
+                    ])
+                    .range([groupHeight, 0])
+                : null;
+
             // Horizontal grid + y ticks
             const yTicks = yScale.ticks(5);
             yTicks.forEach(t => {
@@ -305,22 +336,75 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                 });
             }
 
+            if (showYAxis2 && yScale2) {
+                const y2Ticks = yScale2.ticks(5);
+                const yAxis2Group = panelGroup.append("g").attr("class", "y-axis-2");
+                const yAxis2Color = this.isHighContrastMode() ? this.getThemeForeground(settings.yAxis2Color || "#6b7280") : settings.yAxis2Color;
+                const axisX = plotWidth + yAxis2Width - 2;
+                const x = plotWidth + yAxis2Width - 8;
+
+                // Axis line + tick marks (makes the 2nd axis obvious).
+                yAxis2Group.append("line")
+                    .attr("x1", axisX)
+                    .attr("x2", axisX)
+                    .attr("y1", 0)
+                    .attr("y2", groupHeight)
+                    .attr("stroke", yAxis2Color || this.getThemeForeground("#6b7280"))
+                    .attr("stroke-width", 1)
+                    .attr("opacity", 0.65);
+
+                y2Ticks.forEach(t => {
+                    const y = Math.round(yScale2(t));
+                    yAxis2Group.append("line")
+                        .attr("x1", axisX - 4)
+                        .attr("x2", axisX)
+                        .attr("y1", y)
+                        .attr("y2", y)
+                        .attr("stroke", yAxis2Color || this.getThemeForeground("#6b7280"))
+                        .attr("stroke-width", 1)
+                        .attr("opacity", 0.65);
+                    yAxis2Group.append("text")
+                        .attr("x", x)
+                        .attr("y", y)
+                        .attr("dy", "0.32em")
+                        .attr("text-anchor", "end")
+                        .attr("font-size", `${yAxis2FontSize}px`)
+                        .attr("font-family", settings.yAxis2FontFamily)
+                        .style("font-weight", settings.yAxis2Bold ? "700" : "400")
+                        .style("font-style", settings.yAxis2Italic ? "italic" : "normal")
+                        .style("text-decoration", settings.yAxis2Underline ? "underline" : "none")
+                        .attr("fill", yAxis2Color)
+                        .text(formatMeasureValue(t, lineData.secondaryValueFormatString || lineData.valueFormatString));
+                });
+            }
+
             // Build series -> dense points (all x values, with NaN for missing)
             const groupPoints = lineData.dataPoints.filter(p => p.groupValue === groupName);
             const pointsBySeriesByX = new Map<string, Map<string, number>>();
-            yValues.forEach(k => pointsBySeriesByX.set(k, new Map()));
+            const points2BySeriesByX = new Map<string, Map<string, number>>();
+            yValues.forEach(k => {
+                pointsBySeriesByX.set(k, new Map());
+                points2BySeriesByX.set(k, new Map());
+            });
 
             for (const p of groupPoints) {
                 if (!pointsBySeriesByX.has(p.yValue)) {
                     pointsBySeriesByX.set(p.yValue, new Map());
+                    points2BySeriesByX.set(p.yValue, new Map());
                 }
                 pointsBySeriesByX.get(p.yValue)!.set(p.xValue, p.value);
+                points2BySeriesByX.get(p.yValue)!.set(p.xValue, (p as any).value2 ?? NaN);
             }
 
             const seriesDense = new Map<string, DensePoint[]>();
             yValues.forEach(seriesKey => {
                 const map = pointsBySeriesByX.get(seriesKey) ?? new Map();
-                const pts = xValues.map(x => ({ xValue: x, value: map.get(x) ?? NaN }));
+                const map2 = points2BySeriesByX.get(seriesKey) ?? new Map();
+                const pts = xValues.map(x => ({
+                    xValue: x,
+                    value: map.get(x) ?? NaN,
+                    value2: map2.get(x) ?? NaN
+                }));
                 seriesDense.set(seriesKey, pts);
             });
 
@@ -540,14 +624,22 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
             const pointLabels = settings.pointValueLabels;
             if (pointLabels?.enabled) {
                 const fontSize = this.getEffectiveFontSize(pointLabels.fontSize, 6, 40);
+                const value2FontSize = this.getEffectiveFontSize((pointLabels as any).value2FontSize ?? fontSize, 6, 40);
                 const offset = Math.max(0, Math.min(24, pointLabels.offset ?? 8));
+                const insideOffset = Math.max(0, Math.min(24, pointLabels.insideOffset ?? 2));
+                const haloWidth = Math.max(0, Math.min(12, pointLabels.haloWidth ?? 3));
+                const valueLineGap = Math.max(0, Math.min(24, (pointLabels as any).valueLineGap ?? 2));
                 const labelColor = this.isHighContrastMode()
                     ? this.getThemeForeground(pointLabels.color || "#111827")
                     : (pointLabels.color || "#111827");
+                const value2Color = this.isHighContrastMode()
+                    ? this.getThemeForeground((pointLabels as any).value2Color || labelColor)
+                    : ((pointLabels as any).value2Color || labelColor);
                 const bgColor = this.isHighContrastMode()
                     ? this.getThemeBackground(pointLabels.backgroundColor || "#ffffff")
                     : (pointLabels.backgroundColor || "#ffffff");
                 const bgOpacity = Math.max(0, Math.min(1, Number(pointLabels.backgroundOpacity ?? 0.85)));
+                const haloColor = this.getThemeBackground("#ffffff");
 
                 const padX = 4;
                 const padY = 2;
@@ -556,7 +648,11 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                 const step = plotWidth / Math.max(1, xValues.length - 1);
                 const sample = formatMeasureValue(lineData.maxValue, lineData.valueFormatString);
                 const sampleW = measureTextWidth(sample, fontSize, "Segoe UI");
-                const needed = sampleW + padX * 2 + 6;
+                const sample2 = lineData.secondaryValueFormatString
+                    ? formatMeasureValue(lineData.maxValue, lineData.secondaryValueFormatString)
+                    : sample;
+                const sampleW2 = measureTextWidth(sample2, value2FontSize, "Segoe UI");
+                const needed = Math.max(sampleW, sampleW2) + padX * 2 + 6;
                 const autoSkip = step > 0 ? Math.max(1, Math.ceil(needed / step)) : 1;
 
                 yValues.forEach(seriesKey => {
@@ -565,6 +661,9 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
 
                     const seriesColor = colorScale(seriesKey);
                     const skip = pointLabels.density === "all" ? 1 : autoSkip;
+                    const placement = pointLabels.placement || "floating";
+                    const showValue2 = Boolean(pointLabels.showValue2);
+                    const value2Position = pointLabels.value2Position || "below";
 
                     // Always include last defined point even if skipping.
                     let lastDefined = -1;
@@ -581,6 +680,20 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                         const cx = xScale(xValueOrder.get(p.xValue) ?? 0);
                         const cy = yScale(p.value);
                         const valueText = formatMeasureValue(p.value, lineData.valueFormatString);
+                        const value2Text = (showValue2 && Number.isFinite(p.value2))
+                            ? formatMeasureValue(p.value2, lineData.secondaryValueFormatString || lineData.valueFormatString)
+                            : "";
+                        const lines: Array<{ text: string; fontSize: number; kind: "primary" | "secondary" }> = (() => {
+                            if (!value2Text) return [{ text: valueText, fontSize, kind: "primary" }];
+                            if (value2Position === "above") return [
+                                { text: value2Text, fontSize: value2FontSize, kind: "secondary" },
+                                { text: valueText, fontSize, kind: "primary" }
+                            ];
+                            return [
+                                { text: valueText, fontSize, kind: "primary" },
+                                { text: value2Text, fontSize: value2FontSize, kind: "secondary" }
+                            ];
+                        })();
                         const future = applyMarks ? isFutureX(p.xValue) : false;
                         const dimOpacity = Math.max(0, Math.min(1, dateLogic?.dimOpacity ?? 0.35));
                         const pastTextColor = (dateLogic?.pastStyle === "grey")
@@ -588,50 +701,121 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                             : seriesColor;
                         const pointOpacity = applyMarks && !future && dateLogic?.pastStyle !== "grey" ? dimOpacity : 1;
 
-                        // Keep label inside plot: above unless too close to the top.
-                        const placeAbove = (cy - offset - fontSize - padY * 2) >= 0;
-                        const y = placeAbove ? (cy - offset) : (cy + offset + fontSize);
+                        if (placement === "insideLine") {
+                            const primaryFill = applyMarks
+                                ? (future ? seriesColor : pastTextColor)
+                                : labelColor;
+                            const secondaryFill = applyMarks ? primaryFill : value2Color;
 
-                        const w = measureTextWidth(valueText, fontSize, "Segoe UI");
-                        const boxW = Math.ceil(w + padX * 2);
-                        const boxH = Math.ceil(fontSize + padY * 2);
+                            // Estimate local stroke direction and offset label along the normal so it reads
+                            // like it sits "in" the line rather than floating above it.
+                            const findPrevDefined = (): number => {
+                                for (let j = i - 1; j >= 0; j--) if (Number.isFinite(pts[j].value)) return j;
+                                return -1;
+                            };
+                            const findNextDefined = (): number => {
+                                for (let j = i + 1; j < pts.length; j++) if (Number.isFinite(pts[j].value)) return j;
+                                return -1;
+                            };
+                            const prev = findPrevDefined();
+                            const next = findNextDefined();
 
-                        const gx = Math.round(cx - boxW / 2);
-                        const gy = Math.round(y - fontSize - padY);
+                            const aIdx = prev >= 0 ? prev : i;
+                            const bIdx = next >= 0 ? next : i;
+                            const ax = xScale(xValueOrder.get(pts[aIdx].xValue) ?? aIdx);
+                            const ay = yScale(pts[aIdx].value);
+                            const bx = xScale(xValueOrder.get(pts[bIdx].xValue) ?? bIdx);
+                            const by = yScale(pts[bIdx].value);
+                            const dx = bx - ax;
+                            const dy = by - ay;
+                            const len = Math.hypot(dx, dy) || 1;
+                            const nx = (-dy / len);
+                            const ny = (dx / len);
 
-                        const g = panelGroup.append("g")
-                            .attr("class", "point-value-label")
-                            .attr("transform", `translate(${gx}, ${gy})`)
-                            .style("opacity", String(0.92 * pointOpacity));
+                            const tx = cx + nx * insideOffset;
+                            const ty = cy + ny * insideOffset;
 
-                        if (pointLabels.showBackground) {
-                            g.append("rect")
-                                .attr("class", "point-value-bg")
-                                .attr("x", 0)
-                                .attr("y", 0)
-                                .attr("width", boxW)
-                                .attr("height", boxH)
-                                .attr("rx", 4)
-                                .attr("ry", 4)
-                                .attr("fill", bgColor)
-                                .attr("opacity", bgOpacity);
-                        }
+                            const g = panelGroup.append("g")
+                                .attr("class", "point-value-label inside-line")
+                                .attr("transform", `translate(${Math.round(tx)}, ${Math.round(ty)})`)
+                                .style("opacity", String(0.92 * pointOpacity));
 
-                        g.append("text")
-                            .attr("x", Math.round(boxW / 2))
-                            .attr("y", Math.round(padY + fontSize - 2))
-                            .attr("text-anchor", "middle")
-                            .attr("font-size", `${fontSize}px`)
-                            .attr("font-family", "Segoe UI")
-                            .attr("fill", labelColor)
-                            .style("font-weight", "600")
-                            .text(valueText);
+                            // Make the stroke wide enough to actually "cut" the line underneath.
+                            const cutStrokeWidth = Math.max(haloWidth, (settings.lineSettings.lineWidth || 2.5) + haloWidth * 2);
 
-                        // If the user picked a series-specific color via legend role, keep the label legible by
-                        // lightly tinting the text when background is off.
-                        if (!pointLabels.showBackground) {
-                            const fill = applyMarks && !future ? pastTextColor : seriesColor;
-                            (g.select("text") as any).attr("fill", fill);
+                            const totalH = lines.reduce((s, l) => s + l.fontSize, 0) + Math.max(0, lines.length - 1) * valueLineGap;
+                            let cursor = -totalH / 2;
+                            lines.forEach((l, idx2) => {
+                                const fill = l.kind === "primary" ? primaryFill : secondaryFill;
+                                const y = cursor + l.fontSize;
+                                cursor += l.fontSize + valueLineGap;
+
+                                g.append("text")
+                                    .attr("x", 0)
+                                    .attr("y", y)
+                                    .attr("text-anchor", "middle")
+                                    .attr("font-size", `${l.fontSize}px`)
+                                    .attr("font-family", "Segoe UI")
+                                    .attr("fill", fill)
+                                    .style("font-weight", "700")
+                                    .style("paint-order", "stroke")
+                                    .attr("stroke", haloColor)
+                                    .attr("stroke-linecap", "round")
+                                    .attr("stroke-linejoin", "round")
+                                    .attr("stroke-width", cutStrokeWidth)
+                                    .text(l.text);
+                            });
+                        } else {
+                            const measuredW = Math.max(0, ...lines.map(l => measureTextWidth(l.text, l.fontSize, "Segoe UI")));
+                            const boxW = Math.ceil(measuredW + padX * 2);
+                            const textH = Math.ceil(lines.reduce((s, l) => s + l.fontSize, 0) + Math.max(0, lines.length - 1) * valueLineGap);
+                            const boxH = Math.ceil(textH + padY * 2);
+
+                            // Keep label inside plot: above unless too close to the top.
+                            const placeAbove = (cy - offset - boxH) >= 0;
+                            const boxTop = placeAbove ? (cy - offset - boxH) : (cy + offset);
+
+                            const gx = Math.round(cx - boxW / 2);
+                            const gy = Math.round(boxTop);
+
+                            const g = panelGroup.append("g")
+                                .attr("class", "point-value-label floating")
+                                .attr("transform", `translate(${gx}, ${gy})`)
+                                .style("opacity", String(0.92 * pointOpacity));
+
+                            if (pointLabels.showBackground) {
+                                g.append("rect")
+                                    .attr("class", "point-value-bg")
+                                    .attr("x", 0)
+                                    .attr("y", 0)
+                                    .attr("width", boxW)
+                                    .attr("height", boxH)
+                                    .attr("rx", 4)
+                                    .attr("ry", 4)
+                                    .attr("fill", bgColor)
+                                    .attr("opacity", bgOpacity);
+                            }
+
+                            const primaryFloatingFill = (() => {
+                                if (pointLabels.showBackground) return labelColor;
+                                return applyMarks && !future ? pastTextColor : seriesColor;
+                            })();
+                            const secondaryFloatingFill = pointLabels.showBackground ? value2Color : value2Color;
+
+                            let yCursor = padY;
+                            lines.forEach((l, idx2) => {
+                                const fill = l.kind === "primary" ? primaryFloatingFill : secondaryFloatingFill;
+                                g.append("text")
+                                    .attr("x", Math.round(boxW / 2))
+                                    .attr("y", Math.round(yCursor + l.fontSize - 2))
+                                    .attr("text-anchor", "middle")
+                                    .attr("font-size", `${l.fontSize}px`)
+                                    .attr("font-family", "Segoe UI")
+                                    .attr("fill", fill)
+                                    .style("font-weight", "600")
+                                    .text(l.text);
+                                yCursor += l.fontSize + valueLineGap;
+                            });
                         }
                     }
                 });
@@ -640,7 +824,7 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
             // Inline end labels (right zone)
             const nodes: LabelNode[] = [];
             if (inlineEnabled) {
-                const labelX = Math.round(plotWidth + 12);
+                const labelX = Math.round(plotWidth + (showYAxis2 ? yAxis2Width : 0) + 12);
                 const maxLabelWidth = Math.max(80, labelZoneWidth - 24);
                 const maxTextW = Math.max(20, maxLabelWidth - labelPadding * 2);
 
@@ -853,6 +1037,18 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                     const v = pointsBySeriesByX.get(seriesKey)?.get(xVal);
                     const formatted = Number.isFinite(v) ? formatMeasureValue(v!, lineData.valueFormatString) : "(Blank)";
                     rows.push({ displayName: seriesKey, value: formatted, color: colorScale(seriesKey) } as any);
+
+                    const v2 = points2BySeriesByX.get(seriesKey)?.get(xVal);
+                    if (lineData.secondaryValueFormatString || lineData.secondaryValueDisplayName) {
+                        const formatted2 = Number.isFinite(v2)
+                            ? formatMeasureValue(v2!, lineData.secondaryValueFormatString || lineData.valueFormatString)
+                            : "(Blank)";
+                        rows.push({
+                            displayName: `${seriesKey} (${lineData.secondaryValueDisplayName || "Value 2"})`,
+                            value: formatted2,
+                            color: colorScale(seriesKey)
+                        } as any);
+                    }
                 });
                 if (groupName !== "All" && groupName !== "(Blank)") {
                     rows.push({ displayName: "Group", value: groupName } as any);

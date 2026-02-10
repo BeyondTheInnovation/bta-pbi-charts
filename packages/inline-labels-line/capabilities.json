@@ -23,6 +23,12 @@
       "name": "values",
       "kind": "Measure",
       "description": "Numeric value for the line"
+    },
+    {
+      "displayName": "Value 2",
+      "name": "values2",
+      "kind": "Measure",
+      "description": "Optional secondary measure for stacked point value labels (does not affect the line)"
     }
   ],
   "tooltips": {
@@ -153,6 +159,28 @@
           "displayName": "Show Values",
           "type": { "bool": true }
         },
+        "placement": {
+          "displayName": "Placement",
+          "type": {
+            "enumeration": [
+              { "value": "floating", "displayName": "Floating" },
+              { "value": "insideLine", "displayName": "Inside Line" }
+            ]
+          }
+        },
+        "showValue2": {
+          "displayName": "Show Value 2",
+          "type": { "bool": true }
+        },
+        "value2Position": {
+          "displayName": "Value 2 Position",
+          "type": {
+            "enumeration": [
+              { "value": "below", "displayName": "Below" },
+              { "value": "above", "displayName": "Above" }
+            ]
+          }
+        },
         "density": {
           "displayName": "Density",
           "description": "Auto reduces labels when they would overlap.",
@@ -171,6 +199,19 @@
           "displayName": "Color",
           "type": { "fill": { "solid": { "color": true } } }
         },
+        "value2FontSize": {
+          "displayName": "Value 2 Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "value2Color": {
+          "displayName": "Value 2 Color",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "valueLineGap": {
+          "displayName": "Value Line Gap",
+          "description": "Gap between Value and Value 2 lines (px).",
+          "type": { "numeric": true }
+        },
         "showBackground": {
           "displayName": "Background",
           "type": { "bool": true }
@@ -186,6 +227,16 @@
         "offset": {
           "displayName": "Offset",
           "description": "Distance from the line/point.",
+          "type": { "numeric": true }
+        },
+        "insideOffset": {
+          "displayName": "Inside Offset",
+          "description": "Used only for Inside Line placement. Offsets text slightly perpendicular to the stroke.",
+          "type": { "numeric": true }
+        },
+        "haloWidth": {
+          "displayName": "Halo Width",
+          "description": "Used only for Inside Line placement. Thickness of the text halo.",
           "type": { "numeric": true }
         }
       }
@@ -413,6 +464,40 @@
         }
       }
     },
+    "yAxis2Settings": {
+      "displayName": "Y-Axis (Value 2)",
+      "description": "Secondary axis for Value 2 (right side). Only shown when Value 2 is bound.",
+      "properties": {
+        "show": {
+          "displayName": "Show Y-Axis",
+          "type": { "bool": true }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "fontFamily": {
+          "displayName": "Font Family",
+          "type": { "text": true }
+        },
+        "color": {
+          "displayName": "Color",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "bold": {
+          "displayName": "Bold",
+          "type": { "bool": true }
+        },
+        "italic": {
+          "displayName": "Italic",
+          "type": { "bool": true }
+        },
+        "underline": {
+          "displayName": "Underline",
+          "type": { "bool": true }
+        }
+      }
+    },
     "textSizes": {
       "displayName": "Text Sizes",
       "description": "Manual font size overrides (0 = auto/responsive)",
@@ -472,7 +557,8 @@
           "xAxis": { "max": 2 },
           "group": { "max": 0 },
           "legend": { "max": 1 },
-          "values": { "max": 1 }
+          "values": { "max": 1 },
+          "values2": { "max": 1 }
         }
       ],
       "categorical": {
@@ -487,7 +573,8 @@
         },
         "values": {
           "select": [
-            { "for": { "in": "values" } }
+            { "for": { "in": "values" } },
+            { "for": { "in": "values2" } }
           ]
         }
       }
@@ -498,7 +585,8 @@
           "xAxis": { "max": 2 },
           "group": { "min": 1, "max": 1 },
           "legend": { "max": 1 },
-          "values": { "max": 1 }
+          "values": { "max": 1 },
+          "values2": { "max": 1 }
         }
       ],
       "categorical": {
@@ -515,7 +603,8 @@
           "group": {
             "by": "group",
             "select": [
-              { "for": { "in": "values" } }
+              { "for": { "in": "values" } },
+              { "for": { "in": "values2" } }
             ]
           }
         }

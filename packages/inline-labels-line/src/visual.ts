@@ -313,6 +313,39 @@ function createPointValueLabelsCard(settings: IInlineLabelsLineVisualSettings["p
                     }
                 } as powerbi.visuals.FormattingSlice,
                 {
+                    uid: "pointValues_placement",
+                    displayName: "Placement",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "pointValueLabels", propertyName: "placement" },
+                            value: (settings as any).placement
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "pointValues_showValue2",
+                    displayName: "Show Value 2",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "pointValueLabels", propertyName: "showValue2" },
+                            value: (settings as any).showValue2
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "pointValues_value2Position",
+                    displayName: "Value 2 Position",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "pointValueLabels", propertyName: "value2Position" },
+                            value: (settings as any).value2Position
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
                     uid: "pointValues_density",
                     displayName: "Density",
                     control: {
@@ -346,6 +379,47 @@ function createPointValueLabelsCard(settings: IInlineLabelsLineVisualSettings["p
                         properties: {
                             descriptor: { objectName: "pointValueLabels", propertyName: "color" },
                             value: { value: settings.color }
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "pointValues_value2FontSize",
+                    displayName: "Value 2 Font Size",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "pointValueLabels", propertyName: "value2FontSize" },
+                            value: (settings as any).value2FontSize,
+                            options: {
+                                minValue: { type: powerbi.visuals.ValidatorType.Min, value: 6 },
+                                maxValue: { type: powerbi.visuals.ValidatorType.Max, value: 40 }
+                            }
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "pointValues_value2Color",
+                    displayName: "Value 2 Color",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ColorPicker,
+                        properties: {
+                            descriptor: { objectName: "pointValueLabels", propertyName: "value2Color" },
+                            value: { value: (settings as any).value2Color }
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "pointValues_valueLineGap",
+                    displayName: "Value Line Gap",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "pointValueLabels", propertyName: "valueLineGap" },
+                            value: (settings as any).valueLineGap,
+                            options: {
+                                minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
+                                maxValue: { type: powerbi.visuals.ValidatorType.Max, value: 24 }
+                            }
                         }
                     }
                 } as powerbi.visuals.FormattingSlice,
@@ -397,6 +471,36 @@ function createPointValueLabelsCard(settings: IInlineLabelsLineVisualSettings["p
                             options: {
                                 minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
                                 maxValue: { type: powerbi.visuals.ValidatorType.Max, value: 24 }
+                            }
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "pointValues_insideOffset",
+                    displayName: "Inside Offset",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "pointValueLabels", propertyName: "insideOffset" },
+                            value: (settings as any).insideOffset,
+                            options: {
+                                minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
+                                maxValue: { type: powerbi.visuals.ValidatorType.Max, value: 24 }
+                            }
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "pointValues_haloWidth",
+                    displayName: "Halo Width",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "pointValueLabels", propertyName: "haloWidth" },
+                            value: (settings as any).haloWidth,
+                            options: {
+                                minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
+                                maxValue: { type: powerbi.visuals.ValidatorType.Max, value: 12 }
                             }
                         }
                     }
@@ -492,6 +596,100 @@ function createDateLogicCard(settings: IInlineLabelsLineVisualSettings["dateLogi
                         properties: {
                             descriptor: { objectName: "dateLogicSettings", propertyName: "applyTo" },
                             value: settings.applyTo
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice
+            ]
+        }]
+    };
+}
+
+function createYAxis2Card(settings: IInlineLabelsLineVisualSettings): powerbi.visuals.FormattingCard {
+    return {
+        displayName: "Y-Axis (Value 2)",
+        uid: "yAxis2Settings_card",
+        groups: [{
+            displayName: "Settings",
+            uid: "yAxis2Settings_group",
+            slices: [
+                {
+                    uid: "yAxis2_show",
+                    displayName: "Show Y-Axis",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "yAxis2Settings", propertyName: "show" },
+                            value: settings.showYAxis2
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "yAxis2_fontSize",
+                    displayName: "Font Size",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "yAxis2Settings", propertyName: "fontSize" },
+                            value: settings.yAxis2FontSize,
+                            options: {
+                                minValue: { type: powerbi.visuals.ValidatorType.Min, value: 6 },
+                                maxValue: { type: powerbi.visuals.ValidatorType.Max, value: 40 }
+                            }
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "yAxis2_fontFamily",
+                    displayName: "Font Family",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.FontPicker,
+                        properties: {
+                            descriptor: { objectName: "yAxis2Settings", propertyName: "fontFamily" },
+                            value: settings.yAxis2FontFamily
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "yAxis2_color",
+                    displayName: "Color",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ColorPicker,
+                        properties: {
+                            descriptor: { objectName: "yAxis2Settings", propertyName: "color" },
+                            value: { value: settings.yAxis2Color }
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "yAxis2_bold",
+                    displayName: "Bold",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "yAxis2Settings", propertyName: "bold" },
+                            value: settings.yAxis2Bold
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "yAxis2_italic",
+                    displayName: "Italic",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "yAxis2Settings", propertyName: "italic" },
+                            value: settings.yAxis2Italic
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "yAxis2_underline",
+                    displayName: "Underline",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "yAxis2Settings", propertyName: "underline" },
+                            value: settings.yAxis2Underline
                         }
                     }
                 } as powerbi.visuals.FormattingSlice
@@ -677,6 +875,20 @@ export class Visual implements IVisual {
                 return;
             }
 
+            // Auto-enable stacked point values when Value 2 is bound, unless the user explicitly set a preference.
+            const objects = (dataView.metadata as any)?.objects as any;
+            const pointObj = objects?.pointValueLabels as any;
+            const y2Obj = objects?.yAxis2Settings as any;
+            const hasPointEnabledPref = !!(pointObj && Object.prototype.hasOwnProperty.call(pointObj, "enabled"));
+            const hasShowValue2Pref = !!(pointObj && Object.prototype.hasOwnProperty.call(pointObj, "showValue2"));
+            const hasYAxis2ShowPref = !!(y2Obj && Object.prototype.hasOwnProperty.call(y2Obj, "show"));
+
+            if (chartData.hasValue2) {
+                if (!hasPointEnabledPref) this.settings.pointValueLabels.enabled = true;
+                if (!hasShowValue2Pref) this.settings.pointValueLabels.showValue2 = true;
+                if (!hasYAxis2ShowPref) this.settings.showYAxis2 = true;
+            }
+
             chartData.categoryColorMap = this.categoryColors;
             this.renderer.render(chartData, this.settings);
             this.bindInteractions();
@@ -827,6 +1039,8 @@ export class Visual implements IVisual {
             underline: this.settings.yAxisUnderline,
             color: this.settings.yAxisColor
         }));
+
+        cards.push(createYAxis2Card(this.settings));
 
         cards.push(createXAxisCard({
             show: this.settings.showXAxis,

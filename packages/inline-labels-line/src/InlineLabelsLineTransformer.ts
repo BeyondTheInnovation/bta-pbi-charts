@@ -5,14 +5,24 @@ import DataViewCategorical = powerbi.DataViewCategorical;
 import { ChartData, DataPoint, formatDataValue, formatGroupValue } from "@pbi-visuals/shared";
 
 export interface InlineLabelsLineChartData extends ChartData {
+    dataPoints: InlineLabelsLineDataPoint[];
     hasLegendRoleData: boolean;
     xIsDateAxis: boolean;
     xMsByValue?: Map<string, number>;
+    secondaryValueFormatString?: string;
+    secondaryValueDisplayName?: string;
+    maxValue2?: number;
+    minValue2?: number;
+    hasValue2: boolean;
 }
 
 type AccKey = string;
 
 const MIN_MS_TIMESTAMP_FOR_DATE_AXIS = 1000 * 1000 * 1000 * 100; // < ~1973 in ms (avoid treating years/quarters/ranks as timestamps)
+
+export interface InlineLabelsLineDataPoint extends DataPoint {
+    value2?: number;
+}
 
 function tryParseDateMsHeuristic(value: any): number | null {
     if (value === null || value === undefined) return null;
@@ -96,6 +106,8 @@ export class InlineLabelsLineTransformer {
 
         let maxValue = -Infinity;
         let minValue = Infinity;
+        let maxValue2 = -Infinity;
+        let minValue2 = Infinity;
 
         const xAxisIndices: number[] = [];
         let legendIndex = -1;
@@ -116,31 +128,65 @@ export class InlineLabelsLineTransformer {
         const seriesIndex = legendIndex >= 0 ? legendIndex : xAxisIndexForSeriesFallback;
 
         const groupedValues = (categorical.values as any)?.grouped?.() as Array<any> | undefined;
-        const valueGroups: Array<{ groupValue: string; values: any[]; highlights?: any[] }> = [];
+        const valueGroups: Array<{
+            groupValue: string;
+            values: any[];
+            highlights?: any[];
+            values2?: any[];
+            highlights2?: any[];
+        }> = [];
+
+        const findValueColumn = (cols: any[] | undefined, roleName: "values" | "values2"): any | undefined => {
+            if (!cols || cols.length === 0) return undefined;
+            return cols.find(c => Boolean(c?.source?.roles?.[roleName]));
+        };
+
+        const primaryColFromUngrouped = findValueColumn(categorical.values as any, "values") ?? (categorical.values as any)?.[0];
+        const secondaryColFromUngrouped = findValueColumn(categorical.values as any, "values2");
 
         if (groupedValues && groupedValues.length > 0) {
             for (const g of groupedValues) {
                 const groupValue = formatGroupValue(g?.name);
-                const valueColumn = g?.values?.[0];
-                const groupValues = (valueColumn?.values as any[]) ?? [];
-                const groupHighlights = (valueColumn?.highlights as any[]) ?? undefined;
-                valueGroups.push({ groupValue, values: groupValues, highlights: groupHighlights });
+                const cols = (g?.values as any[]) ?? [];
+                const primaryCol = findValueColumn(cols, "values") ?? cols[0];
+                const secondaryCol = findValueColumn(cols, "values2");
+                valueGroups.push({
+                    groupValue,
+                    values: (primaryCol?.values as any[]) ?? [],
+                    highlights: (primaryCol?.highlights as any[]) ?? undefined,
+                    values2: (secondaryCol?.values as any[]) ?? undefined,
+                    highlights2: (secondaryCol?.highlights as any[]) ?? undefined
+                });
             }
         } else {
             valueGroups.push({
                 groupValue: "All",
-                values: (categorical.values?.[0]?.values as any[]) ?? [],
-                highlights: (categorical.values?.[0]?.highlights as any[]) ?? undefined
+                values: (primaryColFromUngrouped?.values as any[]) ?? [],
+                highlights: (primaryColFromUngrouped?.highlights as any[]) ?? undefined,
+                values2: (secondaryColFromUngrouped?.values as any[]) ?? undefined,
+                highlights2: (secondaryColFromUngrouped?.highlights as any[]) ?? undefined
             });
         }
 
         const valueFormatString =
-            (groupedValues?.[0]?.values?.[0]?.source as any)?.format as string | undefined
-            ?? (categorical.values?.[0]?.source as any)?.format as string | undefined;
+            ((groupedValues && groupedValues.length > 0)
+                ? ((findValueColumn(groupedValues?.[0]?.values as any, "values") ?? groupedValues?.[0]?.values?.[0])?.source as any)?.format
+                : (primaryColFromUngrouped?.source as any)?.format) as string | undefined;
 
         const valueDisplayName =
-            (groupedValues?.[0]?.values?.[0]?.source as any)?.displayName as string | undefined
-            ?? (categorical.values?.[0]?.source as any)?.displayName as string | undefined;
+            ((groupedValues && groupedValues.length > 0)
+                ? ((findValueColumn(groupedValues?.[0]?.values as any, "values") ?? groupedValues?.[0]?.values?.[0])?.source as any)?.displayName
+                : (primaryColFromUngrouped?.source as any)?.displayName) as string | undefined;
+
+        const secondaryValueFormatString =
+            ((groupedValues && groupedValues.length > 0)
+                ? ((findValueColumn(groupedValues?.[0]?.values as any, "values2"))?.source as any)?.format
+                : (secondaryColFromUngrouped?.source as any)?.format) as string | undefined;
+
+        const secondaryValueDisplayName =
+            ((groupedValues && groupedValues.length > 0)
+                ? ((findValueColumn(groupedValues?.[0]?.values as any, "values2"))?.source as any)?.displayName
+                : (secondaryColFromUngrouped?.source as any)?.displayName) as string | undefined;
 
         const toDateMs = (value: any): number | null => {
             // For the X axis itself, we can be less strict than the heuristic parser because
@@ -161,12 +207,14 @@ export class InlineLabelsLineTransformer {
             return Number.isNaN(ms) ? null : ms;
         };
 
-        const acc = new Map<AccKey, { xValue: string; seriesKey: string; groupValue: string; value: number }>();
+        const acc = new Map<AccKey, { xValue: string; seriesKey: string; groupValue: string; value: number; value2: number }>();
 
         for (const vg of valueGroups) {
             const groupValue = vg.groupValue;
             const values = vg.values ?? [];
             const highlights = vg.highlights;
+            const values2 = vg.values2 ?? [];
+            const highlights2 = vg.highlights2;
             groupsSet.add(groupValue);
 
             for (let i = 0; i < values.length; i++) {
@@ -195,16 +243,34 @@ export class InlineLabelsLineTransformer {
                     ? Number(hasHighlight ? highlightValue : rawValue)
                     : NaN;
 
+                const rawValue2 = Number(values2[i]);
+                const hasHighlight2 = highlights2 && highlights2[i] !== null && highlights2[i] !== undefined;
+                const highlightValue2 = hasHighlight2 ? Number(highlights2![i]) : null;
+                const value2 = Number.isFinite(hasHighlight2 ? highlightValue2 : rawValue2)
+                    ? Number(hasHighlight2 ? highlightValue2 : rawValue2)
+                    : NaN;
+
                 const key = `${groupValue}||${seriesKey}||${xValue}`;
                 const prev = acc.get(key);
                 if (!prev) {
-                    acc.set(key, { xValue, seriesKey, groupValue, value: Number.isFinite(value) ? value : NaN });
+                    acc.set(key, {
+                        xValue,
+                        seriesKey,
+                        groupValue,
+                        value: Number.isFinite(value) ? value : NaN,
+                        value2: Number.isFinite(value2) ? value2 : NaN
+                    });
                 } else {
                     // Sum duplicates (if either is NaN, keep the finite one; if both NaN keep NaN).
                     const a = prev.value;
                     const b = value;
                     if (Number.isFinite(a) && Number.isFinite(b)) prev.value = a + b;
                     else if (!Number.isFinite(a) && Number.isFinite(b)) prev.value = b;
+
+                    const a2 = prev.value2;
+                    const b2 = value2;
+                    if (Number.isFinite(a2) && Number.isFinite(b2)) prev.value2 = a2 + b2;
+                    else if (!Number.isFinite(a2) && Number.isFinite(b2)) prev.value2 = b2;
                 }
             }
         }
@@ -222,7 +288,7 @@ export class InlineLabelsLineTransformer {
         const groups = Array.from(groupsSet).filter(g => g !== "").sort();
 
         // Materialize points
-        const dataPoints: DataPoint[] = [];
+        const dataPoints: InlineLabelsLineDataPoint[] = [];
         let idx = 0;
         for (const v of acc.values()) {
             const n = v.value;
@@ -230,10 +296,16 @@ export class InlineLabelsLineTransformer {
                 if (n > maxValue) maxValue = n;
                 if (n < minValue) minValue = n;
             }
+            const n2 = v.value2;
+            if (Number.isFinite(n2)) {
+                if (n2 > maxValue2) maxValue2 = n2;
+                if (n2 < minValue2) minValue2 = n2;
+            }
             dataPoints.push({
                 xValue: v.xValue,
                 yValue: v.seriesKey,
                 value: v.value,
+                value2: v.value2,
                 groupValue: v.groupValue,
                 index: idx++
             });
@@ -241,6 +313,11 @@ export class InlineLabelsLineTransformer {
 
         if (minValue === Infinity) minValue = 0;
         if (maxValue === -Infinity) maxValue = 1;
+        const hasValue2 = Number.isFinite(minValue2) && Number.isFinite(maxValue2) && minValue2 !== Infinity && maxValue2 !== -Infinity;
+        if (!hasValue2) {
+            minValue2 = 0;
+            maxValue2 = 1;
+        }
 
         return {
             dataPoints,
@@ -253,7 +330,12 @@ export class InlineLabelsLineTransformer {
             xIsDateAxis: dateAxisIndex >= 0,
             xMsByValue: dateAxisIndex >= 0 ? xMsByValue : undefined,
             valueFormatString,
-            valueDisplayName
+            valueDisplayName,
+            secondaryValueFormatString,
+            secondaryValueDisplayName,
+            maxValue2,
+            minValue2,
+            hasValue2
         };
     }
 }
