@@ -28,9 +28,6 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Install pbiviz certificate
-        run: cd packages/bump-chart && node ../../scripts/pbiviz-wrapper.mjs install-cert
-
       - name: Build and package visuals
         run: bun run build:all
 

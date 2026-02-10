@@ -12,7 +12,7 @@
     },
     "packages/bollinger-bands": {
       "name": "@pbi-visuals/bollinger-bands",
-      "version": "1.1.0",
+      "version": "1.4.0",
       "dependencies": {
         "powerbi-visuals-api": "~5.3.0",
       },
@@ -25,7 +25,7 @@
     },
     "packages/bump-chart": {
       "name": "@pbi-visuals/bump-chart",
-      "version": "1.1.0",
+      "version": "1.4.0",
       "dependencies": {
         "powerbi-visuals-api": "~5.3.0",
         "powerbi-visuals-utils-formattingmodel": "^6.2.2",
@@ -39,7 +39,7 @@
     },
     "packages/calendar-heatmap": {
       "name": "@pbi-visuals/calendar-heatmap",
-      "version": "1.1.0",
+      "version": "1.4.0",
       "dependencies": {
         "powerbi-visuals-api": "~5.3.0",
       },
@@ -52,7 +52,7 @@
     },
     "packages/donut-chart": {
       "name": "@pbi-visuals/donut-chart",
-      "version": "1.1.0",
+      "version": "1.4.0",
       "dependencies": {
         "powerbi-visuals-api": "~5.3.0",
       },
@@ -65,7 +65,20 @@
     },
     "packages/heatmap": {
       "name": "@pbi-visuals/heatmap",
-      "version": "1.1.0",
+      "version": "1.4.0",
+      "dependencies": {
+        "powerbi-visuals-api": "~5.3.0",
+      },
+      "devDependencies": {
+        "eslint": "^9.0.0",
+        "eslint-plugin-powerbi-visuals": "^0.8.1",
+        "powerbi-visuals-tools": "^5.0.0",
+        "typescript": "^5.5.4",
+      },
+    },
+    "packages/inline-labels-line": {
+      "name": "@pbi-visuals/inline-labels-line",
+      "version": "1.4.0",
       "dependencies": {
         "powerbi-visuals-api": "~5.3.0",
       },
@@ -78,7 +91,7 @@
     },
     "packages/packed-bubble": {
       "name": "@pbi-visuals/packed-bubble",
-      "version": "1.1.0",
+      "version": "1.4.0",
       "dependencies": {
         "powerbi-visuals-api": "~5.3.0",
       },
@@ -91,7 +104,7 @@
     },
     "packages/shared": {
       "name": "@pbi-visuals/shared",
-      "version": "1.1.0",
+      "version": "1.4.0",
       "dependencies": {
         "d3-array": "^3.2.4",
         "d3-color": "^3.1.0",
@@ -117,7 +130,7 @@
     },
     "packages/streamgraph": {
       "name": "@pbi-visuals/streamgraph",
-      "version": "1.1.0",
+      "version": "1.4.0",
       "dependencies": {
         "powerbi-visuals-api": "~5.3.0",
       },
@@ -209,6 +222,8 @@
     "@pbi-visuals/donut-chart": ["@pbi-visuals/donut-chart@workspace:packages/donut-chart"],
 
     "@pbi-visuals/heatmap": ["@pbi-visuals/heatmap@workspace:packages/heatmap"],
+
+    "@pbi-visuals/inline-labels-line": ["@pbi-visuals/inline-labels-line@workspace:packages/inline-labels-line"],
 
     "@pbi-visuals/packed-bubble": ["@pbi-visuals/packed-bubble@workspace:packages/packed-bubble"],
 
