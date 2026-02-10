@@ -178,8 +178,9 @@ export class BubbleRenderer extends BaseRenderer<IBubbleVisualSettings> {
             bubbles.each((d, i, nodes) => {
                 const bubble = d3.select(nodes[i]);
                 const bubbleColor = colorScale ? colorScale(d.legendKey) : fallbackColor;
+                const valueLabel = bubbleData.valueDisplayName || "Value";
                 this.addTooltip(bubble as any, [
-                    { displayName: "Value", value: formatMeasureValue(d.value, bubbleData.valueFormatString), color: bubbleColor }
+                    { displayName: valueLabel, value: formatMeasureValue(d.value, bubbleData.valueFormatString), color: bubbleColor }
                 ], {
                     title: d.category,
                     subtitle: (groupName !== "All" && groupName !== "(Blank)") ? groupName : undefined,

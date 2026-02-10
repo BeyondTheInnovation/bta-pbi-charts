@@ -249,7 +249,8 @@ export class CalendarRenderer extends BaseRenderer<ICalendarVisualSettings> {
                         .attr("stroke", cellStroke)
                         .attr("stroke-width", 1);
 
-                    this.addTooltip(cell as any, [{ displayName: "Value", value: formatMeasureValue(value, calendarData.valueFormatString), color: fill }], {
+                    const valueLabel = calendarData.valueDisplayName || "Value";
+                    this.addTooltip(cell as any, [{ displayName: valueLabel, value: formatMeasureValue(value, calendarData.valueFormatString), color: fill }], {
                         title: dateStr,
                         subtitle: (groupName !== "All" && groupName !== "(Blank)") ? groupName : undefined,
                         color: fill

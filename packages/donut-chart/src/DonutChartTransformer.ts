@@ -56,6 +56,10 @@ export class DonutChartTransformer {
             (groupedValues?.[0]?.values?.[0]?.source as any)?.format as string | undefined
             ?? (categorical.values?.[0]?.source as any)?.format as string | undefined;
 
+        const valueDisplayName =
+            (groupedValues?.[0]?.values?.[0]?.source as any)?.displayName as string | undefined
+            ?? (categorical.values?.[0]?.source as any)?.displayName as string | undefined;
+
         for (const vg of valueGroups) {
             const groupValue = vg.groupValue;
             const values = vg.values ?? [];
@@ -130,7 +134,8 @@ export class DonutChartTransformer {
             totalsByGroup,
             hasLegendRoleData: legendIndex >= 0,
             hasHighlights,
-            valueFormatString
+            valueFormatString,
+            valueDisplayName
         };
     }
 }

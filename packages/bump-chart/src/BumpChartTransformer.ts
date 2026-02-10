@@ -62,6 +62,10 @@ export class BumpChartTransformer {
             (groupedValues?.[0]?.values?.[0]?.source as any)?.format as string | undefined
             ?? (categorical.values?.[0]?.source as any)?.format as string | undefined;
 
+        const valueDisplayName =
+            (groupedValues?.[0]?.values?.[0]?.source as any)?.displayName as string | undefined
+            ?? (categorical.values?.[0]?.source as any)?.displayName as string | undefined;
+
         let pointIndex = 0;
         for (const vg of valueGroups) {
             const groupValue = vg.groupValue;
@@ -158,7 +162,8 @@ export class BumpChartTransformer {
             rankedData,
             maxRank: maxRank || yValues.length,
             hasLegendRoleData: legendIndex >= 0,
-            valueFormatString
+            valueFormatString,
+            valueDisplayName
         };
     }
 }

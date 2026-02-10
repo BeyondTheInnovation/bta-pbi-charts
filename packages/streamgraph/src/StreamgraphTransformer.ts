@@ -58,6 +58,10 @@ export class StreamgraphTransformer {
             (groupedValues?.[0]?.values?.[0]?.source as any)?.format as string | undefined
             ?? (categorical.values?.[0]?.source as any)?.format as string | undefined;
 
+        const valueDisplayName =
+            (groupedValues?.[0]?.values?.[0]?.source as any)?.displayName as string | undefined
+            ?? (categorical.values?.[0]?.source as any)?.displayName as string | undefined;
+
         // Prefer the dedicated legend role for series when bound; fall back to yAxis for legacy configs.
         const seriesIndex = legendIndex >= 0 ? legendIndex : yAxisIndex;
 
@@ -129,7 +133,8 @@ export class StreamgraphTransformer {
             stackedDataByGroup,
             maxStackSum,
             hasLegendRoleData,
-            valueFormatString
+            valueFormatString,
+            valueDisplayName
         };
     }
 }

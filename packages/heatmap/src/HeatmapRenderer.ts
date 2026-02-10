@@ -256,9 +256,10 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                     const xPath = xAxis.keyToPath.get(xKey) ?? [xKey];
                     const yDisplay = yPath.join(" • ");
                     const xDisplay = xPath.join(" • ");
+                    const valueLabel = heatmapData.valueDisplayName || "Value";
 
                     this.addTooltip(cell as any, [
-                        { displayName: "Value", value: formatMeasureValue(value, heatmapData.valueFormatString), color: fill },
+                        { displayName: valueLabel, value: formatMeasureValue(value, heatmapData.valueFormatString), color: fill },
                         { displayName: "Row", value: yDisplay },
                         { displayName: "Column", value: xDisplay },
                         ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])

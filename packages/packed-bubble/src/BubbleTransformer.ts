@@ -26,6 +26,7 @@ export interface BubbleData {
     categoryColorMap?: Map<string, string>;
     hasLegendRoleData: boolean;
     valueFormatString?: string;
+    valueDisplayName?: string;
 }
 
 export class BubbleTransformer {
@@ -72,6 +73,10 @@ export class BubbleTransformer {
         const valueFormatString =
             (groupedValues?.[0]?.values?.[0]?.source as any)?.format as string | undefined
             ?? (categorical.values?.[0]?.source as any)?.format as string | undefined;
+
+        const valueDisplayName =
+            (groupedValues?.[0]?.values?.[0]?.source as any)?.displayName as string | undefined
+            ?? (categorical.values?.[0]?.source as any)?.displayName as string | undefined;
 
         let nodeIdCounter = 0;
         valueGroups.forEach((vg, groupIdx) => {
@@ -122,6 +127,6 @@ export class BubbleTransformer {
         if (minValue === Infinity) minValue = 0;
 
         const hasLegendRoleData = legendIndex >= 0 && legendItems.length > 0;
-        return { nodes, categories, legendItems, groups, maxValue, minValue, hasLegendRoleData, valueFormatString };
+        return { nodes, categories, legendItems, groups, maxValue, minValue, hasLegendRoleData, valueFormatString, valueDisplayName };
     }
 }

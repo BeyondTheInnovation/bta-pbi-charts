@@ -64,6 +64,10 @@ export class CalendarTransformer {
             (groupedValues?.[0]?.values?.[0]?.source as any)?.format as string | undefined
             ?? (categorical.values?.[0]?.source as any)?.format as string | undefined;
 
+        const valueDisplayName =
+            (groupedValues?.[0]?.values?.[0]?.source as any)?.displayName as string | undefined
+            ?? (categorical.values?.[0]?.source as any)?.displayName as string | undefined;
+
         let pointIndex = 0;
         for (const vg of valueGroups) {
             const values = vg.values ?? [];
@@ -127,6 +131,7 @@ export class CalendarTransformer {
             calendarPoints,
             years,
             valueFormatString,
+            valueDisplayName,
             dateRange: {
                 start: minDate || new Date(),
                 end: maxDate || new Date()

@@ -210,6 +210,7 @@ export class HeatmapTransformer {
 
         const measureCount = Math.max(1, matrix.valueSources?.length ?? 1);
         const valueFormatString = (matrix.valueSources?.[0] as any)?.format as string | undefined;
+        const valueDisplayName = (matrix.valueSources?.[0] as any)?.displayName as string | undefined;
 
         // ---- Columns (X axis) ----
         const xLeafKeys: string[] = [];
@@ -411,7 +412,8 @@ export class HeatmapTransformer {
             minValue,
             xAxis,
             yAxisByGroup,
-            valueFormatString
+            valueFormatString,
+            valueDisplayName
         };
     }
 }

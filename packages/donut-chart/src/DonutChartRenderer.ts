@@ -23,6 +23,7 @@ type OutsideLabelCandidate = {
 
 export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
     private valueFormatString?: string;
+    private valueDisplayName?: string;
 
     constructor(context: RenderContext) {
         super(context);
@@ -32,6 +33,7 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
         this.settings = settings;
         const donutData = data as DonutChartData;
         this.valueFormatString = donutData.valueFormatString;
+        this.valueDisplayName = donutData.valueDisplayName;
 
         if (!donutData.groups?.length || !donutData.xValues?.length) {
             this.renderNoData();
@@ -191,7 +193,7 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                 const color = colorScale(d.data.category);
                 const percent = total > 0 ? (d.data.value / total) : 0;
                 const tooltipData = [
-                    { displayName: "Value", value: formatMeasureValue(d.data.value, this.valueFormatString), color },
+                    { displayName: this.valueDisplayName || "Value", value: formatMeasureValue(d.data.value, this.valueFormatString), color },
                     { displayName: "Percent", value: `${(percent * 100).toFixed(1)}%`, color },
                     ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
                 ];

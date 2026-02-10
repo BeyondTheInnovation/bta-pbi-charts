@@ -35,6 +35,8 @@ export interface ChartData {
     minValue: number;
     categoryColorMap?: Map<string, string>;
     valueFormatString?: string;
+    // Name of the bound measure in the Values bucket (e.g. "Sales"), used for tooltips.
+    valueDisplayName?: string;
 }
 
 export interface DataPoint {

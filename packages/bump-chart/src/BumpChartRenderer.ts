@@ -278,6 +278,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                         const cx = xScale(point.xValue) ?? 0;
                         const cy = yScale(point.rank);
                         const periodLabel = xLabelByValue.get(point.xValue) ?? point.xValue;
+                        const valueLabel = bumpData.valueDisplayName || "Value";
 
                         const marker = panelGroup.append("circle")
                             .attr("class", "bump-marker")
@@ -291,7 +292,7 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
 
                         this.addTooltip(marker as any, [
                             { displayName: "Rank", value: `#${point.rank}`, color },
-                            { displayName: "Value", value: formatMeasureValue(point.value, bumpData.valueFormatString), color },
+                            { displayName: valueLabel, value: formatMeasureValue(point.value, bumpData.valueFormatString), color },
                             ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
                         ], { title: yVal, subtitle: periodLabel, color });
                     });

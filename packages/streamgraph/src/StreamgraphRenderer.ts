@@ -206,11 +206,12 @@ export class StreamgraphRenderer extends BaseRenderer<IStreamgraphVisualSettings
                         const rawIndex = Math.round(xScale.invert(px));
                         const index = Math.max(0, Math.min(xValues.length - 1, rawIndex));
                         const rawValue = (stackInput[index]?.[category] ?? 0) as number;
+                        const valueLabel = streamData.valueDisplayName || "Value";
 
                         return {
                             meta: { title: category, subtitle: xDisplayLabels[index], color: categoryColor },
                             tooltipData: [
-                                { displayName: "Value", value: formatMeasureValue(rawValue, streamData.valueFormatString), color: categoryColor },
+                                { displayName: valueLabel, value: formatMeasureValue(rawValue, streamData.valueFormatString), color: categoryColor },
                                 ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
                             ]
                         };
