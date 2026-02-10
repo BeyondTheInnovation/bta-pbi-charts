@@ -81,28 +81,67 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
             40
         );
 
-        const parseXDate = (val: string): Date | null => {
-            const ms = Number(val);
-            if (Number.isFinite(ms)) {
-                const d = new Date(ms);
-                if (!isNaN(d.getTime())) return d;
-            }
-            const d = new Date(val);
-            return isNaN(d.getTime()) ? null : d;
-        };
+        const MIN_MS_TIMESTAMP_FOR_DATE_AXIS = 1000 * 1000 * 1000 * 100; // < ~1973 in ms
+        const isDateAxisForLabels = Boolean(lineData.xIsDateAxis && lineData.xMsByValue && lineData.xMsByValue.size > 0);
 
-        const formatXLabel = (val: string): string => {
-            const date = parseXDate(val);
-            if (date) {
-                return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
-            }
-            return val;
+        const formatXLabel = (xVal: string): string => {
+            if (!isDateAxisForLabels) return xVal;
+
+            // Prefer the transformer's ms map (it knows which values are true dates).
+            const msFromMap = lineData.xMsByValue?.get(xVal);
+            const ms = (typeof msFromMap === "number" && Number.isFinite(msFromMap))
+                ? msFromMap
+                : Number(xVal);
+
+            if (!Number.isFinite(ms) || ms < MIN_MS_TIMESTAMP_FOR_DATE_AXIS) return xVal;
+
+            const d = new Date(ms);
+            if (Number.isNaN(d.getTime())) return xVal;
+            return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
         };
 
         const xDisplayLabels = xValues.map(formatXLabel);
         const xValueOrder = new Map<string, number>(xValues.map((x, idx) => [x, idx]));
         const xLabelByValue = new Map<string, string>();
         xValues.forEach((x, i) => xLabelByValue.set(x, xDisplayLabels[i]));
+
+        const dateLogic = settings.dateLogic;
+        const dateLogicEnabled = Boolean(
+            dateLogic?.enabled
+            && lineData.xIsDateAxis
+            && lineData.xMsByValue
+            && lineData.xMsByValue.size > 0
+        );
+        const cutoffMs = (() => {
+            if (!dateLogicEnabled) return null;
+            if (dateLogic.cutoff === "now") return Date.now();
+            if (dateLogic.cutoff === "custom") {
+                const raw = String(dateLogic.customDate ?? "").trim();
+                if (raw) {
+                    const d = new Date(raw);
+                    const ms = d.getTime();
+                    if (!Number.isNaN(ms)) return ms;
+                }
+                // Fallback
+            }
+            const now = new Date();
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
+        })();
+
+        const isFutureX = (xVal: string): boolean => {
+            if (!dateLogicEnabled || cutoffMs === null) return false;
+            const ms = lineData.xMsByValue?.get(xVal);
+            if (typeof ms === "number" && Number.isFinite(ms)) {
+                return ms > cutoffMs;
+            }
+            const n = Number(xVal);
+            return Number.isFinite(n) ? (n > cutoffMs) : false;
+        };
+
+        const applyTo = dateLogic?.applyTo ?? "lineArea";
+        const applyLine = dateLogicEnabled && (applyTo === "lineArea" || applyTo === "lineOnly" || applyTo === "everything");
+        const applyArea = dateLogicEnabled && (applyTo === "lineArea" || applyTo === "everything");
+        const applyMarks = dateLogicEnabled && (applyTo === "everything");
 
         const inlineEnabled = Boolean(settings.inlineLabelSettings.enabled && yValues.length > 0);
         const labelFontFamily = "Segoe UI";
@@ -306,13 +345,60 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                     const pts = seriesDense.get(seriesKey);
                     if (!pts) return;
                     const color = colorScale(seriesKey);
+                    if (!applyArea) {
+                        panelGroup.append("path")
+                            .datum(pts)
+                            .attr("class", "area-path")
+                            .attr("data-selection-key", seriesKey)
+                            .attr("d", areaGen)
+                            .attr("fill", color)
+                            .attr("opacity", settings.lineSettings.areaOpacity)
+                            .attr("stroke", "none");
+                        return;
+                    }
+
+                    // Past style "grey" should look intentionally grey, but the line stroke/marks
+                    // should not feel too heavy against the light fill.
+                    const pastGrey = this.getThemeForeground("#9ca3af");
+                    const pastFill = (dateLogic.pastStyle === "grey")
+                        ? pastGrey
+                        : color;
+                    const pastOpacity = (dateLogic.pastStyle === "grey")
+                        ? settings.lineSettings.areaOpacity
+                        : (settings.lineSettings.areaOpacity * Math.max(0, Math.min(1, dateLogic.dimOpacity ?? 0.35)));
+
+                    const futureOpacity = settings.lineSettings.areaOpacity;
+
+                    const pastArea = d3.area<DensePoint>()
+                        .defined(d => Number.isFinite(d.value) && !isFutureX(d.xValue))
+                        .x(d => xScale(xValueOrder.get(d.xValue) ?? 0))
+                        .y0(yScale(baseline))
+                        .y1(d => yScale(d.value))
+                        .curve(curve);
+
+                    const futureArea = d3.area<DensePoint>()
+                        .defined(d => Number.isFinite(d.value) && isFutureX(d.xValue))
+                        .x(d => xScale(xValueOrder.get(d.xValue) ?? 0))
+                        .y0(yScale(baseline))
+                        .y1(d => yScale(d.value))
+                        .curve(curve);
+
                     panelGroup.append("path")
                         .datum(pts)
-                        .attr("class", "area-path")
+                        .attr("class", "area-path past-area")
                         .attr("data-selection-key", seriesKey)
-                        .attr("d", areaGen)
+                        .attr("d", pastArea)
+                        .attr("fill", pastFill)
+                        .attr("opacity", pastOpacity)
+                        .attr("stroke", "none");
+
+                    panelGroup.append("path")
+                        .datum(pts)
+                        .attr("class", "area-path future-area")
+                        .attr("data-selection-key", seriesKey)
+                        .attr("d", futureArea)
                         .attr("fill", color)
-                        .attr("opacity", settings.lineSettings.areaOpacity)
+                        .attr("opacity", futureOpacity)
                         .attr("stroke", "none");
                 });
             }
@@ -322,14 +408,76 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                 const pts = seriesDense.get(seriesKey);
                 if (!pts) return;
                 const color = colorScale(seriesKey);
+                if (!applyLine) {
+                    panelGroup.append("path")
+                        .datum(pts)
+                        .attr("class", "line-path")
+                        .attr("data-selection-key", seriesKey)
+                        .attr("d", lineGen)
+                        .attr("stroke", color)
+                        .attr("stroke-width", settings.lineSettings.lineWidth)
+                        .attr("opacity", 1);
+                    return;
+                }
+
+                // Include the last past defined point as an anchor in the future path so the dotted
+                // segment visually continues from the last actual point.
+                let anchorX: string | null = null;
+                let firstFutureIdx = -1;
+                for (let i = 0; i < pts.length; i++) {
+                    if (!Number.isFinite(pts[i].value)) continue;
+                    if (isFutureX(pts[i].xValue)) { firstFutureIdx = i; break; }
+                }
+                if (firstFutureIdx >= 0) {
+                    for (let i = firstFutureIdx - 1; i >= 0; i--) {
+                        if (Number.isFinite(pts[i].value)) { anchorX = pts[i].xValue; break; }
+                    }
+                }
+
+                const dimOpacity = Math.max(0, Math.min(1, dateLogic.dimOpacity ?? 0.35));
+                const pastGrey = this.getThemeForeground("#9ca3af");
+                const pastStroke = (dateLogic.pastStyle === "grey")
+                    ? pastGrey
+                    : color;
+                const pastOpacity = (dateLogic.pastStyle === "grey") ? 1 : dimOpacity;
+
+                const pastLine = d3.line<DensePoint>()
+                    .defined(d => Number.isFinite(d.value) && !isFutureX(d.xValue))
+                    .x(d => xScale(xValueOrder.get(d.xValue) ?? 0))
+                    .y(d => yScale(d.value))
+                    .curve(curve);
+
+                const futureLine = d3.line<DensePoint>()
+                    .defined(d => {
+                        if (!Number.isFinite(d.value)) return false;
+                        if (isFutureX(d.xValue)) return true;
+                        return anchorX !== null && d.xValue === anchorX;
+                    })
+                    .x(d => xScale(xValueOrder.get(d.xValue) ?? 0))
+                    .y(d => yScale(d.value))
+                    .curve(curve);
+
                 panelGroup.append("path")
                     .datum(pts)
-                    .attr("class", "line-path")
+                    .attr("class", "line-path past-line")
                     .attr("data-selection-key", seriesKey)
-                    .attr("d", lineGen)
+                    .attr("d", pastLine)
+                    .attr("stroke", pastStroke)
+                    .attr("stroke-width", settings.lineSettings.lineWidth)
+                    .attr("opacity", pastOpacity);
+
+                const futurePath = panelGroup.append("path")
+                    .datum(pts)
+                    .attr("class", "line-path future-line")
+                    .attr("data-selection-key", seriesKey)
+                    .attr("d", futureLine)
                     .attr("stroke", color)
                     .attr("stroke-width", settings.lineSettings.lineWidth)
                     .attr("opacity", 1);
+
+                if (dateLogic.futureStyle === "dotted") {
+                    futurePath.attr("stroke-dasharray", "4,4");
+                }
             });
 
             // Markers: last / last2
@@ -361,15 +509,23 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                     const p = pts[idx];
                     const cx = xScale(xValueOrder.get(p.xValue) ?? 0);
                     const cy = yScale(p.value);
+                    const future = applyMarks ? isFutureX(p.xValue) : false;
+                    const dimOpacity = Math.max(0, Math.min(1, dateLogic?.dimOpacity ?? 0.35));
+                    const pastFill = (dateLogic?.pastStyle === "grey")
+                        ? this.getThemeForeground("#9ca3af")
+                        : color;
+                    const fill = applyMarks && !future ? pastFill : color;
+                    const opacity = applyMarks && !future && dateLogic?.pastStyle !== "grey" ? dimOpacity : 1;
                     panelGroup.append("circle")
                         .attr("class", `line-marker ${cls}`)
                         .attr("data-selection-key", seriesKey)
                         .attr("cx", cx)
                         .attr("cy", cy)
                         .attr("r", Math.max(0, size / 2))
-                        .attr("fill", color)
+                        .attr("fill", fill)
                         .attr("stroke", bgStroke)
-                        .attr("stroke-width", 2);
+                        .attr("stroke-width", 2)
+                        .attr("opacity", opacity);
                 };
 
                 if (showPrev && prevIdx >= 0 && settings.markerSettings.prevMarkerSize > 0) {
@@ -425,6 +581,12 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                         const cx = xScale(xValueOrder.get(p.xValue) ?? 0);
                         const cy = yScale(p.value);
                         const valueText = formatMeasureValue(p.value, lineData.valueFormatString);
+                        const future = applyMarks ? isFutureX(p.xValue) : false;
+                        const dimOpacity = Math.max(0, Math.min(1, dateLogic?.dimOpacity ?? 0.35));
+                        const pastTextColor = (dateLogic?.pastStyle === "grey")
+                            ? this.getThemeForeground("#9ca3af")
+                            : seriesColor;
+                        const pointOpacity = applyMarks && !future && dateLogic?.pastStyle !== "grey" ? dimOpacity : 1;
 
                         // Keep label inside plot: above unless too close to the top.
                         const placeAbove = (cy - offset - fontSize - padY * 2) >= 0;
@@ -440,7 +602,7 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                         const g = panelGroup.append("g")
                             .attr("class", "point-value-label")
                             .attr("transform", `translate(${gx}, ${gy})`)
-                            .style("opacity", 0.92);
+                            .style("opacity", String(0.92 * pointOpacity));
 
                         if (pointLabels.showBackground) {
                             g.append("rect")
@@ -468,7 +630,8 @@ export class InlineLabelsLineRenderer extends BaseRenderer<IInlineLabelsLineVisu
                         // If the user picked a series-specific color via legend role, keep the label legible by
                         // lightly tinting the text when background is off.
                         if (!pointLabels.showBackground) {
-                            (g.select("text") as any).attr("fill", seriesColor);
+                            const fill = applyMarks && !future ? pastTextColor : seriesColor;
+                            (g.select("text") as any).attr("fill", fill);
                         }
                     }
                 });

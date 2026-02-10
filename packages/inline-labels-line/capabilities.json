@@ -190,6 +190,63 @@
         }
       }
     },
+    "dateLogicSettings": {
+      "displayName": "Date Logic",
+      "description": "Applies special styling to past vs future dates (requires a date-like X-Axis).",
+      "properties": {
+        "enabled": {
+          "displayName": "Enabled",
+          "type": { "bool": true }
+        },
+        "cutoff": {
+          "displayName": "Cutoff",
+          "type": {
+            "enumeration": [
+              { "value": "today", "displayName": "Today" },
+              { "value": "now", "displayName": "Now" },
+              { "value": "custom", "displayName": "Custom" }
+            ]
+          }
+        },
+        "customDate": {
+          "displayName": "Custom Date",
+          "description": "ISO date (e.g. 2026-02-10) or ISO timestamp.",
+          "type": { "text": true }
+        },
+        "futureStyle": {
+          "displayName": "Future Style",
+          "type": {
+            "enumeration": [
+              { "value": "dotted", "displayName": "Dotted" },
+              { "value": "solid", "displayName": "Solid" }
+            ]
+          }
+        },
+        "pastStyle": {
+          "displayName": "Past Style",
+          "type": {
+            "enumeration": [
+              { "value": "dimSeries", "displayName": "Dim Series Color" },
+              { "value": "grey", "displayName": "Grey" }
+            ]
+          }
+        },
+        "dimOpacity": {
+          "displayName": "Dim Opacity",
+          "type": { "numeric": true }
+        },
+        "applyTo": {
+          "displayName": "Apply To",
+          "type": {
+            "enumeration": [
+              { "value": "lineArea", "displayName": "Line + Area" },
+              { "value": "lineOnly", "displayName": "Line Only" },
+              { "value": "everything", "displayName": "Everything" }
+            ]
+          }
+        }
+      }
+    },
     "legend": {
       "displayName": "Legend",
       "properties": {

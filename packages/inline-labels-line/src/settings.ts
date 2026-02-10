@@ -22,6 +22,10 @@ export type MarkerMode = "none" | "last" | "last2";
 export type InlineLabelContent = "name_value_delta" | "name_value" | "name_only" | "value_delta";
 export type InlineDeltaMode = "percent" | "absolute" | "both" | "none";
 export type PointValueLabelDensity = "auto" | "all";
+export type DateLogicCutoff = "today" | "now" | "custom";
+export type DateLogicFutureStyle = "dotted" | "solid";
+export type DateLogicPastStyle = "dimSeries" | "grey";
+export type DateLogicApplyTo = "lineArea" | "lineOnly" | "everything";
 
 export interface ILineSettings {
     curve: LineCurve;
@@ -59,6 +63,16 @@ export interface IPointValueLabelSettings {
     offset: number;
 }
 
+export interface IDateLogicSettings {
+    enabled: boolean;
+    cutoff: DateLogicCutoff;
+    customDate: string;
+    futureStyle: DateLogicFutureStyle;
+    pastStyle: DateLogicPastStyle;
+    dimOpacity: number;
+    applyTo: DateLogicApplyTo;
+}
+
 export interface IInlineLabelsLineVisualSettings extends IBaseVisualSettings {
     // Legend add-on
     showLegend: boolean;
@@ -69,6 +83,7 @@ export interface IInlineLabelsLineVisualSettings extends IBaseVisualSettings {
     markerSettings: IMarkerSettings;
     inlineLabelSettings: IInlineLabelSettings;
     pointValueLabels: IPointValueLabelSettings;
+    dateLogic: IDateLogicSettings;
 }
 
 export const defaultSettings: IInlineLabelsLineVisualSettings = {
@@ -135,6 +150,15 @@ export const defaultSettings: IInlineLabelsLineVisualSettings = {
         backgroundColor: "#ffffff",
         backgroundOpacity: 0.85,
         offset: 8
+    },
+    dateLogic: {
+        enabled: false,
+        cutoff: "today",
+        customDate: "",
+        futureStyle: "dotted",
+        pastStyle: "dimSeries",
+        dimOpacity: 0.35,
+        applyTo: "lineArea"
     }
 };
 
@@ -350,6 +374,38 @@ export function parseSettings(dataView: DataView): IInlineLabelsLineVisualSettin
 
         if (settings.pointValueLabels.density !== "auto" && settings.pointValueLabels.density !== "all") {
             settings.pointValueLabels.density = defaultSettings.pointValueLabels.density;
+        }
+    }
+
+    // Date logic
+    const dateLogicObj = objects["dateLogicSettings"];
+    if (dateLogicObj) {
+        settings.dateLogic.enabled = (dateLogicObj["enabled"] as boolean) ?? defaultSettings.dateLogic.enabled;
+        settings.dateLogic.cutoff = (dateLogicObj["cutoff"] as DateLogicCutoff) ?? defaultSettings.dateLogic.cutoff;
+        settings.dateLogic.customDate = (dateLogicObj["customDate"] as string) ?? defaultSettings.dateLogic.customDate;
+        settings.dateLogic.futureStyle = (dateLogicObj["futureStyle"] as DateLogicFutureStyle) ?? defaultSettings.dateLogic.futureStyle;
+        settings.dateLogic.pastStyle = (dateLogicObj["pastStyle"] as DateLogicPastStyle) ?? defaultSettings.dateLogic.pastStyle;
+        settings.dateLogic.dimOpacity = (dateLogicObj["dimOpacity"] as number) ?? defaultSettings.dateLogic.dimOpacity;
+        settings.dateLogic.applyTo = (dateLogicObj["applyTo"] as DateLogicApplyTo) ?? defaultSettings.dateLogic.applyTo;
+
+        const clamp01 = (v: number, fallback: number): number => {
+            const n = Number(v);
+            if (!Number.isFinite(n)) return fallback;
+            return Math.max(0, Math.min(1, n));
+        };
+        settings.dateLogic.dimOpacity = clamp01(settings.dateLogic.dimOpacity, defaultSettings.dateLogic.dimOpacity);
+
+        if (settings.dateLogic.cutoff !== "today" && settings.dateLogic.cutoff !== "now" && settings.dateLogic.cutoff !== "custom") {
+            settings.dateLogic.cutoff = defaultSettings.dateLogic.cutoff;
+        }
+        if (settings.dateLogic.futureStyle !== "dotted" && settings.dateLogic.futureStyle !== "solid") {
+            settings.dateLogic.futureStyle = defaultSettings.dateLogic.futureStyle;
+        }
+        if (settings.dateLogic.pastStyle !== "dimSeries" && settings.dateLogic.pastStyle !== "grey") {
+            settings.dateLogic.pastStyle = defaultSettings.dateLogic.pastStyle;
+        }
+        if (settings.dateLogic.applyTo !== "lineArea" && settings.dateLogic.applyTo !== "lineOnly" && settings.dateLogic.applyTo !== "everything") {
+            settings.dateLogic.applyTo = defaultSettings.dateLogic.applyTo;
         }
     }
 

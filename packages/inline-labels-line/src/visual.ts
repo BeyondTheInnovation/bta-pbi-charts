@@ -406,6 +406,100 @@ function createPointValueLabelsCard(settings: IInlineLabelsLineVisualSettings["p
     };
 }
 
+function createDateLogicCard(settings: IInlineLabelsLineVisualSettings["dateLogic"]): powerbi.visuals.FormattingCard {
+    return {
+        displayName: "Date Logic",
+        uid: "dateLogicSettings_card",
+        groups: [{
+            displayName: "Settings",
+            uid: "dateLogicSettings_group",
+            slices: [
+                {
+                    uid: "dateLogic_enabled",
+                    displayName: "Enabled",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: { objectName: "dateLogicSettings", propertyName: "enabled" },
+                            value: settings.enabled
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "dateLogic_cutoff",
+                    displayName: "Cutoff",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "dateLogicSettings", propertyName: "cutoff" },
+                            value: settings.cutoff
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "dateLogic_customDate",
+                    displayName: "Custom Date",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.TextInput,
+                        properties: {
+                            descriptor: { objectName: "dateLogicSettings", propertyName: "customDate" },
+                            value: settings.customDate
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "dateLogic_futureStyle",
+                    displayName: "Future Style",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "dateLogicSettings", propertyName: "futureStyle" },
+                            value: settings.futureStyle
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "dateLogic_pastStyle",
+                    displayName: "Past Style",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "dateLogicSettings", propertyName: "pastStyle" },
+                            value: settings.pastStyle
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "dateLogic_dimOpacity",
+                    displayName: "Dim Opacity",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: { objectName: "dateLogicSettings", propertyName: "dimOpacity" },
+                            value: settings.dimOpacity,
+                            options: {
+                                minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
+                                maxValue: { type: powerbi.visuals.ValidatorType.Max, value: 1 }
+                            }
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice,
+                {
+                    uid: "dateLogic_applyTo",
+                    displayName: "Apply To",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: { objectName: "dateLogicSettings", propertyName: "applyTo" },
+                            value: settings.applyTo
+                        }
+                    }
+                } as powerbi.visuals.FormattingSlice
+            ]
+        }]
+    };
+}
+
 function createLegendWithShowCard(settings: IInlineLabelsLineVisualSettings): powerbi.visuals.FormattingCard {
     return {
         displayName: "Legend",
@@ -718,6 +812,7 @@ export class Visual implements IVisual {
         cards.push(createMarkerSettingsCard(this.settings.markerSettings));
         cards.push(createInlineLabelCard(this.settings.inlineLabelSettings));
         cards.push(createPointValueLabelsCard(this.settings.pointValueLabels));
+        cards.push(createDateLogicCard(this.settings.dateLogic));
 
         cards.push(createLegendWithShowCard(this.settings));
 
