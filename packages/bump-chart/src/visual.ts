@@ -144,8 +144,17 @@ export class Visual implements IVisual {
             return;
         }
 
-        // Pass color overrides to chart data
-        chartData.categoryColorMap = this.categoryColors;
+        // Seed initial series colors so the rendered palette matches the Data Colors defaults.
+        const defaultColors = this.settings.useCustomColors && this.settings.customColors?.length > 0
+            ? this.settings.customColors
+            : getSchemeColors(this.settings.colorScheme);
+        const seededColors = new Map<string, string>(this.categoryColors);
+        chartData.yValues.forEach((k, i) => {
+            if (!seededColors.has(k)) {
+                seededColors.set(k, defaultColors[i % defaultColors.length]);
+            }
+        });
+        chartData.categoryColorMap = seededColors;
 
         // Render the chart
         this.renderer.render(chartData, this.settings);
@@ -187,6 +196,9 @@ export class Visual implements IVisual {
                 this.categorySelectionIds.set(categoryValue, selectionId);
             }
         }
+
+        // Keep ordering stable and consistent with transformer series ordering.
+        this.categories.sort((a, b) => a.localeCompare(b));
     }
 
     private renderNoData(width: number, height: number): void {

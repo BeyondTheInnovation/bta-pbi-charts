@@ -59,6 +59,7 @@ export {
     forceCollide,
     forceManyBody,
     forceSimulation,
+    forceY,
 } from "d3-force";
 
 // d3-color (transitive dep of d3-interpolate / d3-scale, but occasionally

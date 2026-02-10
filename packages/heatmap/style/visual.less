@@ -54,10 +54,23 @@
         transition: stroke 0.15s ease, stroke-width 0.15s ease;
     }
 
+    .heatmap-total-cell {
+        cursor: default;
+    }
+
+    .group-separator {
+        vector-effect: non-scaling-stroke;
+        shape-rendering: crispEdges;
+    }
+
     .cell-value {
         pointer-events: none;
         font-weight: 600;
         letter-spacing: 0;
+    }
+
+    .total-value {
+        font-weight: 700;
     }
 
     // Refined axis styles

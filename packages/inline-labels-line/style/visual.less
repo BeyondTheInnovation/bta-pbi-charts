@@ -1,0 +1,137 @@
+.pbi-visual {
+    font-family: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: visible;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+
+    svg text {
+        text-rendering: geometricPrecision;
+        font-feature-settings: "kern" 1, "liga" 1;
+    }
+
+    // Crisp rendering for straight lines (axes/grid)
+    svg {
+        shape-rendering: crispEdges;
+    }
+
+    // Smooth rendering for curves
+    .line-path,
+    .area-path,
+    path[d*="C"],
+    path[d*="Q"],
+    circle {
+        shape-rendering: geometricPrecision;
+    }
+
+    .x-axis line,
+    .y-axis line,
+    .grid-line {
+        shape-rendering: crispEdges;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .chart-container {
+        overflow: visible;
+    }
+
+    .panel-title {
+        font-weight: 600;
+        fill: #111827;
+        letter-spacing: -0.01em;
+    }
+
+    .grid-line {
+        pointer-events: none;
+    }
+
+    .line-path {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .area-path {
+        pointer-events: none;
+    }
+
+    .line-marker {
+        cursor: pointer;
+    }
+
+    .hover-line,
+    .hover-dot,
+    .hover-dots {
+        pointer-events: none;
+    }
+
+    .tooltip-overlay {
+        pointer-events: all;
+    }
+
+    .x-axis,
+    .y-axis {
+        line {
+            stroke: #e5e7eb;
+            stroke-width: 1;
+        }
+
+        text {
+            fill: #6b7280;
+            font-weight: 400;
+            letter-spacing: 0;
+        }
+    }
+
+    .end-label-group {
+        cursor: pointer;
+    }
+
+    .end-label-bg {
+        fill: rgba(255, 255, 255, 0.82);
+        stroke: rgba(17, 24, 39, 0.10);
+        stroke-width: 1;
+    }
+
+    .end-label-name {
+        font-weight: 650;
+        fill: #111827;
+        letter-spacing: -0.01em;
+    }
+
+    .end-label-value {
+        font-weight: 500;
+        fill: #111827;
+    }
+
+    .end-label-delta {
+        font-weight: 500;
+        fill: #6b7280;
+    }
+
+    .leader-line {
+        fill: none;
+        stroke: rgba(17, 24, 39, 0.25);
+        stroke-width: 1;
+        stroke-dasharray: 2,3;
+        pointer-events: none;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .point-value-label {
+        pointer-events: none;
+    }
+
+    .point-value-bg {
+        stroke: rgba(17, 24, 39, 0.10);
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .no-data-message {
+        fill: #9ca3af;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+    }
+}

@@ -16,13 +16,15 @@
     "package:bubble": "bun run --filter @pbi-visuals/packed-bubble package",
     "package:donut": "bun run --filter @pbi-visuals/donut-chart package",
     "package:bollinger": "bun run --filter @pbi-visuals/bollinger-bands package",
+    "package:inline-labels": "bun run --filter @pbi-visuals/inline-labels-line package",
     "start:heatmap": "bun run --filter @pbi-visuals/heatmap start",
     "start:streamgraph": "bun run --filter @pbi-visuals/streamgraph start",
     "start:bump-chart": "bun run --filter @pbi-visuals/bump-chart start",
     "start:calendar": "bun run --filter @pbi-visuals/calendar-heatmap start",
     "start:bubble": "bun run --filter @pbi-visuals/packed-bubble start",
     "start:donut": "bun run --filter @pbi-visuals/donut-chart start",
-    "start:bollinger": "bun run --filter @pbi-visuals/bollinger-bands start"
+    "start:bollinger": "bun run --filter @pbi-visuals/bollinger-bands start",
+    "start:inline-labels": "bun run --filter @pbi-visuals/inline-labels-line start"
   },
   "dependencies": {},
   "devDependencies": {

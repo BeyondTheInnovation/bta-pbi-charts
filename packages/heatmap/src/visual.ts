@@ -139,7 +139,7 @@ export class Visual implements IVisual {
         this.renderer = new HeatmapRenderer(context);
 
         // Transform data
-        const chartData = HeatmapTransformer.transform(dataView);
+        const chartData = HeatmapTransformer.transform(dataView, this.settings);
 
         // Check if data is empty
         if (!chartData.dataPoints || chartData.dataPoints.length === 0) {
@@ -209,6 +209,13 @@ export class Visual implements IVisual {
             const baseX = Number(layer.getAttribute("data-base-x") ?? "0");
             const pinY = Number(layer.getAttribute("data-pin-y") ?? "0");
             layer.setAttribute("transform", `translate(${Math.round(baseX)}, ${Math.round(pinY + scrollTop)})`);
+        });
+
+        const pinnedUiLayers = this.target.querySelectorAll<SVGGElement>("g.pinned-ui-layer");
+        pinnedUiLayers.forEach((layer) => {
+            const baseX = Number(layer.getAttribute("data-base-x") ?? "0");
+            const baseY = Number(layer.getAttribute("data-base-y") ?? "0");
+            layer.setAttribute("transform", `translate(${Math.round(baseX + scrollLeft)}, ${Math.round(baseY + scrollTop)})`);
         });
     }
 

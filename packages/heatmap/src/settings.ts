@@ -19,6 +19,12 @@ import {
 export interface IHeatmapSettings {
     cellPadding: number;
     showValues: boolean;
+    showRowTotals: boolean;
+    rowTotalsPosition: "top" | "bottom";
+    showColumnTotals: boolean;
+    columnTotalsPosition: "left" | "right";
+    showGrandTotalCell: boolean;
+    showOverallTotalHeader: boolean;
     minColor: string;
     maxColor: string;
     enableHorizontalScroll: boolean;
@@ -70,6 +76,12 @@ export const defaultSettings: IHeatmapVisualSettings = {
     heatmap: {
         cellPadding: 2,
         showValues: true,
+        showRowTotals: false,
+        rowTotalsPosition: "top",
+        showColumnTotals: false,
+        columnTotalsPosition: "right",
+        showGrandTotalCell: true,
+        showOverallTotalHeader: false,
         minColor: "#f7fbff",
         maxColor: "#08519c",
         enableHorizontalScroll: false,
@@ -209,6 +221,12 @@ export function parseSettings(dataView: DataView): IHeatmapVisualSettings {
     if (heatmapObj) {
         settings.heatmap.cellPadding = (heatmapObj["cellPadding"] as number) ?? defaultSettings.heatmap.cellPadding;
         settings.heatmap.showValues = (heatmapObj["showValues"] as boolean) ?? defaultSettings.heatmap.showValues;
+        settings.heatmap.showRowTotals = (heatmapObj["showRowTotals"] as boolean) ?? defaultSettings.heatmap.showRowTotals;
+        settings.heatmap.rowTotalsPosition = (heatmapObj["rowTotalsPosition"] as "top" | "bottom") ?? defaultSettings.heatmap.rowTotalsPosition;
+        settings.heatmap.showColumnTotals = (heatmapObj["showColumnTotals"] as boolean) ?? defaultSettings.heatmap.showColumnTotals;
+        settings.heatmap.columnTotalsPosition = (heatmapObj["columnTotalsPosition"] as "left" | "right") ?? defaultSettings.heatmap.columnTotalsPosition;
+        settings.heatmap.showGrandTotalCell = (heatmapObj["showGrandTotalCell"] as boolean) ?? defaultSettings.heatmap.showGrandTotalCell;
+        settings.heatmap.showOverallTotalHeader = (heatmapObj["showOverallTotalHeader"] as boolean) ?? defaultSettings.heatmap.showOverallTotalHeader;
         settings.heatmap.enableHorizontalScroll = (heatmapObj["enableHorizontalScroll"] as boolean) ?? defaultSettings.heatmap.enableHorizontalScroll;
         settings.heatmap.enableVerticalScroll = (heatmapObj["enableVerticalScroll"] as boolean) ?? defaultSettings.heatmap.enableVerticalScroll;
         settings.heatmap.minCellWidth = (heatmapObj["minCellWidth"] as number) ?? defaultSettings.heatmap.minCellWidth;

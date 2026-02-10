@@ -1,0 +1,26 @@
+{
+  "visual": {
+    "name": "inlineLabelsLineVisual",
+    "displayName": "Inline Labels Line",
+    "guid": "inlineLabelsLineVisual9F4A2C3D1B5E6F7801234567890ABCDE",
+    "visualClassName": "Visual",
+    "version": "1.0.0.0",
+    "description": "A modern line chart with inline end labels, last-2 markers, and optional area fill.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.3.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}
+

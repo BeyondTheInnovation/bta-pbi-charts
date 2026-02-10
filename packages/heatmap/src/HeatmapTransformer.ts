@@ -8,6 +8,7 @@ import DataViewHierarchyLevel = powerbi.DataViewHierarchyLevel;
 import DataViewMatrixGroupValue = powerbi.DataViewMatrixGroupValue;
 
 import { ChartData, DataPoint, formatDataValue, formatGroupValue } from "@pbi-visuals/shared";
+import { IHeatmapVisualSettings } from "./settings";
 
 export interface AxisSpan {
     level: number;
@@ -28,9 +29,15 @@ export interface AxisHierarchy {
 export interface HeatmapMatrixData extends ChartData {
     xAxis: AxisHierarchy;
     yAxisByGroup: Map<string, AxisHierarchy>;
+    totalsByGroup: Map<string, HeatmapGroupTotals>;
+    overallGrandTotal: number;
+    totalRowKey: string;
+    totalColumnKey: string;
 }
 
 const KEY_SEP = "\u001f";
+const TOTAL_ROW_KEY = "__bta_total_row__";
+const TOTAL_COL_KEY = "__bta_total_col__";
 const MONTHS: Record<string, number> = {
     jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
     jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12
@@ -63,6 +70,12 @@ function parseMonthYearKey(s: string): number | null {
     }
 
     return null;
+}
+
+export interface HeatmapGroupTotals {
+    rowTotalsByX: Map<string, number>;
+    colTotalsByY: Map<string, number>;
+    grandTotal: number;
 }
 
 type SortValue = number | string;
@@ -185,9 +198,9 @@ function buildAxisHierarchyFromLeafPaths(leafKeys: string[], leafPaths: string[]
 }
 
 export class HeatmapTransformer {
-    public static transform(dataView: DataView): HeatmapMatrixData {
+    public static transform(dataView: DataView, settings?: IHeatmapVisualSettings): HeatmapMatrixData {
         if (dataView.matrix) {
-            return HeatmapTransformer.transformMatrix(dataView.matrix);
+            return HeatmapTransformer.transformMatrix(dataView.matrix, settings);
         }
 
         // Backward-compat fallback: empty chart data (capabilities now use matrix).
@@ -199,11 +212,15 @@ export class HeatmapTransformer {
             maxValue: 0,
             minValue: 0,
             xAxis: buildAxisHierarchyFromLeafPaths([], []),
-            yAxisByGroup: new Map()
+            yAxisByGroup: new Map(),
+            totalsByGroup: new Map(),
+            overallGrandTotal: 0,
+            totalRowKey: TOTAL_ROW_KEY,
+            totalColumnKey: TOTAL_COL_KEY
         };
     }
 
-    private static transformMatrix(matrix: DataViewMatrix): HeatmapMatrixData {
+    private static transformMatrix(matrix: DataViewMatrix, settings?: IHeatmapVisualSettings): HeatmapMatrixData {
         const dataPoints: DataPoint[] = [];
         let maxValue = 0;
         let minValue = Infinity;
@@ -295,11 +312,11 @@ export class HeatmapTransformer {
             }
         }
 
-        const xAxis = buildAxisHierarchyFromLeafPaths(xLeafKeys, xLeafPaths);
+        let xAxis = buildAxisHierarchyFromLeafPaths(xLeafKeys, xLeafPaths);
 
         // ---- Rows (Y axis) ----
         const groupNamesSet = new Set<string>();
-        const yAxisByGroup = new Map<string, AxisHierarchy>();
+        let yAxisByGroup = new Map<string, AxisHierarchy>();
 
         let rowLeafGlobalCounter = 0;
 
@@ -400,6 +417,74 @@ export class HeatmapTransformer {
 
         if (minValue === Infinity) minValue = 0;
 
+        // ---- Totals ----
+        const totalsByGroup = new Map<string, HeatmapGroupTotals>();
+        let overallGrandTotal = 0;
+        for (const dp of dataPoints) {
+            overallGrandTotal += dp.value;
+            const groupKey = (dp.groupValue ?? "").trim() ? dp.groupValue : "All";
+
+            let t = totalsByGroup.get(groupKey);
+            if (!t) {
+                t = {
+                    rowTotalsByX: new Map(),
+                    colTotalsByY: new Map(),
+                    grandTotal: 0
+                };
+                totalsByGroup.set(groupKey, t);
+            }
+
+            t.grandTotal += dp.value;
+            t.rowTotalsByX.set(dp.xValue, (t.rowTotalsByX.get(dp.xValue) ?? 0) + dp.value);
+            t.colTotalsByY.set(dp.yValue, (t.colTotalsByY.get(dp.yValue) ?? 0) + dp.value);
+        }
+        for (const groupName of groupNames) {
+            if (!totalsByGroup.has(groupName)) {
+                totalsByGroup.set(groupName, {
+                    rowTotalsByX: new Map(),
+                    colTotalsByY: new Map(),
+                    grandTotal: 0
+                });
+            }
+        }
+
+        const showRowTotals = Boolean(settings?.heatmap?.showRowTotals);
+        const showColTotals = Boolean(settings?.heatmap?.showColumnTotals);
+        const rowTotalsPosition = settings?.heatmap?.rowTotalsPosition ?? "top";
+        const colTotalsPosition = settings?.heatmap?.columnTotalsPosition ?? "right";
+
+        const makeTotalPath = (depth: number): string[] => {
+            const d = Math.max(1, depth);
+            const parts = new Array<string>(d).fill("");
+            parts[d - 1] = "Total";
+            return parts;
+        };
+
+        if (showColTotals) {
+            const totalPath = makeTotalPath(xAxis.depth);
+            const nextKeys = [...xAxis.leafKeys];
+            const nextPaths = [...xAxis.leafPaths];
+            const insertAt = colTotalsPosition === "left" ? 0 : nextKeys.length;
+            nextKeys.splice(insertAt, 0, TOTAL_COL_KEY);
+            nextPaths.splice(insertAt, 0, totalPath);
+            xAxis = buildAxisHierarchyFromLeafPaths(nextKeys, nextPaths);
+        }
+
+        if (showRowTotals) {
+            const nextByGroup = new Map<string, AxisHierarchy>();
+            for (const groupName of groupNames) {
+                const yAxis = yAxisByGroup.get(groupName) ?? buildAxisHierarchyFromLeafPaths([], []);
+                const totalPath = makeTotalPath(yAxis.depth);
+                const nextKeys = [...yAxis.leafKeys];
+                const nextPaths = [...yAxis.leafPaths];
+                const insertAt = rowTotalsPosition === "top" ? 0 : nextKeys.length;
+                nextKeys.splice(insertAt, 0, TOTAL_ROW_KEY);
+                nextPaths.splice(insertAt, 0, totalPath);
+                nextByGroup.set(groupName, buildAxisHierarchyFromLeafPaths(nextKeys, nextPaths));
+            }
+            yAxisByGroup = nextByGroup;
+        }
+
         // yValues is not used directly by the hierarchical renderer, but keep it reasonable.
         const yValuesAll = groupNames.flatMap(g => yAxisByGroup.get(g)?.leafKeys ?? []);
 
@@ -413,7 +498,11 @@ export class HeatmapTransformer {
             xAxis,
             yAxisByGroup,
             valueFormatString,
-            valueDisplayName
+            valueDisplayName,
+            totalsByGroup,
+            overallGrandTotal,
+            totalRowKey: TOTAL_ROW_KEY,
+            totalColumnKey: TOTAL_COL_KEY
         };
     }
 }

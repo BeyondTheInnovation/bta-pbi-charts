@@ -1026,6 +1026,12 @@ export function createBumpChartSettingsCard(settings: {
 export function createHeatmapSettingsCard(settings: {
     cellPadding: number;
     showValues: boolean;
+    showRowTotals: boolean;
+    rowTotalsPosition: "top" | "bottom";
+    showColumnTotals: boolean;
+    columnTotalsPosition: "left" | "right";
+    showGrandTotalCell: boolean;
+    showOverallTotalHeader: boolean;
     enableHorizontalScroll: boolean;
     enableVerticalScroll: boolean;
     minCellWidth: number;
@@ -1039,11 +1045,12 @@ export function createHeatmapSettingsCard(settings: {
     return {
         displayName: "Heatmap",
         uid: "heatmap_card",
-        groups: [{
-            displayName: "Layout",
-            uid: "heatmap_group",
-            slices: [
-                {
+        groups: [
+            {
+                displayName: "Layout",
+                uid: "heatmap_group",
+                slices: [
+                    {
                     uid: "heatmap_cellPadding",
                     displayName: "Cell Padding",
                     control: {
@@ -1165,7 +1172,80 @@ export function createHeatmapSettingsCard(settings: {
                     }
                 } as powerbi.visuals.FormattingSlice
             ]
-        }]
+            },
+            {
+                displayName: "Totals",
+                uid: "heatmap_totals_group",
+                slices: [
+                    {
+                        uid: "heatmap_showRowTotals",
+                        displayName: "Show Totals Row",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "heatmapSettings", propertyName: "showRowTotals" },
+                                value: settings.showRowTotals
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "heatmap_rowTotalsPosition",
+                        displayName: "Totals Row Position",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.Dropdown,
+                            properties: {
+                                descriptor: { objectName: "heatmapSettings", propertyName: "rowTotalsPosition" },
+                                value: settings.rowTotalsPosition
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "heatmap_showColumnTotals",
+                        displayName: "Show Totals Column",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "heatmapSettings", propertyName: "showColumnTotals" },
+                                value: settings.showColumnTotals
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "heatmap_columnTotalsPosition",
+                        displayName: "Totals Column Position",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.Dropdown,
+                            properties: {
+                                descriptor: { objectName: "heatmapSettings", propertyName: "columnTotalsPosition" },
+                                value: settings.columnTotalsPosition
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "heatmap_showGrandTotalCell",
+                        displayName: "Show Grand Total Cell",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "heatmapSettings", propertyName: "showGrandTotalCell" },
+                                value: settings.showGrandTotalCell
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "heatmap_showOverallTotalHeader",
+                        displayName: "Show Overall Total Header",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "heatmapSettings", propertyName: "showOverallTotalHeader" },
+                                value: settings.showOverallTotalHeader
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice
+                ]
+            }
+        ]
     };
 }
 

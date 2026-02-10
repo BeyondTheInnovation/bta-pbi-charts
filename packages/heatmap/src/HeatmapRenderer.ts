@@ -36,6 +36,12 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
         const { dataPoints, groups, maxValue } = heatmapData;
         const xAxis = heatmapData.xAxis;
         const xLeafKeys = xAxis.leafKeys;
+        const totalRowKey = heatmapData.totalRowKey;
+        const totalColKey = heatmapData.totalColumnKey;
+        const hasTotalRow = Boolean(settings.heatmap.showRowTotals);
+        const hasTotalCol = Boolean(settings.heatmap.showColumnTotals);
+        const showGrandTotalCell = Boolean(settings.heatmap.showGrandTotalCell);
+        const showOverallTotalHeader = Boolean(settings.heatmap.showOverallTotalHeader);
         const yAxisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.yAxisColor || "#111827") : settings.yAxisColor;
         const xAxisColor = this.isHighContrastMode() ? this.getThemeForeground(settings.xAxisColor || "#111827") : settings.xAxisColor;
 
@@ -79,8 +85,14 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
         const xAxisLineHeight = Math.max(10, Math.round(xAxisFontSize * 1.15));
         const xAxisHierarchyHeight = settings.showXAxis ? (xAxis.depth * xAxisLineHeight + 18) : 0;
 
+        const overallHeaderFontSize = this.getEffectiveFontSize(
+            Math.max(11, Math.round((settings.textSizes.yAxisFontSize || settings.yAxisFontSize) * 1.05)),
+            8, 24
+        );
+        const overallHeaderReserve = showOverallTotalHeader ? Math.round(overallHeaderFontSize + 14) : 0;
+
         const margin = {
-            top: 12 + legendReserve.top + settings.heatmap.marginTop + titleReserve,
+            top: 12 + legendReserve.top + overallHeaderReserve + settings.heatmap.marginTop + titleReserve,
             right: 12 + legendReserve.right + settings.heatmap.marginRight,
             bottom: 12 + legendReserve.bottom + xAxisHierarchyHeight + settings.heatmap.marginBottom,
             left: (settings.heatmap.enableHorizontalScroll ? 0 : 12) + legendReserve.left + (settings.heatmap.enableHorizontalScroll ? 0 : settings.heatmap.marginLeft)
@@ -133,6 +145,7 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
 
         groups.forEach((groupName, groupIndex) => {
             const groupData = dataPoints.filter(d => d.groupValue === groupName);
+            const groupTotals = heatmapData.totalsByGroup.get(groupName);
             const yAxis = heatmapData.yAxisByGroup.get(groupName);
             const groupYLeafKeys = yAxis?.leafKeys ?? [...new Set(groupData.map(d => d.yValue))];
             const groupHeight = groupHeights[groupIndex] ?? baseGroupHeight;
@@ -145,9 +158,28 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
             const gridAvailableWidth = Math.max(40, chartWidth - yHeaderWidth);
             const minRenderedCellWidth = settings.heatmap.enableHorizontalScroll && hasMinCellWidth ? minCellWidth : 26;
             const cellWidth = Math.max(minRenderedCellWidth, gridAvailableWidth / Math.max(1, xLeafKeys.length) - settings.heatmap.cellPadding);
-            const cellHeight = Math.max(18, groupHeight / Math.max(1, groupYLeafKeys.length) - settings.heatmap.cellPadding);
+            // Keep a stable inter-panel gap by ensuring each panel's grid fits inside `groupHeight`.
+            // When vertical scroll is OFF, shrink cells (and padding if needed) rather than letting
+            // a min cell height overflow into the inter-group spacing.
+            const rowCount = Math.max(1, groupYLeafKeys.length);
+            const baseStepY = groupHeight / rowCount;
+            let padY = settings.heatmap.cellPadding;
+            let cellHeight = baseStepY - padY;
+            if (settings.heatmap.enableVerticalScroll) {
+                // With vertical scroll enabled, we allow the visual to grow and the container to scroll.
+                // Keep a readable minimum.
+                cellHeight = Math.max(18, cellHeight);
+            } else {
+                // If padding would make the cell negative, drop padding to preserve the panel gap.
+                if (cellHeight < 0) {
+                    padY = 0;
+                    cellHeight = baseStepY;
+                }
+                // Allow fractional/tiny cells when height is very constrained; better than overlap.
+                cellHeight = Math.max(0, cellHeight);
+            }
             const stepX = cellWidth + settings.heatmap.cellPadding;
-            const stepY = cellHeight + settings.heatmap.cellPadding;
+            const stepY = cellHeight + padY;
 
             // Calculate chart actual dimensions for alignment
             const gridActualWidth = xLeafKeys.length * stepX;
@@ -219,28 +251,55 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                 : this.getProportionalFontSize(
                     Math.min(cellWidth, cellHeight),
                     0.4,
-                    8,
+                    6,
                     16
                 );
+            const canRenderValueLabel = cellWidth >= 16 && cellHeight >= 12;
 
             // Render cells and value labels as SVG (crisp at any DPI, native rendering)
             for (let yIndex = 0; yIndex < groupYLeafKeys.length; yIndex++) {
                 const yKey = groupYLeafKeys[yIndex];
+                const isTotalRow = hasTotalRow && yKey === totalRowKey;
                 for (let xIndex = 0; xIndex < xLeafKeys.length; xIndex++) {
                     const xKey = xLeafKeys[xIndex];
+                    const isTotalCol = hasTotalCol && xKey === totalColKey;
+                    const isTotalCell = isTotalRow || isTotalCol;
+                    const isGrandCorner = isTotalRow && isTotalCol;
+
                     const key = `${xKey}\u001e${yKey}`;
                     const dataPoint = dataLookup.get(key);
-                    const value = dataPoint?.value ?? 0;
+                    let value = dataPoint?.value ?? 0;
+                    let showValueLabel = canRenderValueLabel && settings.heatmap.showValues && value > 0;
+
+                    if (isTotalCell && groupTotals) {
+                        if (isGrandCorner) {
+                            value = showGrandTotalCell ? groupTotals.grandTotal : 0;
+                            showValueLabel = canRenderValueLabel && showGrandTotalCell;
+                        } else if (isTotalRow) {
+                            value = groupTotals.rowTotalsByX.get(xKey) ?? 0;
+                            showValueLabel = canRenderValueLabel;
+                        } else if (isTotalCol) {
+                            value = groupTotals.colTotalsByY.get(yKey) ?? 0;
+                            showValueLabel = canRenderValueLabel;
+                        }
+                    }
 
                     const x = this.snapToPixelInt(yHeaderWidth + xIndex * stepX);
                     const y = this.snapToPixelInt(yIndex * stepY);
-                    const fill = value === 0
-                        ? (this.isHighContrastMode() ? this.getThemeBackground("#f0f0f0") : "#f0f0f0")
-                        : (colorScale(value) as string);
+                    const totalsFill = this.isHighContrastMode()
+                        ? this.getThemeBackground("#e5e7eb")
+                        : "#f3f4f6";
+                    const fill = isTotalCell
+                        ? totalsFill
+                        : (
+                            value === 0
+                                ? (this.isHighContrastMode() ? this.getThemeBackground("#f0f0f0") : "#f0f0f0")
+                                : (colorScale(value) as string)
+                        );
 
                     // Cell rectangle
                     const cell = panelGroup.append("rect")
-                        .attr("class", "heatmap-cell")
+                        .attr("class", isTotalCell ? "heatmap-cell heatmap-total-cell" : "heatmap-cell")
                         .attr("data-selection-key", `${xKey}\u001e${yKey}`)
                         .attr("x", x)
                         .attr("y", y)
@@ -252,35 +311,57 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                         .attr("stroke-width", 1);
 
                     // Tooltip for cell
-                    const yPath = yAxis?.keyToPath.get(yKey) ?? [yKey];
-                    const xPath = xAxis.keyToPath.get(xKey) ?? [xKey];
-                    const yDisplay = yPath.join(" • ");
-                    const xDisplay = xPath.join(" • ");
                     const valueLabel = heatmapData.valueDisplayName || "Value";
 
-                    this.addTooltip(cell as any, [
-                        { displayName: valueLabel, value: formatMeasureValue(value, heatmapData.valueFormatString), color: fill },
-                        { displayName: "Row", value: yDisplay },
-                        { displayName: "Column", value: xDisplay },
-                        ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
-                    ], {
-                        title: yPath[yPath.length - 1] ?? yKey,
-                        subtitle: xDisplay,
-                        color: fill
-                    });
+                    if (isTotalCell) {
+                        const totalKind = isGrandCorner
+                            ? "Grand total"
+                            : (isTotalRow ? "Total (all rows)" : "Total (all columns)");
+                        const xDisplay = (xAxis.keyToPath.get(xKey) ?? [xKey]).filter(Boolean).join(" • ") || "Total";
+                        const yDisplay = (yAxis?.keyToPath.get(yKey) ?? [yKey]).filter(Boolean).join(" • ") || "Total";
+
+                        this.addTooltip(cell as any, [
+                            { displayName: totalKind, value: formatMeasureValue(value, heatmapData.valueFormatString), color: fill },
+                            ...(isTotalRow ? [] : [{ displayName: "Row", value: yDisplay }]),
+                            ...(isTotalCol ? [] : [{ displayName: "Column", value: xDisplay }]),
+                            ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
+                        ], {
+                            title: totalKind,
+                            subtitle: `${isTotalRow ? xDisplay : yDisplay}`,
+                            color: fill
+                        });
+                    } else {
+                        const yPath = yAxis?.keyToPath.get(yKey) ?? [yKey];
+                        const xPath = xAxis.keyToPath.get(xKey) ?? [xKey];
+                        const yPathFiltered = yPath.filter(Boolean);
+                        const xPathFiltered = xPath.filter(Boolean);
+                        const yDisplay = yPathFiltered.join(" • ");
+                        const xDisplay = xPathFiltered.join(" • ");
+
+                        this.addTooltip(cell as any, [
+                            { displayName: valueLabel, value: formatMeasureValue(value, heatmapData.valueFormatString), color: fill },
+                            { displayName: "Row", value: yDisplay },
+                            { displayName: "Column", value: xDisplay },
+                            ...(groupName !== "All" && groupName !== "(Blank)" ? [{ displayName: "Group", value: groupName }] : [])
+                        ], {
+                            title: yPathFiltered[yPathFiltered.length - 1] ?? yKey,
+                            subtitle: xDisplay,
+                            color: fill
+                        });
+                    }
 
                     // Value label inside cell
-                    if (settings.heatmap.showValues && value > 0) {
+                    if (showValueLabel) {
                         const textColor = this.getContrastColor(fill);
 
                         panelGroup.append("text")
-                            .attr("class", "cell-value")
+                            .attr("class", isTotalCell ? "cell-value total-value" : "cell-value")
                             .attr("x", this.snapToPixelInt(x + cellWidth / 2))
                             .attr("y", this.snapToPixelInt(y + cellHeight / 2))
                             .attr("dy", "0.35em")
                             .attr("text-anchor", "middle")
                             .attr("font-size", `${cellFontSize}px`)
-                            .attr("font-weight", "600")
+                            .attr("font-weight", isTotalCell ? "700" : "600")
                             .attr("fill", textColor)
                             .attr("pointer-events", "none")
                             .text(formatMeasureValue(value, heatmapData.valueFormatString));
@@ -430,8 +511,60 @@ export class HeatmapRenderer extends BaseRenderer<IHeatmapVisualSettings> {
                 }
             }
 
+            // Visible separator centered in the inter-panel gap (keeps panels distinct).
+            if (groups.length > 1 && groupIndex < groups.length - 1) {
+                const gapTopY = Math.round(currentY + groupHeight);
+                const gapH = Math.max(0, Math.round(interPanelGap));
+                // Place the separator in the upper portion of the gap so the next panel's title
+                // has breathing room below it.
+                const sepOffset = gapH ? Math.round(gapH * 0.25) : 0;
+                const sepY = gapTopY + sepOffset;
+                const sepStroke = this.isHighContrastMode()
+                    ? this.getThemeForeground("#6b7280")
+                    : "#eef2f7";
+
+                this.context.container.append("line")
+                    .attr("class", "group-separator")
+                    .attr("x1", Math.round(margin.left))
+                    .attr("x2", Math.round(margin.left + chartWidth))
+                    .attr("y1", sepY)
+                    .attr("y2", sepY)
+                    .attr("stroke", sepStroke)
+                    .attr("stroke-width", 1)
+                    .attr("stroke-opacity", this.isHighContrastMode() ? 1 : 0.9)
+                    .attr("pointer-events", "none");
+            }
+
             currentY += groupHeight + interPanelGap;
         });
+
+        // Pinned overall header (stays visible while scrolling) - add last so it stays on top.
+        if (showOverallTotalHeader) {
+            const pinnedUi = this.context.container.append("g")
+                .attr("class", "pinned-ui-layer")
+                .attr("data-base-x", "0")
+                .attr("data-base-y", "0")
+                .attr("transform", "translate(0, 0)");
+
+            pinnedUi.append("rect")
+                .attr("class", "pinned-ui-background")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", Math.max(0, Math.round(this.context.width)))
+                .attr("height", Math.max(0, Math.round(overallHeaderReserve)))
+                .attr("fill", this.getThemeBackground("#ffffff"))
+                .attr("pointer-events", "none");
+
+            const overallLabel = `Overall total: ${formatMeasureValue(heatmapData.overallGrandTotal, heatmapData.valueFormatString)}`;
+            pinnedUi.append("text")
+                .attr("class", "overall-total-label")
+                .attr("x", 12)
+                .attr("y", Math.max(0, Math.round(overallHeaderReserve - 6)))
+                .attr("font-size", `${overallHeaderFontSize}px`)
+                .attr("font-weight", "600")
+                .attr("fill", this.getTitleTextColor("#111827"))
+                .text(overallLabel);
+        }
 
         // Heatmap has no legend by design (tooltips carry the details).
     }

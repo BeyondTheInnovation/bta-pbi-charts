@@ -223,6 +223,40 @@
           "displayName": "Show Values",
           "type": { "bool": true }
         },
+        "showRowTotals": {
+          "displayName": "Show Totals Row",
+          "type": { "bool": true }
+        },
+        "rowTotalsPosition": {
+          "displayName": "Totals Row Position",
+          "type": {
+            "enumeration": [
+              { "value": "top", "displayName": "Top" },
+              { "value": "bottom", "displayName": "Bottom" }
+            ]
+          }
+        },
+        "showColumnTotals": {
+          "displayName": "Show Totals Column",
+          "type": { "bool": true }
+        },
+        "columnTotalsPosition": {
+          "displayName": "Totals Column Position",
+          "type": {
+            "enumeration": [
+              { "value": "left", "displayName": "Left" },
+              { "value": "right", "displayName": "Right" }
+            ]
+          }
+        },
+        "showGrandTotalCell": {
+          "displayName": "Show Grand Total Cell",
+          "type": { "bool": true }
+        },
+        "showOverallTotalHeader": {
+          "displayName": "Show Overall Total Header",
+          "type": { "bool": true }
+        },
         "enableHorizontalScroll": {
           "displayName": "Enable Horizontal Scroll",
           "description": "Allow the heatmap to extend horizontally and show a scrollbar when needed",

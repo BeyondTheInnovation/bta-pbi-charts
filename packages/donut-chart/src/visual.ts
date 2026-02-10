@@ -135,7 +135,17 @@ export class Visual implements IVisual {
             return;
         }
 
-        chartData.categoryColorMap = this.categoryColors;
+        // Seed initial category colors so the rendered palette matches the Data Colors defaults.
+        const defaultColors = this.settings.useCustomColors && this.settings.customColors?.length > 0
+            ? this.settings.customColors
+            : getSchemeColors(this.settings.colorScheme);
+        const seededColors = new Map<string, string>(this.categoryColors);
+        chartData.xValues.forEach((k, i) => {
+            if (!seededColors.has(k)) {
+                seededColors.set(k, defaultColors[i % defaultColors.length]);
+            }
+        });
+        chartData.categoryColorMap = seededColors;
         this.renderer.render(chartData, this.settings);
         this.bindInteractions();
         } catch (error) {
