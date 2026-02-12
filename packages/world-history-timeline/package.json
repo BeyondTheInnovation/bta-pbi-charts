@@ -1,0 +1,19 @@
+{
+  "name": "@pbi-visuals/world-history-timeline",
+  "version": "1.0.1",
+  "scripts": {
+    "start": "node ../../scripts/pbiviz-wrapper.mjs start",
+    "package": "node ../../scripts/pbiviz-wrapper.mjs package",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "powerbi-visuals-api": "~5.3.0",
+    "powerbi-visuals-utils-formattingmodel": "^6.2.2"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-plugin-powerbi-visuals": "^0.8.1",
+    "powerbi-visuals-tools": "^5.0.0",
+    "typescript": "^5.5.4"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "worldHistoryTimelineVisual",
+    "displayName": "World History Timeline",
+    "guid": "worldHistoryTimelineVisualF7A8B9C0D1E2F3456789ABCDEFFEDCBA",
+    "visualClassName": "Visual",
+    "version": "1.0.1.0",
+    "description": "Timeline bars from start/end years with region coloring and BCE/CE axis formatting.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.3.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

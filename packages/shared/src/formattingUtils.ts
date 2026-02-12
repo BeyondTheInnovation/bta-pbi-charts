@@ -655,14 +655,29 @@ export function createYAxisCard(settings: {
 }
 
 /**
- * Creates a Legend formatting card (without show toggle - legend visibility is data-driven)
+ * Creates a Legend formatting card
  */
 export function createLegendCard(settings: {
+    show?: boolean;
     position?: string;
     fontSize?: number;
     maxItems?: number;
 }): powerbi.visuals.FormattingCard {
     const slices: powerbi.visuals.FormattingSlice[] = [];
+
+    if (settings.show !== undefined) {
+        slices.push({
+            uid: "legend_show",
+            displayName: "Show",
+            control: {
+                type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                properties: {
+                    descriptor: { objectName: "legend", propertyName: "show" },
+                    value: settings.show
+                }
+            }
+        } as powerbi.visuals.FormattingSlice);
+    }
 
     if (settings.position !== undefined) {
         slices.push({

@@ -1,0 +1,356 @@
+{
+  "dataRoles": [
+    {
+      "displayName": "Category",
+      "name": "civilization",
+      "kind": "Grouping",
+      "description": "Label for each timeline bar"
+    },
+    {
+      "displayName": "Legend",
+      "name": "region",
+      "kind": "Grouping",
+      "description": "Color grouping for timeline bars"
+    },
+    {
+      "displayName": "Group",
+      "name": "era",
+      "kind": "Grouping",
+      "description": "Optional categorical field used for tooltips and sorting context"
+    },
+    {
+      "displayName": "Start",
+      "name": "startYear",
+      "kind": "Measure",
+      "description": "Numeric start year (negative for BCE)"
+    },
+    {
+      "displayName": "End",
+      "name": "endYear",
+      "kind": "Measure",
+      "description": "Numeric end year (negative for BCE)"
+    }
+  ],
+  "tooltips": {
+    "supportedTypes": {
+      "default": true,
+      "canvas": true
+    },
+    "roles": ["tooltips"]
+  },
+  "objects": {
+    "categoryColors": {
+      "displayName": "Data Colors",
+      "properties": {
+        "fill": {
+          "displayName": "Color",
+          "type": { "fill": { "solid": { "color": true } } }
+        }
+      }
+    },
+    "timelineSettings": {
+      "displayName": "Timeline",
+      "properties": {
+        "sortBy": {
+          "displayName": "Sort By",
+          "type": {
+            "enumeration": [
+              { "value": "time", "displayName": "Start Time" },
+              { "value": "region", "displayName": "Region" }
+            ]
+          }
+        },
+        "lanePadding": {
+          "displayName": "Lane Padding",
+          "type": { "numeric": true }
+        },
+        "barCornerRadius": {
+          "displayName": "Bar Corner Radius",
+          "type": { "numeric": true }
+        },
+        "minBarWidth": {
+          "displayName": "Min Bar Width",
+          "type": { "numeric": true }
+        },
+        "showTopAxis": {
+          "displayName": "Show Top Axis",
+          "type": { "bool": true }
+        },
+        "showBottomAxis": {
+          "displayName": "Show Bottom Axis",
+          "type": { "bool": true }
+        },
+        "showCrosshair": {
+          "displayName": "Show Crosshair",
+          "type": { "bool": true }
+        },
+        "showLabels": {
+          "displayName": "Show Labels",
+          "type": { "bool": true }
+        }
+      }
+    },
+    "tooltipSettings": {
+      "displayName": "Tooltips",
+      "properties": {
+        "enabled": {
+          "displayName": "Enabled",
+          "type": { "bool": true }
+        },
+        "style": {
+          "displayName": "Style",
+          "type": {
+            "enumeration": [
+              { "value": "powerbi", "displayName": "Power BI" },
+              { "value": "custom", "displayName": "Custom" }
+            ]
+          }
+        },
+        "theme": {
+          "displayName": "Theme",
+          "type": {
+            "enumeration": [
+              { "value": "light", "displayName": "Light" },
+              { "value": "dark", "displayName": "Dark" }
+            ]
+          }
+        },
+        "backgroundColor": {
+          "displayName": "Background",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "textColor": {
+          "displayName": "Text Color",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "borderColor": {
+          "displayName": "Border Color",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "borderRadius": {
+          "displayName": "Border Radius",
+          "type": { "numeric": true }
+        },
+        "shadow": {
+          "displayName": "Shadow",
+          "type": { "bool": true }
+        },
+        "maxWidth": {
+          "displayName": "Max Width",
+          "type": { "numeric": true }
+        },
+        "showColorSwatch": {
+          "displayName": "Show Color Swatch",
+          "type": { "bool": true }
+        }
+      }
+    },
+    "customColors": {
+      "displayName": "Custom Colors",
+      "properties": {
+        "useCustomColors": {
+          "displayName": "Use Custom Colors",
+          "description": "Enable custom colors for each category",
+          "type": { "bool": true }
+        },
+        "colorList": {
+          "displayName": "Colors",
+          "description": "Comma-separated hex colors",
+          "type": { "text": true }
+        }
+      }
+    },
+    "colorScheme": {
+      "displayName": "Color Scheme",
+      "properties": {
+        "scheme": {
+          "displayName": "Color Scheme",
+          "type": {
+            "enumeration": [
+              { "value": "blues", "displayName": "Blues" },
+              { "value": "greens", "displayName": "Greens" },
+              { "value": "reds", "displayName": "Reds" },
+              { "value": "purples", "displayName": "Purples" },
+              { "value": "oranges", "displayName": "Oranges" },
+              { "value": "teals", "displayName": "Teals" },
+              { "value": "pinks", "displayName": "Pinks" },
+              { "value": "warm", "displayName": "Warm" },
+              { "value": "rainbow", "displayName": "Rainbow" },
+              { "value": "pastel", "displayName": "Pastel" },
+              { "value": "vibrant", "displayName": "Vibrant" }
+            ]
+          }
+        }
+      }
+    },
+    "legend": {
+      "displayName": "Legend",
+      "properties": {
+        "show": {
+          "displayName": "Show",
+          "type": { "bool": true }
+        },
+        "position": {
+          "displayName": "Position",
+          "type": {
+            "enumeration": [
+              { "value": "topLeft", "displayName": "Top Left" },
+              { "value": "topCenter", "displayName": "Top Center" },
+              { "value": "topRight", "displayName": "Top Right" },
+              { "value": "topLeftStacked", "displayName": "Top Left (Stacked)" },
+              { "value": "topRightStacked", "displayName": "Top Right (Stacked)" },
+              { "value": "centerLeft", "displayName": "Center Left" },
+              { "value": "centerRight", "displayName": "Center Right" },
+              { "value": "bottomLeft", "displayName": "Bottom Left" },
+              { "value": "bottomCenter", "displayName": "Bottom Center" },
+              { "value": "bottomRight", "displayName": "Bottom Right" }
+            ]
+          }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "maxItems": {
+          "displayName": "Max Items",
+          "type": { "numeric": true }
+        }
+      }
+    },
+    "xAxisSettings": {
+      "displayName": "X-Axis",
+      "properties": {
+        "show": {
+          "displayName": "Show X-Axis",
+          "type": { "bool": true }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "fontFamily": {
+          "displayName": "Font Family",
+          "type": { "text": true }
+        },
+        "color": {
+          "displayName": "Color",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "bold": {
+          "displayName": "Bold",
+          "type": { "bool": true }
+        },
+        "italic": {
+          "displayName": "Italic",
+          "type": { "bool": true }
+        },
+        "underline": {
+          "displayName": "Underline",
+          "type": { "bool": true }
+        },
+        "rotateLabels": {
+          "displayName": "Rotate Labels",
+          "type": {
+            "enumeration": [
+              { "value": "auto", "displayName": "Auto" },
+              { "value": "always", "displayName": "Always" },
+              { "value": "never", "displayName": "Never" }
+            ]
+          }
+        }
+      }
+    },
+    "yAxisSettings": {
+      "displayName": "Y-Axis",
+      "properties": {
+        "show": {
+          "displayName": "Show Labels",
+          "type": { "bool": true }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "fontFamily": {
+          "displayName": "Font Family",
+          "type": { "text": true }
+        },
+        "color": {
+          "displayName": "Color",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "bold": {
+          "displayName": "Bold",
+          "type": { "bool": true }
+        },
+        "italic": {
+          "displayName": "Italic",
+          "type": { "bool": true }
+        },
+        "underline": {
+          "displayName": "Underline",
+          "type": { "bool": true }
+        }
+      }
+    },
+    "textSizes": {
+      "displayName": "Text Sizes",
+      "description": "Manual font size overrides (0 = auto/responsive)",
+      "properties": {
+        "xAxisFontSize": {
+          "displayName": "X-Axis Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "yAxisFontSize": {
+          "displayName": "Y-Axis Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "legendFontSize": {
+          "displayName": "Legend Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "endLabelFontSize": {
+          "displayName": "Bar Label Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        }
+      }
+    }
+  },
+  "dataViewMappings": [
+    {
+      "conditions": [
+        {
+          "civilization": { "max": 1 },
+          "region": { "max": 1 },
+          "era": { "max": 1 },
+          "startYear": { "max": 1 },
+          "endYear": { "max": 1 }
+        }
+      ],
+      "categorical": {
+        "categories": {
+          "select": [
+            { "for": { "in": "civilization" } },
+            { "for": { "in": "region" } },
+            { "for": { "in": "era" } }
+          ],
+          "dataReductionAlgorithm": {
+            "top": { "count": 30000 }
+          }
+        },
+        "values": {
+          "select": [
+            { "for": { "in": "startYear" } },
+            { "for": { "in": "endYear" } }
+          ]
+        }
+      }
+    }
+  ],
+  "supportsHighlight": true,
+  "supportsKeyboardFocus": true,
+  "supportsLandingPage": true,
+  "supportsEmptyDataView": true,
+  "supportsMultiVisualSelection": true,
+  "privileges": []
+}

@@ -1,0 +1,56 @@
+.pbi-visual {
+    font-family: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: visible;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    svg {
+        shape-rendering: geometricPrecision;
+    }
+
+    .chart-container {
+        overflow: visible;
+    }
+
+    .timeline-panel {
+        overflow: visible;
+    }
+
+    .timeline-axis path,
+    .timeline-axis line {
+        stroke: #d1d5db;
+        shape-rendering: crispEdges;
+    }
+
+    .timeline-axis text {
+        fill: #4b5563;
+    }
+
+    .lane-line {
+        pointer-events: none;
+    }
+
+    .timeline-bar {
+        cursor: pointer;
+        transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+
+    .timeline-label {
+        pointer-events: none;
+        letter-spacing: 0;
+    }
+
+    .timeline-crosshair {
+        pointer-events: none;
+    }
+
+    .color-legend text {
+        letter-spacing: 0;
+    }
+
+    .no-data-message {
+        fill: #9ca3af;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}
