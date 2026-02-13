@@ -15,7 +15,7 @@
     {
       "displayName": "Start",
       "name": "startYear",
-      "kind": "GroupingOrMeasure",
+      "kind": "Grouping",
       "description": "Start date or numeric year (supports hierarchy levels)"
     },
     {
@@ -31,6 +31,9 @@
       "canvas": true
     },
     "roles": ["tooltips"]
+  },
+  "drilldown": {
+    "roles": ["startYear"]
   },
   "objects": {
     "categoryColors": {
@@ -328,7 +331,7 @@
         {
           "civilization": { "max": 5 },
           "region": { "max": 5 },
-          "startYear": { "max": 5 },
+          "startYear": { "max": 1 },
           "endYear": { "max": 5 }
         }
       ],
@@ -346,7 +349,6 @@
         },
         "values": {
           "select": [
-            { "for": { "in": "startYear" } },
             { "for": { "in": "endYear" } }
           ]
         }

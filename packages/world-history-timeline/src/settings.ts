@@ -21,6 +21,11 @@ export interface IWorldHistoryTimelineSettings {
     sortBy: TimelineSortMode;
     sortOptions: string;
     sortControlReservePx?: number;
+    legendHeightPx?: number;
+    sortHeightPx?: number;
+    axisHeaderHeightPx?: number;
+    headerTopPaddingPx?: number;
+    contentStartYPx?: number;
     lanePadding: number;
     barCornerRadius: number;
     minBarWidth: number;

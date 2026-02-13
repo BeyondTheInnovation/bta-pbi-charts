@@ -1,24 +1,261 @@
 Category,CategoryLevel1,CategoryLevel2,Legend,LegendLevel1,LegendLevel2,Group,GroupLevel1,GroupLevel2,Start,End,StartDate,EndDate,StartHierarchy,EndHierarchy,StartLabel,EndLabel
-Mesopotamian civilization,Ancient,Mesopotamia,Middle East,Afro Eurasia,Middle East,ANCIENT WORLD,Ancient,Early,-3500,-550,,,BCE deep antiquity,BCE late antiquity,,
-Egyptian civilization,Ancient,Egypt,Middle East,Afro Eurasia,Nile region,ANCIENT WORLD,Ancient,Early,-3000,-550,,,BCE deep antiquity,BCE late antiquity,,
-Roman Republic,Ancient,Rome,Europe,Europe,South Europe,ANCIENT WORLD,Ancient,Classical,-500,0,,,500s BCE,turn of era,,
-Roman Empire,Ancient,Rome,Europe,Europe,South Europe,ANCIENT WORLD,Ancient,Late,0,500,0001-01-01,0500-01-01,year 1,500s,founding era,late antiquity
-Aegean civilization,Ancient,Aegean,Europe,Europe,South Europe,ANCIENT WORLD,Ancient,Bronze,-2000,-1200,,,2000s BCE,1200s BCE,,
-Medieval Europe,Medieval,Europe,Europe,Europe,West Europe,MEDIEVAL WORLD,Medieval,Core,500,1500,0500-01-01,1500-01-01,500s,1500s,,
-Medieval China,Medieval,China,East Asia,Asia,East Asia,MEDIEVAL WORLD,Medieval,Core,500,1500,0500-01-01,1500-01-01,500s,1500s,,
-Shogunate,Medieval,Japan,East Asia,Asia,East Asia,MEDIEVAL WORLD,Medieval,Late,1200,1870,1200-01-01,1870-01-01,1200s,1800s,,
-Mongol Empire,Medieval,Steppe,Steppe,Asia,Inner Asia,MEDIEVAL WORLD,Medieval,Imperial,1200,1300,1200-01-01,1300-01-01,1200s,1300s,,
-Mughal Empire,Modern,South Asia,South Asia,Asia,South Asia,MODERN WORLD,Modern,Early,1500,1800,1500-01-01,1800-01-01,1500s,1800s,,
-Early modern Europe,Modern,Europe,Europe,Europe,West Europe,MODERN WORLD,Modern,Early,1500,1800,1500-01-01,1800-01-01,1500s,1800s,,
-Colonial Americas,Modern,Americas,Americas,Americas,North America,MODERN WORLD,Modern,Colonial,1500,1776,1500-01-01,1776-07-04,1500s,1700s,,independence
-British India,Modern,South Asia,South Asia,Asia,South Asia,MODERN WORLD,Modern,Colonial,1800,1945,1800-01-01,1945-08-15,1800s,1940s,,WWII
-Industrial Europe,Modern,Europe,Europe,Europe,West Europe,MODERN WORLD,Modern,Industrial,1800,1914,1800-01-01,1914-07-28,1800s,1910s,,WWI
-Imperial Japan,Modern,Japan,East Asia,Asia,East Asia,MODERN WORLD,Modern,Imperial,1868,1945,1868-01-01,1945-09-02,1800s,1940s,,WWII
-Republic of China,Modern,China,East Asia,Asia,East Asia,MODERN WORLD,Modern,Transition,1912,1949,1912-01-01,1949-10-01,1910s,1940s,,
-Peoples Republic of China,Modern,China,East Asia,Asia,East Asia,MODERN WORLD,Modern,Contemporary,1949,2035,1949-10-01,2035-12-31,1940s,2030s,,extended
-Modern Europe,Modern,Europe,Europe,Europe,West Europe,MODERN WORLD,Modern,Contemporary,1945,2035,1945-05-08,2035-12-31,1940s,2030s,WWII,extended
-Modern India,Modern,South Asia,South Asia,Asia,South Asia,MODERN WORLD,Modern,Contemporary,1947,2035,1947-08-15,2035-12-31,1940s,2030s,,extended
-Modern Africa,Modern,Africa,Sub Saharan Africa,Africa,Sub Saharan Africa,MODERN WORLD,Modern,Contemporary,1960,2035,1960-01-01,2035-12-31,1960s,2030s,,extended
-Superpower US,Modern,United States,Americas,Americas,North America,MODERN WORLD,Modern,Contemporary,1945,2035,1945-09-02,2035-12-31,1940s,2030s,WWII,extended
-Contemporary world,Contemporary,Global,World,Global,Global,CONTEMPORARY WORLD,Contemporary,Current,2018,2035,2018-01-01,2035-01-01,2010s,2030s,present,today-plus
-Near future world,Contemporary,Global,World,Global,Global,CONTEMPORARY WORLD,Contemporary,Future,2025,2050,2025-01-01,2050-01-01,2020s,2050s,future,horizon
+Anatolian League 001,Medieval,Anatolian League,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Early,1180,1180,1180-01-01,1180-04-30,1180 Q1,1180 Q2,1180-01,1180-04
+Atlantic Republic 002,Medieval,Atlantic Republic,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Core,1183,1184,1183-08-12,1184-01-16,1183 Q3,1184 Q1,1183-08,1184-01
+Carpathian Kingdom 003,Medieval,Carpathian Kingdom,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Late,1186,1186,1186-03-23,1186-10-03,1186 Q1,1186 Q4,1186-03,1186-10
+Danube Federation 004,Medieval,Danube Federation,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Early,1190,1191,1190-10-07,1191-05-26,1190 Q4,1191 Q2,1190-10,1191-05
+Eurasian Khanate 005,Medieval,Eurasian Khanate,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Core,1193,1194,1193-05-18,1194-02-10,1193 Q2,1194 Q1,1193-05,1194-02
+Hellenic Commonwealth 006,Medieval,Hellenic Commonwealth,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Late,1197,1198,1197-12-02,1198-10-03,1197 Q4,1198 Q4,1197-12,1198-10
+Iberian Crown 007,Medieval,Iberian Crown,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Early,1200,1201,1200-07-13,1201-06-20,1200 Q3,1201 Q2,1200-07,1201-06
+Levantine Sultanate 008,Medieval,Levantine Sultanate,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Core,1203,1204,1203-02-24,1204-03-09,1203 Q1,1204 Q1,1203-02,1204-03
+Maghreb Union 009,Medieval,Maghreb Union,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Late,1207,1208,1207-09-08,1208-10-28,1207 Q3,1208 Q4,1207-09,1208-10
+Nile Dynasty 010,Medieval,Nile Dynasty,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Early,1210,1211,1210-04-19,1211-07-16,1210 Q2,1211 Q3,1210-04,1211-07
+Nordic Pact 011,Medieval,Nordic Pact,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Core,1214,1216,1214-11-03,1216-03-07,1214 Q4,1216 Q1,1214-11,1216-03
+Persian Alliance 012,Medieval,Persian Alliance,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Late,1217,1218,1217-06-14,1218-11-23,1217 Q2,1218 Q4,1217-06,1218-11
+Saharan Confederacy 013,Medieval,Saharan Confederacy,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Early,1220,1221,1220-01-25,1221-08-11,1220 Q1,1221 Q3,1220-01,1221-08
+Silk Road Polity 014,Medieval,Silk Road Polity,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Core,1224,1226,1224-08-09,1226-04-02,1224 Q3,1226 Q2,1224-08,1226-04
+Steppe Horde 015,Medieval,Steppe Horde,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Late,1227,1228,1227-03-20,1228-12-17,1227 Q1,1228 Q4,1227-03,1228-12
+Andean State 016,Medieval,Andean State,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Early,1231,1233,1231-10-04,1233-08-09,1231 Q4,1233 Q3,1231-10,1233-08
+Amazonian Realm 017,Medieval,Amazonian Realm,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Core,1234,1236,1234-05-15,1236-04-26,1234 Q2,1236 Q2,1234-05,1236-04
+Mississippian Coalition 018,Medieval,Mississippian Coalition,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Late,1237,1240,1237-12-26,1240-01-14,1237 Q4,1240 Q1,1237-12,1240-01
+Mesoamerican Alliance 019,Medieval,Mesoamerican Alliance,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Early,1241,1243,1241-07-10,1243-09-04,1241 Q3,1243 Q3,1241-07,1243-09
+Caribbean Domain 020,Medieval,Caribbean Domain,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Core,1244,1246,1244-02-21,1246-05-24,1244 Q1,1246 Q2,1244-02,1246-05
+Han Revival 021,Medieval,Han Revival,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Late,1248,1251,1248-09-05,1251-01-13,1248 Q3,1251 Q1,1248-09,1251-01
+Yamato Shogunate 022,Medieval,Yamato Shogunate,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Early,1251,1253,1251-04-16,1253-09-29,1251 Q2,1253 Q3,1251-04,1253-09
+Deccan Empire 023,Medieval,Deccan Empire,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Core,1254,1257,1254-11-27,1257-06-18,1254 Q4,1257 Q2,1254-11,1257-06
+Bengal Maritime League 024,Medieval,Bengal Maritime League,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Late,1258,1261,1258-06-11,1261-02-06,1258 Q2,1261 Q1,1258-06,1261-02
+Malay Sultanate 025,Medieval,Malay Sultanate,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Early,1261,1263,1261-01-22,1263-10-27,1261 Q1,1263 Q4,1261-01,1263-10
+Javan Principalities 026,Medieval,Javan Principalities,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Core,1265,1268,1265-08-06,1268-06-16,1265 Q3,1268 Q2,1265-08,1268-06
+Austral Dominion 027,Medieval,Austral Dominion,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Late,1268,1271,1268-03-17,1271-03-04,1268 Q1,1271 Q1,1268-03,1271-03
+Pacific Archipelago Council 028,Medieval,Pacific Archipelago Council,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Early,1271,1274,1271-10-01,1274-10-24,1271 Q4,1274 Q4,1271-10,1274-10
+Baltic Trade Union 029,Medieval,Baltic Trade Union,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Core,1275,1278,1275-05-12,1278-07-11,1275 Q2,1278 Q3,1275-05,1278-07
+Rhine Compact 030,Medieval,Rhine Compact,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Late,1278,1282,1278-12-23,1282-03-30,1278 Q4,1282 Q1,1278-12,1282-03
+Anatolian League 031,Medieval,Anatolian League,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Early,1282,1285,1282-07-07,1285-11-18,1282 Q3,1285 Q4,1282-07,1285-11
+Atlantic Republic 032,Medieval,Atlantic Republic,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Core,1285,1288,1285-02-18,1288-08-08,1285 Q1,1288 Q3,1285-02,1288-08
+Carpathian Kingdom 033,Medieval,Carpathian Kingdom,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Late,1288,1292,1288-09-02,1292-03-29,1288 Q3,1292 Q1,1288-09,1292-03
+Danube Federation 034,Medieval,Danube Federation,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Early,1292,1295,1292-04-13,1295-12-15,1292 Q2,1295 Q4,1292-04,1295-12
+Eurasian Khanate 035,Medieval,Eurasian Khanate,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Core,1295,1299,1295-11-24,1299-09-02,1295 Q4,1299 Q3,1295-11,1299-09
+Hellenic Commonwealth 036,Medieval,Hellenic Commonwealth,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Late,1299,1303,1299-06-08,1303-04-24,1299 Q2,1303 Q2,1299-06,1303-04
+Iberian Crown 037,Medieval,Iberian Crown,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Early,1302,1306,1302-01-19,1306-01-10,1302 Q1,1306 Q1,1302-01,1306-01
+Levantine Sultanate 038,Medieval,Levantine Sultanate,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Core,1305,1309,1305-08-03,1309-08-31,1305 Q3,1309 Q3,1305-08,1309-08
+Maghreb Union 039,Medieval,Maghreb Union,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Late,1309,1313,1309-03-14,1313-05-18,1309 Q1,1313 Q2,1309-03,1313-05
+Nile Dynasty 040,Medieval,Nile Dynasty,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Early,1312,1317,1312-10-25,1317-02-04,1312 Q4,1317 Q1,1312-10,1317-02
+Nordic Pact 041,Medieval,Nordic Pact,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Core,1316,1320,1316-05-09,1320-09-25,1316 Q2,1320 Q3,1316-05,1320-09
+Persian Alliance 042,Medieval,Persian Alliance,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Late,1319,1324,1319-12-20,1324-06-13,1319 Q4,1324 Q2,1319-12,1324-06
+Saharan Confederacy 043,Medieval,Saharan Confederacy,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Early,1322,1327,1322-07-04,1327-02-02,1322 Q3,1327 Q1,1322-07,1327-02
+Silk Road Polity 044,Medieval,Silk Road Polity,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Core,1326,1330,1326-02-15,1330-10-23,1326 Q1,1330 Q4,1326-02,1330-10
+Steppe Horde 045,Medieval,Steppe Horde,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Late,1329,1334,1329-09-26,1334-07-10,1329 Q3,1334 Q3,1329-09,1334-07
+Andean State 046,Medieval,Andean State,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Early,1333,1338,1333-04-10,1338-02-28,1333 Q2,1338 Q1,1333-04,1338-02
+Amazonian Realm 047,Medieval,Amazonian Realm,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Core,1336,1341,1336-11-21,1341-11-17,1336 Q4,1341 Q4,1336-11,1341-11
+Mississippian Coalition 048,Medieval,Mississippian Coalition,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Late,1339,1344,1339-06-05,1344-07-07,1339 Q2,1344 Q3,1339-06,1344-07
+Mesoamerican Alliance 049,Medieval,Mesoamerican Alliance,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Early,1343,1348,1343-01-16,1348-03-26,1343 Q1,1348 Q1,1343-01,1348-03
+Caribbean Domain 050,Medieval,Caribbean Domain,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Core,1346,1351,1346-08-27,1351-12-12,1346 Q3,1351 Q4,1346-08,1351-12
+Han Revival 051,Medieval,Han Revival,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Late,1350,1355,1350-03-11,1355-08-02,1350 Q1,1355 Q3,1350-03,1355-08
+Yamato Shogunate 052,Medieval,Yamato Shogunate,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Early,1353,1359,1353-10-22,1359-04-21,1353 Q4,1359 Q2,1353-10,1359-04
+Deccan Empire 053,Medieval,Deccan Empire,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Core,1356,1361,1356-05-06,1361-12-10,1356 Q2,1361 Q4,1356-05,1361-12
+Bengal Maritime League 054,Medieval,Bengal Maritime League,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Late,1360,1366,1360-12-17,1366-08-29,1360 Q4,1366 Q3,1360-12,1366-08
+Malay Sultanate 055,Medieval,Malay Sultanate,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Early,1363,1369,1363-07-01,1369-04-18,1363 Q3,1369 Q2,1363-07,1369-04
+Javan Principalities 056,Medieval,Javan Principalities,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Core,1367,1373,1367-02-12,1373-01-06,1367 Q1,1373 Q1,1367-02,1373-01
+Austral Dominion 057,Medieval,Austral Dominion,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Late,1370,1376,1370-09-23,1376-09-23,1370 Q3,1376 Q3,1370-09,1376-09
+Pacific Archipelago Council 058,Medieval,Pacific Archipelago Council,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Early,1373,1373,1373-04-07,1373-08-14,1373 Q2,1373 Q3,1373-04,1373-08
+Baltic Trade Union 059,Medieval,Baltic Trade Union,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Core,1377,1378,1377-11-18,1378-05-03,1377 Q4,1378 Q2,1377-11,1378-05
+Rhine Compact 060,Medieval,Rhine Compact,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Late,1380,1380,1380-06-02,1380-12-22,1380 Q2,1380 Q4,1380-06,1380-12
+Anatolian League 061,Medieval,Anatolian League,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Early,1384,1384,1384-01-13,1384-09-09,1384 Q1,1384 Q3,1384-01,1384-09
+Atlantic Republic 062,Medieval,Atlantic Republic,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Core,1387,1388,1387-08-24,1388-05-27,1387 Q3,1388 Q2,1387-08,1388-05
+Carpathian Kingdom 063,Medieval,Carpathian Kingdom,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Late,1390,1391,1390-03-08,1391-01-16,1390 Q1,1391 Q1,1390-03,1391-01
+Danube Federation 064,Medieval,Danube Federation,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Early,1394,1395,1394-10-19,1395-10-05,1394 Q4,1395 Q4,1394-10,1395-10
+Eurasian Khanate 065,Medieval,Eurasian Khanate,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Core,1397,1398,1397-05-03,1398-05-26,1397 Q2,1398 Q2,1397-05,1398-05
+Hellenic Commonwealth 066,Medieval,Hellenic Commonwealth,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Late,1401,1403,1401-12-14,1403-02-12,1401 Q4,1403 Q1,1401-12,1403-02
+Iberian Crown 067,Medieval,Iberian Crown,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Early,1404,1405,1404-07-25,1405-10-30,1404 Q3,1405 Q4,1404-07,1405-10
+Levantine Sultanate 068,Medieval,Levantine Sultanate,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Core,1407,1408,1407-02-09,1408-06-22,1407 Q1,1408 Q2,1407-02,1408-06
+Maghreb Union 069,Medieval,Maghreb Union,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Late,1411,1413,1411-09-20,1413-03-09,1411 Q3,1413 Q1,1411-09,1413-03
+Nile Dynasty 070,Medieval,Nile Dynasty,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Early,1414,1415,1414-04-04,1415-10-29,1414 Q2,1415 Q4,1414-04,1415-10
+Nordic Pact 071,Medieval,Nordic Pact,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Core,1418,1420,1418-11-15,1420-07-17,1418 Q4,1420 Q3,1418-11,1420-07
+Persian Alliance 072,Medieval,Persian Alliance,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Late,1421,1423,1421-06-26,1423-04-04,1421 Q2,1423 Q2,1421-06,1423-04
+Saharan Confederacy 073,Medieval,Saharan Confederacy,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Early,1424,1425,1424-01-10,1425-11-24,1424 Q1,1425 Q4,1424-01,1425-11
+Silk Road Polity 074,Medieval,Silk Road Polity,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Core,1428,1430,1428-08-21,1430-08-12,1428 Q3,1430 Q3,1428-08,1430-08
+Steppe Horde 075,Medieval,Steppe Horde,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Late,1431,1433,1431-03-05,1433-04-01,1431 Q1,1433 Q2,1431-03,1433-04
+Andean State 076,Medieval,Andean State,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Early,1435,1437,1435-10-16,1437-12-19,1435 Q4,1437 Q4,1435-10,1437-12
+Amazonian Realm 077,Medieval,Amazonian Realm,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Core,1438,1440,1438-05-27,1440-09-05,1438 Q2,1440 Q3,1438-05,1440-09
+Mississippian Coalition 078,Medieval,Mississippian Coalition,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Late,1441,1444,1441-12-11,1444-04-28,1441 Q4,1444 Q2,1441-12,1444-04
+Mesoamerican Alliance 079,Medieval,Mesoamerican Alliance,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Early,1445,1448,1445-07-22,1448-01-14,1445 Q3,1448 Q1,1445-07,1448-01
+Caribbean Domain 080,Medieval,Caribbean Domain,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Core,1448,1450,1448-02-06,1450-09-06,1448 Q1,1450 Q3,1448-02,1450-09
+Han Revival 081,Medieval,Han Revival,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Late,1452,1455,1452-09-17,1455-05-25,1452 Q3,1455 Q2,1452-09,1455-05
+Yamato Shogunate 082,Medieval,Yamato Shogunate,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Early,1455,1458,1455-04-01,1458-01-12,1455 Q2,1458 Q1,1455-04,1458-01
+Deccan Empire 083,Medieval,Deccan Empire,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Core,1458,1461,1458-11-12,1461-10-01,1458 Q4,1461 Q4,1458-11,1461-10
+Bengal Maritime League 084,Medieval,Bengal Maritime League,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Late,1462,1465,1462-06-23,1465-06-18,1462 Q2,1465 Q2,1462-06,1465-06
+Malay Sultanate 085,Medieval,Malay Sultanate,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Early,1465,1468,1465-01-07,1468-02-09,1465 Q1,1468 Q1,1465-01,1468-02
+Javan Principalities 086,Medieval,Javan Principalities,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Core,1469,1472,1469-08-18,1472-10-26,1469 Q3,1472 Q4,1469-08,1472-10
+Austral Dominion 087,Medieval,Austral Dominion,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Late,1472,1475,1472-03-02,1475-06-17,1472 Q1,1475 Q2,1472-03,1475-06
+Pacific Archipelago Council 088,Medieval,Pacific Archipelago Council,Oceania,Pacific,Austral Pacific,MEDIEVAL WORLD,Medieval,Early,1475,1479,1475-10-13,1479-03-05,1475 Q4,1479 Q1,1475-10,1479-03
+Baltic Trade Union 089,Medieval,Baltic Trade Union,Americas,Americas,Western Hemisphere,MEDIEVAL WORLD,Medieval,Core,1479,1482,1479-05-24,1482-11-20,1479 Q2,1482 Q4,1479-05,1482-11
+Rhine Compact 090,Medieval,Rhine Compact,Europe,Europe,Western Eurasia,MEDIEVAL WORLD,Medieval,Late,1482,1486,1482-12-08,1486-07-13,1482 Q4,1486 Q3,1482-12,1486-07
+Anatolian League 091,Medieval,Anatolian League,East Asia,Asia,Eastern Asia,MEDIEVAL WORLD,Medieval,Early,1486,1490,1486-07-19,1490-03-30,1486 Q3,1490 Q1,1486-07,1490-03
+Atlantic Republic 092,Medieval,Atlantic Republic,South Asia,Asia,Indian Subcontinent,MEDIEVAL WORLD,Medieval,Core,1489,1492,1489-02-03,1492-11-21,1489 Q1,1492 Q4,1489-02,1492-11
+Carpathian Kingdom 093,Medieval,Carpathian Kingdom,Middle East,Afro Eurasia,Near East,MEDIEVAL WORLD,Medieval,Late,1492,1496,1492-09-14,1496-08-08,1492 Q3,1496 Q3,1492-09,1496-08
+Danube Federation 094,Medieval,Danube Federation,Sub Saharan Africa,Africa,Central and Southern Africa,MEDIEVAL WORLD,Medieval,Early,1496,1500,1496-04-25,1500-04-26,1496 Q2,1500 Q2,1496-04,1500-04
+Eurasian Khanate 095,Medieval,Eurasian Khanate,Steppe,Eurasia,Inner Eurasia,MEDIEVAL WORLD,Medieval,Core,1499,1503,1499-11-09,1503-12-17,1499 Q4,1503 Q4,1499-11,1503-12
+Hellenic Commonwealth 096,Early Modern,Hellenic Commonwealth,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Late,1503,1507,1503-06-20,1507-09-02,1503 Q2,1507 Q3,1503-06,1507-09
+Iberian Crown 097,Early Modern,Iberian Crown,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Early,1506,1510,1506-01-04,1510-04-25,1506 Q1,1510 Q2,1506-01,1510-04
+Levantine Sultanate 098,Early Modern,Levantine Sultanate,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Middle,1509,1514,1509-08-15,1514-01-10,1509 Q3,1514 Q1,1509-08,1514-01
+Maghreb Union 099,Early Modern,Maghreb Union,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Late,1513,1517,1513-03-26,1517-09-27,1513 Q1,1517 Q3,1513-03,1517-09
+Nile Dynasty 100,Early Modern,Nile Dynasty,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Early,1516,1521,1516-10-10,1521-05-20,1516 Q4,1521 Q2,1516-10,1521-05
+Nordic Pact 101,Early Modern,Nordic Pact,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Middle,1520,1525,1520-05-21,1525-02-04,1520 Q2,1525 Q1,1520-05,1525-02
+Persian Alliance 102,Early Modern,Persian Alliance,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Late,1523,1528,1523-12-05,1528-09-26,1523 Q4,1528 Q3,1523-12,1528-09
+Saharan Confederacy 103,Early Modern,Saharan Confederacy,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Early,1526,1531,1526-07-16,1531-06-14,1526 Q3,1531 Q2,1526-07,1531-06
+Silk Road Polity 104,Early Modern,Silk Road Polity,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Middle,1530,1535,1530-02-27,1535-03-04,1530 Q1,1535 Q1,1530-02,1535-03
+Steppe Horde 105,Early Modern,Steppe Horde,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Late,1533,1538,1533-09-11,1538-10-23,1533 Q3,1538 Q4,1533-09,1538-10
+Andean State 106,Early Modern,Andean State,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Early,1537,1542,1537-04-22,1542-07-10,1537 Q2,1542 Q3,1537-04,1542-07
+Amazonian Realm 107,Early Modern,Amazonian Realm,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Middle,1540,1546,1540-11-06,1546-03-02,1540 Q4,1546 Q1,1540-11,1546-03
+Mississippian Coalition 108,Early Modern,Mississippian Coalition,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Late,1543,1548,1543-06-17,1548-11-16,1543 Q2,1548 Q4,1543-06,1548-11
+Mesoamerican Alliance 109,Early Modern,Mesoamerican Alliance,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Early,1547,1552,1547-01-01,1552-07-09,1547 Q1,1552 Q3,1547-01,1552-07
+Caribbean Domain 110,Early Modern,Caribbean Domain,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Middle,1550,1556,1550-08-12,1556-03-26,1550 Q3,1556 Q1,1550-08,1556-03
+Han Revival 111,Early Modern,Han Revival,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Late,1554,1559,1554-03-23,1559-12-12,1554 Q1,1559 Q4,1554-03,1559-12
+Yamato Shogunate 112,Early Modern,Yamato Shogunate,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Early,1557,1563,1557-10-07,1563-08-04,1557 Q4,1563 Q3,1557-10,1563-08
+Deccan Empire 113,Early Modern,Deccan Empire,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Middle,1560,1566,1560-05-18,1566-04-21,1560 Q2,1566 Q2,1560-05,1566-04
+Bengal Maritime League 114,Early Modern,Bengal Maritime League,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Late,1564,1570,1564-12-02,1570-12-12,1564 Q4,1570 Q4,1564-12,1570-12
+Malay Sultanate 115,Early Modern,Malay Sultanate,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Early,1567,1567,1567-07-13,1567-11-28,1567 Q3,1567 Q4,1567-07,1567-11
+Javan Principalities 116,Early Modern,Javan Principalities,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Middle,1571,1571,1571-02-24,1571-08-18,1571 Q1,1571 Q3,1571-02,1571-08
+Austral Dominion 117,Early Modern,Austral Dominion,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Late,1574,1575,1574-09-08,1575-04-08,1574 Q3,1575 Q2,1574-09,1575-04
+Pacific Archipelago Council 118,Early Modern,Pacific Archipelago Council,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Early,1577,1577,1577-04-19,1577-12-24,1577 Q2,1577 Q4,1577-04,1577-12
+Baltic Trade Union 119,Early Modern,Baltic Trade Union,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Middle,1581,1582,1581-11-03,1582-08-16,1581 Q4,1582 Q3,1581-11,1582-08
+Rhine Compact 120,Early Modern,Rhine Compact,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Late,1584,1585,1584-06-14,1585-05-03,1584 Q2,1585 Q2,1584-06,1585-05
+Anatolian League 121,Early Modern,Anatolian League,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Early,1588,1589,1588-01-25,1589-01-19,1588 Q1,1589 Q1,1588-01,1589-01
+Atlantic Republic 122,Early Modern,Atlantic Republic,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Middle,1591,1592,1591-08-09,1592-09-09,1591 Q3,1592 Q3,1591-08,1592-09
+Carpathian Kingdom 123,Early Modern,Carpathian Kingdom,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Late,1594,1595,1594-03-20,1595-05-28,1594 Q1,1595 Q2,1594-03,1595-05
+Danube Federation 124,Early Modern,Danube Federation,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Early,1598,1600,1598-10-04,1600-01-18,1598 Q4,1600 Q1,1598-10,1600-01
+Eurasian Khanate 125,Early Modern,Eurasian Khanate,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Middle,1601,1602,1601-05-15,1602-10-05,1601 Q2,1602 Q4,1601-05,1602-10
+Hellenic Commonwealth 126,Early Modern,Hellenic Commonwealth,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Late,1605,1607,1605-12-26,1607-06-24,1605 Q4,1607 Q2,1605-12,1607-06
+Iberian Crown 127,Early Modern,Iberian Crown,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Early,1608,1610,1608-07-10,1610-02-12,1608 Q3,1610 Q1,1608-07,1610-02
+Levantine Sultanate 128,Early Modern,Levantine Sultanate,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Middle,1611,1612,1611-02-21,1612-11-01,1611 Q1,1612 Q4,1611-02,1612-11
+Maghreb Union 129,Early Modern,Maghreb Union,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Late,1615,1617,1615-09-05,1617-06-22,1615 Q3,1617 Q2,1615-09,1617-06
+Nile Dynasty 130,Early Modern,Nile Dynasty,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Early,1618,1620,1618-04-16,1620-03-09,1618 Q2,1620 Q1,1618-04,1620-03
+Nordic Pact 131,Early Modern,Nordic Pact,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Middle,1622,1624,1622-11-27,1624-11-26,1622 Q4,1624 Q4,1622-11,1624-11
+Persian Alliance 132,Early Modern,Persian Alliance,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Late,1625,1627,1625-06-11,1627-07-18,1625 Q2,1627 Q3,1625-06,1627-07
+Saharan Confederacy 133,Early Modern,Saharan Confederacy,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Early,1628,1630,1628-01-22,1630-04-05,1628 Q1,1630 Q2,1628-01,1630-04
+Silk Road Polity 134,Early Modern,Silk Road Polity,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Middle,1632,1634,1632-08-06,1634-11-25,1632 Q3,1634 Q4,1632-08,1634-11
+Steppe Horde 135,Early Modern,Steppe Horde,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Late,1635,1637,1635-03-17,1637-08-11,1635 Q1,1637 Q3,1635-03,1637-08
+Andean State 136,Early Modern,Andean State,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Early,1639,1642,1639-10-01,1642-04-03,1639 Q4,1642 Q2,1639-10,1642-04
+Amazonian Realm 137,Early Modern,Amazonian Realm,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Middle,1642,1644,1642-05-12,1644-12-19,1642 Q2,1644 Q4,1642-05,1644-12
+Mississippian Coalition 138,Early Modern,Mississippian Coalition,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Late,1645,1648,1645-12-23,1648-09-07,1645 Q4,1648 Q3,1645-12,1648-09
+Mesoamerican Alliance 139,Early Modern,Mesoamerican Alliance,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Early,1649,1652,1649-07-07,1652-04-28,1649 Q3,1652 Q2,1649-07,1652-04
+Caribbean Domain 140,Early Modern,Caribbean Domain,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Middle,1652,1655,1652-02-18,1655-01-16,1652 Q1,1655 Q1,1652-02,1655-01
+Han Revival 141,Early Modern,Han Revival,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Late,1656,1659,1656-09-02,1659-09-07,1656 Q3,1659 Q3,1656-09,1659-09
+Yamato Shogunate 142,Early Modern,Yamato Shogunate,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Early,1659,1662,1659-04-13,1662-05-24,1659 Q2,1662 Q2,1659-04,1662-05
+Deccan Empire 143,Early Modern,Deccan Empire,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Middle,1662,1666,1662-11-24,1666-02-10,1662 Q4,1666 Q1,1662-11,1666-02
+Bengal Maritime League 144,Early Modern,Bengal Maritime League,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Late,1666,1669,1666-06-08,1669-10-01,1666 Q2,1669 Q4,1666-06,1669-10
+Malay Sultanate 145,Early Modern,Malay Sultanate,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Early,1669,1672,1669-01-19,1672-06-20,1669 Q1,1672 Q2,1669-01,1672-06
+Javan Principalities 146,Early Modern,Javan Principalities,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Middle,1673,1677,1673-08-03,1677-02-08,1673 Q3,1677 Q1,1673-08,1677-02
+Austral Dominion 147,Early Modern,Austral Dominion,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Late,1676,1679,1676-03-14,1679-10-27,1676 Q1,1679 Q4,1676-03,1679-10
+Pacific Archipelago Council 148,Early Modern,Pacific Archipelago Council,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Early,1679,1683,1679-10-25,1683-07-15,1679 Q4,1683 Q3,1679-10,1683-07
+Baltic Trade Union 149,Early Modern,Baltic Trade Union,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Middle,1683,1687,1683-05-09,1687-03-05,1683 Q2,1687 Q1,1683-05,1687-03
+Rhine Compact 150,Early Modern,Rhine Compact,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Late,1686,1690,1686-12-20,1690-11-22,1686 Q4,1690 Q4,1686-12,1690-11
+Anatolian League 151,Early Modern,Anatolian League,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Early,1690,1694,1690-07-04,1694-07-13,1690 Q3,1694 Q3,1690-07,1694-07
+Atlantic Republic 152,Early Modern,Atlantic Republic,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Middle,1693,1697,1693-02-15,1697-04-02,1693 Q1,1697 Q2,1693-02,1697-04
+Carpathian Kingdom 153,Early Modern,Carpathian Kingdom,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Late,1696,1700,1696-09-26,1700-12-19,1696 Q3,1700 Q4,1696-09,1700-12
+Danube Federation 154,Early Modern,Danube Federation,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Early,1700,1704,1700-04-10,1704-08-08,1700 Q2,1704 Q3,1700-04,1704-08
+Eurasian Khanate 155,Early Modern,Eurasian Khanate,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Middle,1703,1708,1703-11-21,1708-04-26,1703 Q4,1708 Q2,1703-11,1708-04
+Hellenic Commonwealth 156,Early Modern,Hellenic Commonwealth,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Late,1707,1711,1707-06-05,1711-12-16,1707 Q2,1711 Q4,1707-06,1711-12
+Iberian Crown 157,Early Modern,Iberian Crown,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Early,1710,1714,1710-01-16,1714-09-04,1710 Q1,1714 Q3,1710-01,1714-09
+Levantine Sultanate 158,Early Modern,Levantine Sultanate,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Middle,1713,1718,1713-08-27,1718-05-22,1713 Q3,1718 Q2,1713-08,1718-05
+Maghreb Union 159,Early Modern,Maghreb Union,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Late,1717,1722,1717-03-11,1722-01-10,1717 Q1,1722 Q1,1717-03,1722-01
+Nile Dynasty 160,Early Modern,Nile Dynasty,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Early,1720,1725,1720-10-22,1725-09-29,1720 Q4,1725 Q3,1720-10,1725-09
+Nordic Pact 161,Early Modern,Nordic Pact,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Middle,1724,1729,1724-05-06,1729-05-20,1724 Q2,1729 Q2,1724-05,1729-05
+Persian Alliance 162,Early Modern,Persian Alliance,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Late,1727,1733,1727-12-17,1733-02-05,1727 Q4,1733 Q1,1727-12,1733-02
+Saharan Confederacy 163,Early Modern,Saharan Confederacy,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Early,1730,1735,1730-07-01,1735-09-27,1730 Q3,1735 Q3,1730-07,1735-09
+Silk Road Polity 164,Early Modern,Silk Road Polity,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Middle,1734,1739,1734-02-12,1739-06-17,1734 Q1,1739 Q2,1734-02,1739-06
+Steppe Horde 165,Early Modern,Steppe Horde,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Late,1737,1743,1737-09-23,1743-03-04,1737 Q3,1743 Q1,1737-09,1743-03
+Andean State 166,Early Modern,Andean State,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Early,1741,1746,1741-04-07,1746-10-23,1741 Q2,1746 Q4,1741-04,1746-10
+Amazonian Realm 167,Early Modern,Amazonian Realm,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Middle,1744,1750,1744-11-18,1750-07-12,1744 Q4,1750 Q3,1744-11,1750-07
+Mississippian Coalition 168,Early Modern,Mississippian Coalition,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Late,1747,1753,1747-06-02,1753-03-01,1747 Q2,1753 Q1,1747-06,1753-03
+Mesoamerican Alliance 169,Early Modern,Mesoamerican Alliance,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Early,1751,1756,1751-01-13,1756-11-18,1751 Q1,1756 Q4,1751-01,1756-11
+Caribbean Domain 170,Early Modern,Caribbean Domain,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Middle,1754,1760,1754-08-24,1760-08-05,1754 Q3,1760 Q3,1754-08,1760-08
+Han Revival 171,Early Modern,Han Revival,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Late,1758,1764,1758-03-08,1764-03-26,1758 Q1,1764 Q1,1758-03,1764-03
+Yamato Shogunate 172,Early Modern,Yamato Shogunate,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Early,1761,1762,1761-10-19,1762-03-15,1761 Q4,1762 Q1,1761-10,1762-03
+Deccan Empire 173,Early Modern,Deccan Empire,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Middle,1764,1764,1764-05-03,1764-11-03,1764 Q2,1764 Q4,1764-05,1764-11
+Bengal Maritime League 174,Early Modern,Bengal Maritime League,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Late,1768,1769,1768-12-14,1769-07-23,1768 Q4,1769 Q3,1768-12,1769-07
+Malay Sultanate 175,Early Modern,Malay Sultanate,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Early,1771,1772,1771-07-25,1772-04-08,1771 Q3,1772 Q2,1771-07,1772-04
+Javan Principalities 176,Early Modern,Javan Principalities,Oceania,Pacific,Austral Pacific,EARLY MODERN WORLD,Early Modern,Middle,1775,1775,1775-02-09,1775-12-01,1775 Q1,1775 Q4,1775-02,1775-12
+Austral Dominion 177,Early Modern,Austral Dominion,Americas,Americas,Western Hemisphere,EARLY MODERN WORLD,Early Modern,Late,1778,1779,1778-09-20,1779-08-18,1778 Q3,1779 Q3,1778-09,1779-08
+Pacific Archipelago Council 178,Early Modern,Pacific Archipelago Council,Europe,Europe,Western Eurasia,EARLY MODERN WORLD,Early Modern,Early,1781,1782,1781-04-04,1782-04-08,1781 Q2,1782 Q2,1781-04,1782-04
+Baltic Trade Union 179,Early Modern,Baltic Trade Union,East Asia,Asia,Eastern Asia,EARLY MODERN WORLD,Early Modern,Middle,1785,1786,1785-11-15,1786-12-26,1785 Q4,1786 Q4,1785-11,1786-12
+Rhine Compact 180,Early Modern,Rhine Compact,South Asia,Asia,Indian Subcontinent,EARLY MODERN WORLD,Early Modern,Late,1788,1789,1788-06-26,1789-09-12,1788 Q2,1789 Q3,1788-06,1789-09
+Anatolian League 181,Early Modern,Anatolian League,Middle East,Afro Eurasia,Near East,EARLY MODERN WORLD,Early Modern,Early,1792,1793,1792-01-10,1793-05-04,1792 Q1,1793 Q2,1792-01,1793-05
+Atlantic Republic 182,Early Modern,Atlantic Republic,Sub Saharan Africa,Africa,Central and Southern Africa,EARLY MODERN WORLD,Early Modern,Middle,1795,1797,1795-08-21,1797-01-19,1795 Q3,1797 Q1,1795-08,1797-01
+Carpathian Kingdom 183,Early Modern,Carpathian Kingdom,Steppe,Eurasia,Inner Eurasia,EARLY MODERN WORLD,Early Modern,Late,1798,1799,1798-03-05,1799-09-10,1798 Q1,1799 Q3,1798-03,1799-09
+Danube Federation 184,Industrial,Danube Federation,Oceania,Pacific,Austral Pacific,INDUSTRIAL WORLD,Industrial,Transition,1802,1804,1802-10-16,1804-05-29,1802 Q4,1804 Q2,1802-10,1804-05
+Eurasian Khanate 185,Industrial,Eurasian Khanate,Americas,Americas,Western Hemisphere,INDUSTRIAL WORLD,Industrial,Expansion,1805,1807,1805-05-27,1807-02-14,1805 Q2,1807 Q1,1805-05,1807-02
+Hellenic Commonwealth 186,Industrial,Hellenic Commonwealth,Europe,Europe,Western Eurasia,INDUSTRIAL WORLD,Industrial,Consolidation,1809,1811,1809-12-11,1811-10-07,1809 Q4,1811 Q4,1809-12,1811-10
+Iberian Crown 187,Industrial,Iberian Crown,East Asia,Asia,Eastern Asia,INDUSTRIAL WORLD,Industrial,Transition,1812,1814,1812-07-22,1814-06-24,1812 Q3,1814 Q2,1812-07,1814-06
+Levantine Sultanate 188,Industrial,Levantine Sultanate,South Asia,Asia,Indian Subcontinent,INDUSTRIAL WORLD,Industrial,Expansion,1815,1817,1815-02-06,1817-02-14,1815 Q1,1817 Q1,1815-02,1817-02
+Maghreb Union 189,Industrial,Maghreb Union,Middle East,Afro Eurasia,Near East,INDUSTRIAL WORLD,Industrial,Consolidation,1819,1821,1819-09-17,1821-11-01,1819 Q3,1821 Q4,1819-09,1821-11
+Nile Dynasty 190,Industrial,Nile Dynasty,Sub Saharan Africa,Africa,Central and Southern Africa,INDUSTRIAL WORLD,Industrial,Transition,1822,1824,1822-04-01,1824-06-22,1822 Q2,1824 Q2,1822-04,1824-06
+Nordic Pact 191,Industrial,Nordic Pact,Steppe,Eurasia,Inner Eurasia,INDUSTRIAL WORLD,Industrial,Expansion,1826,1829,1826-11-12,1829-03-11,1826 Q4,1829 Q1,1826-11,1829-03
+Persian Alliance 192,Industrial,Persian Alliance,Oceania,Pacific,Austral Pacific,INDUSTRIAL WORLD,Industrial,Consolidation,1829,1831,1829-06-23,1831-11-27,1829 Q2,1831 Q4,1829-06,1831-11
+Saharan Confederacy 193,Industrial,Saharan Confederacy,Americas,Americas,Western Hemisphere,INDUSTRIAL WORLD,Industrial,Transition,1832,1834,1832-01-07,1834-07-19,1832 Q1,1834 Q3,1832-01,1834-07
+Silk Road Polity 194,Industrial,Silk Road Polity,Europe,Europe,Western Eurasia,INDUSTRIAL WORLD,Industrial,Expansion,1836,1839,1836-08-18,1839-04-06,1836 Q3,1839 Q2,1836-08,1839-04
+Steppe Horde 195,Industrial,Steppe Horde,East Asia,Asia,Eastern Asia,INDUSTRIAL WORLD,Industrial,Consolidation,1839,1841,1839-03-02,1841-11-24,1839 Q1,1841 Q4,1839-03,1841-11
+Andean State 196,Industrial,Andean State,South Asia,Asia,Indian Subcontinent,INDUSTRIAL WORLD,Industrial,Transition,1843,1846,1843-10-13,1846-08-13,1843 Q4,1846 Q3,1843-10,1846-08
+Amazonian Realm 197,Industrial,Amazonian Realm,Middle East,Afro Eurasia,Near East,INDUSTRIAL WORLD,Industrial,Expansion,1846,1849,1846-05-24,1849-04-30,1846 Q2,1849 Q2,1846-05,1849-04
+Mississippian Coalition 198,Industrial,Mississippian Coalition,Sub Saharan Africa,Africa,Central and Southern Africa,INDUSTRIAL WORLD,Industrial,Consolidation,1849,1852,1849-12-08,1852-12-21,1849 Q4,1852 Q4,1849-12,1852-12
+Mesoamerican Alliance 199,Industrial,Mesoamerican Alliance,Steppe,Eurasia,Inner Eurasia,INDUSTRIAL WORLD,Industrial,Transition,1853,1856,1853-07-19,1856-09-07,1853 Q3,1856 Q3,1853-07,1856-09
+Caribbean Domain 200,Industrial,Caribbean Domain,Oceania,Pacific,Austral Pacific,INDUSTRIAL WORLD,Industrial,Expansion,1856,1859,1856-02-03,1859-05-01,1856 Q1,1859 Q2,1856-02,1859-05
+Han Revival 201,Industrial,Han Revival,Americas,Americas,Western Hemisphere,INDUSTRIAL WORLD,Industrial,Consolidation,1860,1864,1860-09-14,1864-01-17,1860 Q3,1864 Q1,1860-09,1864-01
+Yamato Shogunate 202,Industrial,Yamato Shogunate,Europe,Europe,Western Eurasia,INDUSTRIAL WORLD,Industrial,Transition,1863,1866,1863-04-25,1866-10-03,1863 Q2,1866 Q4,1863-04,1866-10
+Deccan Empire 203,Industrial,Deccan Empire,East Asia,Asia,Eastern Asia,INDUSTRIAL WORLD,Industrial,Expansion,1866,1870,1866-11-09,1870-05-26,1866 Q4,1870 Q2,1866-11,1870-05
+Bengal Maritime League 204,Industrial,Bengal Maritime League,South Asia,Asia,Indian Subcontinent,INDUSTRIAL WORLD,Industrial,Consolidation,1870,1874,1870-06-20,1874-02-10,1870 Q2,1874 Q1,1870-06,1874-02
+Malay Sultanate 205,Industrial,Malay Sultanate,Middle East,Afro Eurasia,Near East,INDUSTRIAL WORLD,Industrial,Transition,1873,1876,1873-01-04,1876-10-03,1873 Q1,1876 Q4,1873-01,1876-10
+Javan Principalities 206,Industrial,Javan Principalities,Sub Saharan Africa,Africa,Central and Southern Africa,INDUSTRIAL WORLD,Industrial,Expansion,1877,1881,1877-08-15,1881-06-20,1877 Q3,1881 Q2,1877-08,1881-06
+Austral Dominion 207,Industrial,Austral Dominion,Steppe,Eurasia,Inner Eurasia,INDUSTRIAL WORLD,Industrial,Consolidation,1880,1884,1880-03-26,1884-03-07,1880 Q1,1884 Q1,1880-03,1884-03
+Pacific Archipelago Council 208,Industrial,Pacific Archipelago Council,Oceania,Pacific,Austral Pacific,INDUSTRIAL WORLD,Industrial,Transition,1883,1887,1883-10-10,1887-10-28,1883 Q4,1887 Q4,1883-10,1887-10
+Baltic Trade Union 209,Industrial,Baltic Trade Union,Americas,Americas,Western Hemisphere,INDUSTRIAL WORLD,Industrial,Expansion,1887,1891,1887-05-21,1891-07-15,1887 Q2,1891 Q3,1887-05,1891-07
+Rhine Compact 210,Industrial,Rhine Compact,Europe,Europe,Western Eurasia,INDUSTRIAL WORLD,Industrial,Consolidation,1890,1895,1890-12-05,1895-03-07,1890 Q4,1895 Q1,1890-12,1895-03
+Anatolian League 211,Industrial,Anatolian League,East Asia,Asia,Eastern Asia,INDUSTRIAL WORLD,Industrial,Transition,1894,1898,1894-07-16,1898-11-22,1894 Q3,1898 Q4,1894-07,1898-11
+Atlantic Republic 212,Industrial,Atlantic Republic,South Asia,Asia,Indian Subcontinent,INDUSTRIAL WORLD,Industrial,Expansion,1897,1901,1897-02-27,1901-08-13,1897 Q1,1901 Q3,1897-02,1901-08
+Carpathian Kingdom 213,Industrial,Carpathian Kingdom,Middle East,Afro Eurasia,Near East,INDUSTRIAL WORLD,Industrial,Consolidation,1900,1905,1900-09-11,1905-04-02,1900 Q3,1905 Q2,1900-09,1905-04
+Danube Federation 214,Industrial,Danube Federation,Sub Saharan Africa,Africa,Central and Southern Africa,INDUSTRIAL WORLD,Industrial,Transition,1904,1908,1904-04-22,1908-12-18,1904 Q2,1908 Q4,1904-04,1908-12
+Eurasian Khanate 215,Industrial,Eurasian Khanate,Steppe,Eurasia,Inner Eurasia,INDUSTRIAL WORLD,Industrial,Expansion,1907,1912,1907-11-06,1912-08-09,1907 Q4,1912 Q3,1907-11,1912-08
+Hellenic Commonwealth 216,Industrial,Hellenic Commonwealth,Oceania,Pacific,Austral Pacific,INDUSTRIAL WORLD,Industrial,Consolidation,1911,1916,1911-06-17,1916-04-26,1911 Q2,1916 Q2,1911-06,1916-04
+Iberian Crown 217,Industrial,Iberian Crown,Americas,Americas,Western Hemisphere,INDUSTRIAL WORLD,Industrial,Transition,1914,1918,1914-01-01,1918-12-18,1914 Q1,1918 Q4,1914-01,1918-12
+Levantine Sultanate 218,Industrial,Levantine Sultanate,Europe,Europe,Western Eurasia,INDUSTRIAL WORLD,Industrial,Expansion,1917,1922,1917-08-12,1922-09-04,1917 Q3,1922 Q3,1917-08,1922-09
+Maghreb Union 219,Industrial,Maghreb Union,East Asia,Asia,Eastern Asia,INDUSTRIAL WORLD,Industrial,Consolidation,1921,1926,1921-03-23,1926-05-22,1921 Q1,1926 Q2,1921-03,1926-05
+Nile Dynasty 220,Industrial,Nile Dynasty,South Asia,Asia,Indian Subcontinent,INDUSTRIAL WORLD,Industrial,Transition,1924,1930,1924-10-07,1930-01-12,1924 Q4,1930 Q1,1924-10,1930-01
+Nordic Pact 221,Industrial,Nordic Pact,Middle East,Afro Eurasia,Near East,INDUSTRIAL WORLD,Industrial,Expansion,1928,1933,1928-05-18,1933-09-29,1928 Q2,1933 Q3,1928-05,1933-09
+Persian Alliance 222,Industrial,Persian Alliance,Sub Saharan Africa,Africa,Central and Southern Africa,INDUSTRIAL WORLD,Industrial,Consolidation,1931,1937,1931-12-02,1937-05-21,1931 Q4,1937 Q2,1931-12,1937-05
+Saharan Confederacy 223,Industrial,Saharan Confederacy,Steppe,Eurasia,Inner Eurasia,INDUSTRIAL WORLD,Industrial,Transition,1934,1940,1934-07-13,1940-02-06,1934 Q3,1940 Q1,1934-07,1940-02
+Silk Road Polity 224,Industrial,Silk Road Polity,Oceania,Pacific,Austral Pacific,INDUSTRIAL WORLD,Industrial,Expansion,1938,1943,1938-02-24,1943-10-27,1938 Q1,1943 Q4,1938-02,1943-10
+Steppe Horde 225,Industrial,Steppe Horde,Americas,Americas,Western Hemisphere,INDUSTRIAL WORLD,Industrial,Consolidation,1941,1947,1941-09-08,1947-06-17,1941 Q3,1947 Q2,1941-09,1947-06
+Andean State 226,Industrial,Andean State,Europe,Europe,Western Eurasia,INDUSTRIAL WORLD,Industrial,Transition,1945,1951,1945-04-19,1951-03-04,1945 Q2,1951 Q1,1945-04,1951-03
+Amazonian Realm 227,Industrial,Amazonian Realm,East Asia,Asia,Eastern Asia,INDUSTRIAL WORLD,Industrial,Expansion,1948,1954,1948-11-03,1954-10-25,1948 Q4,1954 Q4,1948-11,1954-10
+Mississippian Coalition 228,Contemporary,Mississippian Coalition,South Asia,Asia,Indian Subcontinent,CONTEMPORARY WORLD,Contemporary,Late,1951,1957,1951-06-14,1957-07-11,1951 Q2,1957 Q3,1951-06,1957-07
+Mesoamerican Alliance 229,Contemporary,Mesoamerican Alliance,Middle East,Afro Eurasia,Near East,CONTEMPORARY WORLD,Contemporary,Early,1955,1955,1955-01-25,1955-06-30,1955 Q1,1955 Q2,1955-01,1955-06
+Caribbean Domain 230,Contemporary,Caribbean Domain,Sub Saharan Africa,Africa,Central and Southern Africa,CONTEMPORARY WORLD,Contemporary,Middle,1958,1959,1958-08-09,1959-02-18,1958 Q3,1959 Q1,1958-08,1959-02
+Han Revival 231,Contemporary,Han Revival,Steppe,Eurasia,Inner Eurasia,CONTEMPORARY WORLD,Contemporary,Late,1962,1962,1962-03-20,1962-11-05,1962 Q1,1962 Q4,1962-03,1962-11
+Yamato Shogunate 232,Contemporary,Yamato Shogunate,Oceania,Pacific,Austral Pacific,CONTEMPORARY WORLD,Contemporary,Early,1965,1966,1965-10-04,1966-06-28,1965 Q4,1966 Q2,1965-10,1966-06
+Deccan Empire 233,Contemporary,Deccan Empire,Americas,Americas,Western Hemisphere,CONTEMPORARY WORLD,Contemporary,Middle,1968,1969,1968-05-15,1969-03-15,1968 Q2,1969 Q1,1968-05,1969-03
+Bengal Maritime League 234,Contemporary,Bengal Maritime League,Europe,Europe,Western Eurasia,CONTEMPORARY WORLD,Contemporary,Late,1972,1973,1972-12-26,1973-12-02,1972 Q4,1973 Q4,1972-12,1973-12
+Malay Sultanate 235,Contemporary,Malay Sultanate,East Asia,Asia,Eastern Asia,CONTEMPORARY WORLD,Contemporary,Early,1975,1976,1975-07-10,1976-07-22,1975 Q3,1976 Q3,1975-07,1976-07
+Javan Principalities 236,Contemporary,Javan Principalities,South Asia,Asia,Indian Subcontinent,CONTEMPORARY WORLD,Contemporary,Middle,1979,1980,1979-02-21,1980-04-11,1979 Q1,1980 Q2,1979-02,1980-04
+Austral Dominion 237,Contemporary,Austral Dominion,Middle East,Afro Eurasia,Near East,CONTEMPORARY WORLD,Contemporary,Late,1982,1983,1982-09-05,1983-12-01,1982 Q3,1983 Q4,1982-09,1983-12
+Pacific Archipelago Council 238,Contemporary,Pacific Archipelago Council,Sub Saharan Africa,Africa,Central and Southern Africa,CONTEMPORARY WORLD,Contemporary,Early,1985,1986,1985-04-16,1986-08-18,1985 Q2,1986 Q3,1985-04,1986-08
+Baltic Trade Union 239,Contemporary,Baltic Trade Union,Steppe,Eurasia,Inner Eurasia,CONTEMPORARY WORLD,Contemporary,Middle,1989,1991,1989-11-27,1991-05-07,1989 Q4,1991 Q2,1989-11,1991-05
+Rhine Compact 240,Contemporary,Rhine Compact,Oceania,Pacific,Austral Pacific,CONTEMPORARY WORLD,Contemporary,Late,1992,1993,1992-06-11,1993-12-26,1992 Q2,1993 Q4,1992-06,1993-12
+Anatolian League 241,Contemporary,Anatolian League,Americas,Americas,Western Hemisphere,CONTEMPORARY WORLD,Contemporary,Early,1996,1997,1996-01-22,1997-09-13,1996 Q1,1997 Q3,1996-01,1997-09
+Atlantic Republic 242,Contemporary,Atlantic Republic,Europe,Europe,Western Eurasia,CONTEMPORARY WORLD,Contemporary,Middle,1999,2001,1999-08-06,2001-05-04,1999 Q3,2001 Q2,1999-08,2001-05
+Carpathian Kingdom 243,Contemporary,Carpathian Kingdom,East Asia,Asia,Eastern Asia,CONTEMPORARY WORLD,Contemporary,Late,2002,2004,2002-03-17,2004-01-20,2002 Q1,2004 Q1,2002-03,2004-01
+Danube Federation 244,Contemporary,Danube Federation,South Asia,Asia,Indian Subcontinent,CONTEMPORARY WORLD,Contemporary,Early,2006,2008,2006-10-01,2008-09-11,2006 Q4,2008 Q3,2006-10,2008-09
+Eurasian Khanate 245,Contemporary,Eurasian Khanate,Middle East,Afro Eurasia,Near East,CONTEMPORARY WORLD,Contemporary,Middle,2009,2011,2009-05-12,2011-05-30,2009 Q2,2011 Q2,2009-05,2011-05
+Hellenic Commonwealth 246,Contemporary,Hellenic Commonwealth,Sub Saharan Africa,Africa,Central and Southern Africa,CONTEMPORARY WORLD,Contemporary,Late,2013,2016,2013-12-23,2016-02-16,2013 Q4,2016 Q1,2013-12,2016-02
+Iberian Crown 247,Contemporary,Iberian Crown,Steppe,Eurasia,Inner Eurasia,CONTEMPORARY WORLD,Contemporary,Early,2016,2018,2016-07-07,2018-10-07,2016 Q3,2018 Q4,2016-07,2018-10
+Levantine Sultanate 248,Contemporary,Levantine Sultanate,Oceania,Pacific,Austral Pacific,CONTEMPORARY WORLD,Contemporary,Middle,2019,2021,2019-02-18,2021-06-26,2019 Q1,2021 Q2,2019-02,2021-06
+Maghreb Union 249,Contemporary,Maghreb Union,Americas,Americas,Western Hemisphere,CONTEMPORARY WORLD,Contemporary,Late,2023,2026,2023-09-02,2026-02-14,2023 Q3,2026 Q1,2023-09,2026-02
+Nile Dynasty 250,Contemporary,Nile Dynasty,Europe,Europe,Western Eurasia,CONTEMPORARY WORLD,Contemporary,Early,2026,2028,2026-04-13,2028-11-01,2026 Q2,2028 Q4,2026-04,2028-11
+Nordic Pact 251,Contemporary,Nordic Pact,East Asia,Asia,Eastern Asia,CONTEMPORARY WORLD,Contemporary,Middle,2030,2033,2030-11-24,2033-07-21,2030 Q4,2033 Q3,2030-11,2033-07
+Persian Alliance 252,Contemporary,Persian Alliance,South Asia,Asia,Indian Subcontinent,CONTEMPORARY WORLD,Contemporary,Late,2033,2036,2033-06-08,2036-03-11,2033 Q2,2036 Q1,2033-06,2036-03
+Saharan Confederacy 253,Contemporary,Saharan Confederacy,Middle East,Afro Eurasia,Near East,CONTEMPORARY WORLD,Contemporary,Early,2036,2038,2036-01-19,2038-11-28,2036 Q1,2038 Q4,2036-01,2038-11
+Silk Road Polity 254,Contemporary,Silk Road Polity,Sub Saharan Africa,Africa,Central and Southern Africa,CONTEMPORARY WORLD,Contemporary,Middle,2040,2043,2040-08-03,2043-07-20,2040 Q3,2043 Q3,2040-08,2043-07
+Steppe Horde 255,Contemporary,Steppe Horde,Steppe,Eurasia,Inner Eurasia,CONTEMPORARY WORLD,Contemporary,Late,2043,2046,2043-03-14,2046-04-05,2043 Q1,2046 Q2,2043-03,2046-04
+Andean State 256,Contemporary,Andean State,Oceania,Pacific,Austral Pacific,CONTEMPORARY WORLD,Contemporary,Early,2047,2050,2047-10-25,2050-12-23,2047 Q4,2050 Q4,2047-10,2050-12
+Amazonian Realm 257,Contemporary,Amazonian Realm,Americas,Americas,Western Hemisphere,CONTEMPORARY WORLD,Contemporary,Middle,2050,2053,2050-05-09,2053-08-13,2050 Q2,2053 Q3,2050-05,2053-08
+Mississippian Coalition 258,Contemporary,Mississippian Coalition,Europe,Europe,Western Eurasia,CONTEMPORARY WORLD,Contemporary,Late,2053,2057,2053-12-20,2057-05-02,2053 Q4,2057 Q2,2053-12,2057-05
+Mesoamerican Alliance 259,Contemporary,Mesoamerican Alliance,East Asia,Asia,Eastern Asia,CONTEMPORARY WORLD,Contemporary,Early,2057,2060,2057-07-04,2060-12-21,2057 Q3,2060 Q4,2057-07,2060-12
+Caribbean Domain 260,Contemporary,Caribbean Domain,South Asia,Asia,Indian Subcontinent,CONTEMPORARY WORLD,Contemporary,Middle,2060,2063,2060-02-15,2063-09-10,2060 Q1,2063 Q3,2060-02,2063-09

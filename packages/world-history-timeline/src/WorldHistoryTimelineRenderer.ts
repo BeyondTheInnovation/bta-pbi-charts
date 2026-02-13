@@ -9,11 +9,21 @@ import {
     formatMeasureValue
 } from "@pbi-visuals/shared";
 import { IWorldHistoryTimelineVisualSettings } from "./settings";
-import { WorldHistoryTimelineData, WorldHistoryTimelinePoint } from "./WorldHistoryTimelineTransformer";
+import { TimelineTemporalLevel, WorldHistoryTimelineData, WorldHistoryTimelinePoint } from "./WorldHistoryTimelineTransformer";
 
 interface TimelineRow {
     key: string;
     point: WorldHistoryTimelinePoint;
+}
+
+type AxisLevel = "year" | "quarter" | "month" | "day";
+
+interface AxisLabelRun {
+    label: string;
+    startX: number;
+    endX: number;
+    startValue: number;
+    endValue: number;
 }
 
 export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTimelineVisualSettings> {
@@ -106,13 +116,69 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
 
         // Labels are rendered near bars, so keep the structural left gutter minimal.
         const leftLabelSpace = settings.showYAxis ? 18 : 10;
+        const isDateScale = timelineData.timeScaleMode === "date";
+        const temporalLevel: TimelineTemporalLevel = timelineData.timeTemporalLevel;
+        const hasYearContext = isDateScale && timelineData.timeHasYearContext;
+        const missingYearContext = isDateScale && !timelineData.timeHasYearContext;
+        const axisLevels: AxisLevel[] = (() => {
+            if (!isDateScale) {
+                return ["year"];
+            }
+            switch (temporalLevel) {
+                case "quarter":
+                    return ["year", "quarter"];
+                case "month":
+                    return ["year", "quarter", "month"];
+                case "day":
+                    return ["year", "quarter", "month", "day"];
+                default:
+                    return ["year"];
+            }
+        })();
+        const showAllYearsBanner = missingYearContext && (temporalLevel === "quarter" || temporalLevel === "month" || temporalLevel === "day");
+        const axisHeaderHeightFromSettings = Number((settings.timeline as any).axisHeaderHeightPx ?? 0);
+        const calculatedAxisHeaderHeight = (() => {
+            if (!settings.showXAxis || !settings.timeline.showTopAxis) {
+                return 0;
+            }
+            const rowCount = Math.max(1, axisLevels.length);
+            const headerPadTop = 4;
+            const bannerHeight = showAllYearsBanner ? Math.max(11, axisFontSize) : 0;
+            const bannerGap = showAllYearsBanner ? 3 : 0;
+            const rowHeight = Math.max(12, Math.round(axisFontSize + 6));
+            const baselineGap = 6;
+            const headerPadBottom = 10;
+            return headerPadTop + bannerHeight + bannerGap + (rowCount * rowHeight) + baselineGap + headerPadBottom;
+        })();
 
-        const topAxisReserve = settings.showXAxis && settings.timeline.showTopAxis ? Math.round(axisFontSize + 18) : 0;
-        const bottomAxisReserve = settings.showXAxis && settings.timeline.showBottomAxis ? Math.round(axisFontSize + 18) : 0;
-        const sortControlReserve = Math.max(0, Number((settings.timeline as any).sortControlReservePx ?? 0));
+        const showBottomAxis = false;
+        const topAxisHeaderHeightPx = settings.showXAxis && settings.timeline.showTopAxis
+            ? Math.max(0, Math.round(axisHeaderHeightFromSettings || calculatedAxisHeaderHeight))
+            : 0;
+        const bottomAxisReserve = showBottomAxis ? Math.round(axisFontSize + 18) : 0;
+        const sortHeightPx = Math.max(
+            0,
+            Number((settings.timeline as any).sortHeightPx ?? (settings.timeline as any).sortControlReservePx ?? 0)
+        );
+        const headerTopPaddingPx = Math.max(0, Number((settings.timeline as any).headerTopPaddingPx ?? 6));
+        const headerGapPx = 4;
+        const contentSeparatorPx = topAxisHeaderHeightPx > 0 ? 1 : 0;
+        const legendHeightPx = hasLegend ? Math.max(0, legendReserve.top - 10) : 0;
+        const computedContentStartYPx = headerTopPaddingPx
+            + (legendHeightPx > 0 ? legendHeightPx + headerGapPx : 0)
+            + (sortHeightPx > 0 ? sortHeightPx + headerGapPx : 0)
+            + topAxisHeaderHeightPx
+            + contentSeparatorPx;
+        const contentStartYPx = Math.max(
+            0,
+            Math.round(Number((settings.timeline as any).contentStartYPx ?? computedContentStartYPx))
+        );
+        const axisPinTopPx = headerTopPaddingPx
+            + (legendHeightPx > 0 ? legendHeightPx + headerGapPx : 0)
+            + (sortHeightPx > 0 ? sortHeightPx + headerGapPx : 0);
 
         const margin = {
-            top: 10 + legendReserve.top + topAxisReserve + sortControlReserve,
+            top: contentStartYPx,
             right: 14 + legendReserve.right,
             bottom: 10 + legendReserve.bottom + bottomAxisReserve,
             left: leftLabelSpace + legendReserve.left
@@ -127,7 +193,6 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
 
         let minYear = Math.min(timelineData.minYear, timelineData.maxYear);
         let maxYear = Math.max(timelineData.minYear, timelineData.maxYear);
-        const isDateScale = timelineData.timeScaleMode === "date";
         if (minYear === maxYear) {
             const singlePointPadding = isDateScale ? 24 * 60 * 60 * 1000 : 1;
             minYear -= singlePointPadding;
@@ -161,21 +226,56 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
         const timeSpanMs = Math.max(1, maxYear - minYear);
         const axisDateFormatter = (() => {
             if (timeSpanMs >= 1000 * 60 * 60 * 24 * 365 * 25) {
-                return new Intl.DateTimeFormat(undefined, { year: "numeric" });
+                return new Intl.DateTimeFormat(undefined, { year: "numeric", timeZone: "UTC" });
             }
             if (timeSpanMs >= 1000 * 60 * 60 * 24 * 365 * 2) {
-                return new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" });
+                return new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric", timeZone: "UTC" });
             }
-            return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" });
+            if (timeSpanMs >= 1000 * 60 * 60 * 24 * 45) {
+                return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
+            }
+            return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
         })();
+        const axisMonthFormatter = new Intl.DateTimeFormat(undefined, { month: "short", timeZone: "UTC" });
+        const axisMonthDayFormatter = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
         const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
             month: "short",
             day: "numeric",
-            year: "numeric"
+            year: "numeric",
+            timeZone: "UTC"
         });
+        const formatQuarter = (value: number, includeYear: boolean): string => {
+            const date = new Date(value);
+            const month = date.getUTCMonth();
+            const quarter = Math.floor(month / 3) + 1;
+            const q = `Q${Math.max(1, Math.min(4, quarter))}`;
+            return includeYear ? `${date.getUTCFullYear()} ${q}` : q;
+        };
+        const formatMonth = (value: number, includeYear: boolean): string => {
+            const date = new Date(value);
+            const month = axisMonthFormatter.format(date);
+            return includeYear ? `${date.getUTCFullYear()} ${month}` : month;
+        };
+        const formatDay = (value: number, includeYear: boolean): string => {
+            const date = new Date(value);
+            const dayLabel = `${date.getUTCDate()}`;
+            return includeYear ? `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}` : dayLabel;
+        };
         const formatTimelineValue = (value: number): string => {
             if (!isDateScale) {
                 return formatYear(value);
+            }
+            if (temporalLevel === "quarter") {
+                return formatQuarter(value, hasYearContext);
+            }
+            if (temporalLevel === "month") {
+                return formatMonth(value, hasYearContext);
+            }
+            if (temporalLevel === "day") {
+                return formatDay(value, hasYearContext);
+            }
+            if (missingYearContext) {
+                return axisMonthDayFormatter.format(new Date(value));
             }
             return axisDateFormatter.format(new Date(value));
         };
@@ -183,7 +283,64 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
             if (!isDateScale) {
                 return formatYear(value);
             }
+            if (temporalLevel === "quarter") {
+                return formatQuarter(value, hasYearContext);
+            }
+            if (temporalLevel === "month") {
+                return formatMonth(value, hasYearContext);
+            }
+            if (temporalLevel === "day") {
+                return formatDay(value, hasYearContext);
+            }
+            if (missingYearContext) {
+                return axisMonthDayFormatter.format(new Date(value));
+            }
             return tooltipDateFormatter.format(new Date(value));
+        };
+        const axisLabelForLevel = (level: AxisLevel, value: number): string => {
+            const d = new Date(value);
+            if (level === "year") {
+                return hasYearContext ? String(d.getUTCFullYear()) : "All years";
+            }
+            if (level === "quarter") {
+                return `Q${Math.floor(d.getUTCMonth() / 3) + 1}`;
+            }
+            if (level === "month") {
+                return axisMonthFormatter.format(d);
+            }
+            return `${d.getUTCDate()}`;
+        };
+        const floorToLevelStart = (level: AxisLevel, value: number): number => {
+            const d = new Date(value);
+            const y = d.getUTCFullYear();
+            const m = d.getUTCMonth();
+            const day = d.getUTCDate();
+            switch (level) {
+                case "year":
+                    return Date.UTC(y, 0, 1);
+                case "quarter":
+                    return Date.UTC(y, Math.floor(m / 3) * 3, 1);
+                case "month":
+                    return Date.UTC(y, m, 1);
+                default:
+                    return Date.UTC(y, m, day);
+            }
+        };
+        const addLevelStep = (level: AxisLevel, value: number): number => {
+            const d = new Date(value);
+            const y = d.getUTCFullYear();
+            const m = d.getUTCMonth();
+            const day = d.getUTCDate();
+            switch (level) {
+                case "year":
+                    return Date.UTC(y + 1, 0, 1);
+                case "quarter":
+                    return Date.UTC(y, m + 3, 1);
+                case "month":
+                    return Date.UTC(y, m + 1, 1);
+                default:
+                    return Date.UTC(y, m, day + 1);
+            }
         };
         const formatDuration = (duration: number): string => {
             if (!isDateScale) {
@@ -221,76 +378,228 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
             return `${Math.round(milliseconds / 1000).toLocaleString()} seconds`;
         };
 
-        const rawTicks = xScale.ticks(Math.max(2, Math.floor(chartWidth / 110)));
-        const xTicks: number[] = [];
-        const seenTicks = new Set<number>();
-        const minTick = Math.floor(minYear);
-        const maxTick = Math.ceil(maxYear);
-        const pushTick = (value: number) => {
-            const rounded = Math.round(value);
-            if (rounded < minTick || rounded > maxTick || seenTicks.has(rounded)) {
-                return;
+        const xTicksToRender: number[] = (() => {
+            const minValue = Math.min(minYear, maxYear);
+            const maxValue = Math.max(minYear, maxYear);
+            const activeAxisLevel: AxisLevel = (() => {
+                switch (temporalLevel) {
+                    case "day":
+                        return "day";
+                    case "month":
+                        return "month";
+                    case "quarter":
+                        return "quarter";
+                    default:
+                        return "year";
+                }
+            })();
+
+            if (isDateScale && activeAxisLevel !== "year") {
+                const ticks: number[] = [];
+                let cursor = floorToLevelStart(activeAxisLevel, minValue);
+                let guard = 0;
+                while (cursor <= maxValue && guard < 500000) {
+                    ticks.push(cursor);
+                    cursor = addLevelStep(activeAxisLevel, cursor);
+                    guard += 1;
+                }
+                if (!ticks.length || ticks[0] > minValue) {
+                    ticks.unshift(minValue);
+                }
+                if (ticks[ticks.length - 1] < maxValue) {
+                    ticks.push(maxValue);
+                }
+                return ticks;
             }
-            seenTicks.add(rounded);
-            xTicks.push(rounded);
-        };
-        pushTick(minYear);
-        rawTicks.forEach(pushTick);
-        pushTick(maxYear);
-        xTicks.sort((a, b) => a - b);
-        // Avoid overlapping end labels (e.g., "2000" and "2018" merging visually).
-        const minTickGapPx = Math.max(42, Math.round(axisFontSize * 4.2));
-        const filteredTicks: number[] = [];
-        for (const tick of xTicks) {
-            if (filteredTicks.length === 0) {
-                filteredTicks.push(tick);
-                continue;
-            }
-            const prev = filteredTicks[filteredTicks.length - 1];
-            const gap = Math.abs(xScale(tick) - xScale(prev));
-            if (gap >= minTickGapPx) {
-                filteredTicks.push(tick);
-            }
-        }
-        // Keep first and last ticks, but avoid crowding by replacing the previous one when needed.
-        if (xTicks.length > 0 && filteredTicks[0] !== xTicks[0]) {
-            filteredTicks.unshift(xTicks[0]);
-        }
-        if (xTicks.length > 1) {
-            const lastTick = xTicks[xTicks.length - 1];
-            const lastFiltered = filteredTicks[filteredTicks.length - 1];
-            if (lastFiltered !== lastTick) {
-                const gap = Math.abs(xScale(lastTick) - xScale(lastFiltered));
-                if (gap < minTickGapPx && filteredTicks.length > 1) {
-                    filteredTicks[filteredTicks.length - 1] = lastTick;
-                } else {
-                    filteredTicks.push(lastTick);
+
+            const rawTicks = xScale.ticks(Math.max(2, Math.floor(chartWidth / 110)));
+            const xTicks: number[] = [];
+            const seenTicks = new Set<number>();
+            const minTick = Math.floor(minValue);
+            const maxTick = Math.ceil(maxValue);
+            const pushTick = (value: number) => {
+                const rounded = Math.round(value);
+                if (rounded < minTick || rounded > maxTick || seenTicks.has(rounded)) {
+                    return;
+                }
+                seenTicks.add(rounded);
+                xTicks.push(rounded);
+            };
+            pushTick(minYear);
+            rawTicks.forEach(pushTick);
+            pushTick(maxYear);
+            xTicks.sort((a, b) => a - b);
+
+            const minTickGapPx = Math.max(42, Math.round(axisFontSize * 4.2));
+            const filteredTicks: number[] = [];
+            for (const tick of xTicks) {
+                if (filteredTicks.length === 0) {
+                    filteredTicks.push(tick);
+                    continue;
+                }
+                const prev = filteredTicks[filteredTicks.length - 1];
+                const gap = Math.abs(xScale(tick) - xScale(prev));
+                if (gap >= minTickGapPx) {
+                    filteredTicks.push(tick);
                 }
             }
-        }
-        const xTicksToRender = filteredTicks;
+            if (xTicks.length > 0 && filteredTicks[0] !== xTicks[0]) {
+                filteredTicks.unshift(xTicks[0]);
+            }
+            if (xTicks.length > 1) {
+                const lastTick = xTicks[xTicks.length - 1];
+                const lastFiltered = filteredTicks[filteredTicks.length - 1];
+                if (lastFiltered !== lastTick) {
+                    const gap = Math.abs(xScale(lastTick) - xScale(lastFiltered));
+                    if (gap < minTickGapPx && filteredTicks.length > 1) {
+                        filteredTicks[filteredTicks.length - 1] = lastTick;
+                    } else {
+                        filteredTicks.push(lastTick);
+                    }
+                }
+            }
+            return filteredTicks;
+        })();
+        const buildAxisLabelRuns = (level: AxisLevel): AxisLabelRun[] => {
+            if (!isDateScale) {
+                return [{
+                    label: axisLabelForLevel(level, minYear),
+                    startX: 0,
+                    endX: chartWidth,
+                    startValue: minYear,
+                    endValue: maxYear
+                }];
+            }
+
+            const minValue = Math.min(minYear, maxYear);
+            const maxValue = Math.max(minYear, maxYear);
+            const runs: AxisLabelRun[] = [];
+            let cursor = floorToLevelStart(level, minValue);
+            let guard = 0;
+            while (cursor < maxValue && guard < 500000) {
+                const next = addLevelStep(level, cursor);
+                const clippedStart = Math.max(minValue, cursor);
+                const clippedEnd = Math.min(maxValue, next);
+                if (clippedEnd > clippedStart) {
+                    runs.push({
+                        label: axisLabelForLevel(level, cursor),
+                        startX: xScale(clippedStart),
+                        endX: xScale(clippedEnd),
+                        startValue: clippedStart,
+                        endValue: clippedEnd
+                    });
+                }
+                cursor = next;
+                guard += 1;
+            }
+
+            if (runs.length > 0) {
+                return runs;
+            }
+
+            if (!xTicksToRender.length) {
+                return [];
+            }
+
+            const fallbackRuns: AxisLabelRun[] = [];
+            for (let i = 0; i < xTicksToRender.length; i++) {
+                const startTick = xTicksToRender[i];
+                const endTick = i < xTicksToRender.length - 1 ? xTicksToRender[i + 1] : maxValue;
+                if (endTick <= startTick) {
+                    continue;
+                }
+                fallbackRuns.push({
+                    label: axisLabelForLevel(level, startTick),
+                    startX: xScale(startTick),
+                    endX: xScale(endTick),
+                    startValue: startTick,
+                    endValue: endTick
+                });
+            }
+            return fallbackRuns;
+        };
+        const viewportWidth = this.context.root?.clientWidth || this.context.width;
+        const decimateRunsBySpacing = (
+            runs: AxisLabelRun[],
+            minGapPx: number
+        ): AxisLabelRun[] => {
+            if (runs.length <= 2) {
+                return runs;
+            }
+
+            const kept: AxisLabelRun[] = [];
+            let lastCenter = Number.NEGATIVE_INFINITY;
+
+            for (let i = 0; i < runs.length; i++) {
+                const run = runs[i];
+                const center = run.startX + ((run.endX - run.startX) / 2);
+                const isEdge = i === 0 || i === runs.length - 1;
+                if (isEdge || center - lastCenter >= minGapPx) {
+                    kept.push(run);
+                    lastCenter = center;
+                }
+            }
+
+            const lastRun = runs[runs.length - 1];
+            if (kept[kept.length - 1] !== lastRun) {
+                kept.push(lastRun);
+            }
+            return kept;
+        };
+        const getRowLabelMinGapPx = (level: AxisLevel): number => {
+            switch (level) {
+                case "year":
+                    return Math.max(72, Math.round(axisFontSize * 6.6));
+                case "quarter":
+                    return Math.max(108, Math.round(axisFontSize * 10.0));
+                case "month":
+                    return Math.max(138, Math.round(axisFontSize * 12.0));
+                default:
+                    return Math.max(174, Math.round(axisFontSize * 14.0));
+            }
+        };
+        const buildDecimatedTicks = (ticks: number[], minGapPx: number): number[] => {
+            if (ticks.length <= 2) {
+                return ticks;
+            }
+            const selected: number[] = [];
+            let lastX = Number.NEGATIVE_INFINITY;
+            for (let i = 0; i < ticks.length; i++) {
+                const tick = ticks[i];
+                const x = xScale(tick);
+                const isEdge = i === 0 || i === ticks.length - 1;
+                if (isEdge || x - lastX >= minGapPx) {
+                    selected.push(tick);
+                    lastX = x;
+                }
+            }
+            const lastTick = ticks[ticks.length - 1];
+            if (selected[selected.length - 1] !== lastTick) {
+                selected.push(lastTick);
+            }
+            return selected;
+        };
         const axisStroke = this.isHighContrastMode() ? this.getThemeForeground("#111827") : "#d1d5db";
         const axisTextColor = this.isHighContrastMode() ? this.getThemeForeground(settings.xAxisColor) : settings.xAxisColor;
 
         let topAxisGroup: d3.Selection<SVGGElement, unknown, null, undefined> | null = null;
         if (settings.showXAxis && settings.timeline.showTopAxis) {
-            const headerPadTop = Math.round(axisFontSize + 16);
-            const headerPadBottom = 12;
-            const headerHeight = headerPadTop + headerPadBottom;
-            // Sticky behavior:
-            // - initial (scrollTop=0): axis sits below top legend reservation
-            // - after scrolling past that reservation: axis snaps to top edge
-            const pinnedTopBaseY = -margin.top;
-            const stickyOffset = Math.max(0, Math.round(legendReserve.top + sortControlReserve));
-            const pinnedTopOffset = Math.max(0, Math.round(legendReserve.top + sortControlReserve));
-            const axisBaselineY = Math.max(12, headerPadTop - 2);
+            const rowCount = Math.max(1, axisLevels.length);
+            const headerPadTop = 4;
+            const bannerHeight = showAllYearsBanner ? Math.max(11, axisFontSize) : 0;
+            const bannerGap = showAllYearsBanner ? 3 : 0;
+            const rowHeight = Math.max(12, Math.round(axisFontSize + 6));
+            const rowLabelTop = headerPadTop + bannerHeight + bannerGap;
+            const desiredBaselineY = rowLabelTop + (rowCount * rowHeight) + 6;
+            const headerHeight = Math.max(24, topAxisHeaderHeightPx || calculatedAxisHeaderHeight);
+            const axisBaselineY = Math.max(12, Math.min(headerHeight - 8, desiredBaselineY));
 
             topAxisGroup = panel.append("g")
                 .attr("class", "x-axis timeline-axis top pinned-top-axis")
-                .attr("data-base-y", `${pinnedTopBaseY}`)
-                .attr("data-sticky-offset", `${stickyOffset}`)
-                .attr("data-pin-top", `${pinnedTopOffset}`)
-                .attr("transform", `translate(0, ${Math.round(pinnedTopBaseY)})`);
+                .attr("data-panel-top", `${Math.round(margin.top)}`)
+                .attr("data-axis-natural-top", `${Math.round(axisPinTopPx)}`)
+                .attr("data-header-height", `${Math.round(headerHeight)}`)
+                .attr("transform", `translate(0, ${Math.round(axisPinTopPx - margin.top)})`);
 
             topAxisGroup.append("rect")
                 .attr("class", "pinned-top-axis-bg")
@@ -309,7 +618,124 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                 .attr("stroke", axisStroke)
                 .attr("stroke-width", 1);
 
-            xTicksToRender.forEach((tick) => {
+            if (showAllYearsBanner) {
+                topAxisGroup.append("text")
+                    .attr("x", 0)
+                    .attr("y", this.snapToPixelInt(headerPadTop + bannerHeight - 1))
+                    .attr("text-anchor", "start")
+                    .attr("font-size", `${Math.max(8, axisFontSize - 1)}px`)
+                    .attr("font-family", settings.xAxisFontFamily)
+                    .style("font-weight", "600")
+                    .attr("fill", axisTextColor)
+                    .text("All years view");
+            }
+
+            axisLevels.forEach((level, rowIdx) => {
+                const rowTop = rowLabelTop + (rowIdx * rowHeight);
+                const textY = this.snapToPixelInt(rowTop + (rowHeight * 0.72));
+                const minGapPx = getRowLabelMinGapPx(level);
+                const runs = decimateRunsBySpacing(
+                    buildAxisLabelRuns(level),
+                    minGapPx
+                );
+                const runsWithSpacing = runs.map((run, idx) => {
+                    const nextStart = idx < runs.length - 1 ? runs[idx + 1].startX : chartWidth;
+                    const prevEnd = idx > 0 ? runs[idx - 1].endX : 0;
+                    const centerSpacing = idx < runs.length - 1
+                        ? Math.max(0, nextStart - run.startX)
+                        : Math.max(0, run.endX - prevEnd);
+                    return { run, centerSpacing };
+                });
+                let renderedLabels = 0;
+
+                runsWithSpacing.forEach(({ run, centerSpacing }, idx) => {
+                    const width = Math.max(0, run.endX - run.startX);
+                    if (width <= 0) {
+                        return;
+                    }
+
+                    const cx = this.snapToPixelInt(run.startX + (width / 2));
+                    const spacingBudget = Math.max(0, centerSpacing - 10);
+                    const labelBudget = Math.max(
+                        18,
+                        Math.max(width - 6, Math.min(spacingBudget, minGapPx - 8))
+                    );
+                    const label = formatLabel(run.label, labelBudget, Math.max(8, axisFontSize - 1));
+                    if (!label) {
+                        return;
+                    }
+
+                    topAxisGroup.append("text")
+                        .attr("x", cx)
+                        .attr("y", textY)
+                        .attr("text-anchor", "middle")
+                        .attr("font-size", `${Math.max(8, axisFontSize - 1)}px`)
+                        .attr("font-family", settings.xAxisFontFamily)
+                        .style("font-weight", rowIdx === 0 ? "600" : "400")
+                        .style("font-style", settings.xAxisItalic ? "italic" : "normal")
+                        .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
+                        .attr("fill", axisTextColor)
+                        .text(label);
+                    renderedLabels += 1;
+                });
+
+                if (renderedLabels === 0 && xTicksToRender.length > 0) {
+                    const approxSpacingPx = Math.max(64, Math.round(minGapPx * 0.85));
+                    const totalTicks = xTicksToRender.length;
+                    const desired = Math.max(4, Math.floor(viewportWidth / approxSpacingPx));
+                    const tickStep = Math.max(1, Math.ceil(totalTicks / Math.max(1, desired)));
+                    let lastBandKey = "";
+
+                    for (let i = 0; i < xTicksToRender.length; i += tickStep) {
+                        const tick = xTicksToRender[i];
+                        const bandStart = floorToLevelStart(level, tick);
+                        const bandKey = `${level}-${bandStart}`;
+                        if (bandKey === lastBandKey) {
+                            continue;
+                        }
+                        lastBandKey = bandKey;
+
+                        const cx = this.snapToPixelInt(xScale(tick));
+                        const label = formatLabel(
+                            axisLabelForLevel(level, bandStart),
+                            Math.max(14, approxSpacingPx - 8),
+                            Math.max(8, axisFontSize - 1)
+                        );
+
+                        if (!label) {
+                            continue;
+                        }
+
+                        topAxisGroup.append("text")
+                            .attr("x", cx)
+                            .attr("y", textY)
+                            .attr("text-anchor", "middle")
+                            .attr("font-size", `${Math.max(8, axisFontSize - 1)}px`)
+                            .attr("font-family", settings.xAxisFontFamily)
+                            .style("font-weight", rowIdx === 0 ? "600" : "400")
+                            .style("font-style", settings.xAxisItalic ? "italic" : "normal")
+                            .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
+                            .attr("fill", axisTextColor)
+                            .text(label);
+                    }
+                }
+
+                if (rowIdx < axisLevels.length - 1) {
+                    const separatorY = this.snapToPixel(rowTop + rowHeight);
+                    topAxisGroup.append("line")
+                        .attr("x1", 0)
+                        .attr("x2", chartWidth)
+                        .attr("y1", separatorY)
+                        .attr("y2", separatorY)
+                        .attr("stroke", this.getGridStroke("#e5e7eb"))
+                        .attr("stroke-width", 1)
+                        .attr("stroke-opacity", this.isHighContrastMode() ? 1 : 0.5);
+                }
+            });
+
+            const topTickGapPx = Math.max(24, Math.round(axisFontSize * 2.4));
+            const xTicksTop = buildDecimatedTicks(xTicksToRender, topTickGapPx);
+            xTicksTop.forEach((tick) => {
                 const x = this.snapToPixelInt(xScale(tick));
                 topAxisGroup.append("line")
                     .attr("x1", x)
@@ -318,18 +744,6 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                     .attr("y2", axisBaselineY - 5)
                     .attr("stroke", axisStroke)
                     .attr("stroke-width", 1);
-
-                topAxisGroup.append("text")
-                    .attr("x", x)
-                    .attr("y", axisBaselineY - 8)
-                    .attr("text-anchor", "middle")
-                    .attr("font-size", `${axisFontSize}px`)
-                    .attr("font-family", settings.xAxisFontFamily)
-                    .style("font-weight", settings.xAxisBold ? "700" : "400")
-                    .style("font-style", settings.xAxisItalic ? "italic" : "normal")
-                    .style("text-decoration", settings.xAxisUnderline ? "underline" : "none")
-                    .attr("fill", axisTextColor)
-                    .text(formatTimelineValue(tick));
             });
 
             topAxisGroup.append("line")
@@ -342,7 +756,23 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                 .attr("stroke-opacity", this.isHighContrastMode() ? 1 : 0.65);
         }
 
-        if (settings.showXAxis && settings.timeline.showBottomAxis) {
+        if (settings.showXAxis && showBottomAxis) {
+            const bottomTickGapPx = (() => {
+                if (!isDateScale) {
+                    return Math.max(56, Math.round(axisFontSize * 5.2));
+                }
+                switch (temporalLevel) {
+                    case "quarter":
+                        return Math.max(80, Math.round(axisFontSize * 7.4));
+                    case "month":
+                        return Math.max(92, Math.round(axisFontSize * 8.2));
+                    case "day":
+                        return Math.max(110, Math.round(axisFontSize * 9.2));
+                    default:
+                        return Math.max(64, Math.round(axisFontSize * 5.6));
+                }
+            })();
+            const xTicksBottom = buildDecimatedTicks(xTicksToRender, bottomTickGapPx);
             const bottomAxisGroup = panel.append("g")
                 .attr("class", "x-axis timeline-axis bottom")
                 .attr("transform", `translate(0, ${chartHeight})`);
@@ -355,7 +785,7 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                 .attr("stroke", axisStroke)
                 .attr("stroke-width", 1);
 
-            xTicksToRender.forEach((tick) => {
+            xTicksBottom.forEach((tick) => {
                 const x = this.snapToPixelInt(xScale(tick));
                 bottomAxisGroup.append("line")
                     .attr("x1", x)
@@ -422,7 +852,7 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
 
             const bar = rowGroup.append("rect")
                 .attr("class", "timeline-bar")
-                .attr("data-selection-key", regionKey)
+                .attr("data-selection-key", String(point.index))
                 .attr("x", this.snapToPixelInt(startX))
                 .attr("y", barY)
                 .attr("width", this.snapToPixelInt(barWidth))
@@ -528,10 +958,23 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                     .attr("stroke-opacity", this.isHighContrastMode() ? 1 : 0.9)
                     .style("pointer-events", "none");
 
-                panel.append("text")
+                const todayLabelHost = topAxisGroup ?? panel;
+                const todayLabelY = (() => {
+                    if (topAxisGroup) {
+                        const rawHeaderHeight = Number(topAxisGroup.attr("data-header-height"));
+                        const headerHeight = Number.isFinite(rawHeaderHeight) && rawHeaderHeight > 0
+                            ? rawHeaderHeight
+                            : topAxisHeaderHeightPx;
+                        return this.snapToPixelInt(Math.max(10, Math.min(headerHeight - 6, 16)));
+                    }
+                    // With no top axis, place the label just above row content to avoid bar-text overlap.
+                    return -4;
+                })();
+
+                todayLabelHost.append("text")
                     .attr("class", "timeline-today-label")
                     .attr("x", this.snapToPixelInt(labelX))
-                    .attr("y", 12)
+                    .attr("y", todayLabelY)
                     .attr("text-anchor", useEndAnchor ? "end" : "start")
                     .attr("font-size", `${Math.max(9, axisFontSize - 1)}px`)
                     .attr("font-family", settings.xAxisFontFamily)
@@ -577,52 +1020,29 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                 alignFrame: {
                     x: margin.left,
                     y: margin.top,
-                    width: chartWidth,
+                    width: Math.max(0, legendAvailableWidth - margin.left - 8),
                     height: chartHeight
                 },
                 availableWidth: legendAvailableWidth,
                 availableHeight: legendAvailableHeight
             });
 
-            // Make the legend sticky in viewport space (handled by visual scroll sync).
+            // Keep legend anchored under the title while allowing vertical scroll with content.
             const legendNodes = this.context.container.selectAll<SVGGElement, unknown>("g.color-legend").nodes();
-            const legendPinLeft = 8;
-            const legendPinTop = 6;
-            let stickyLegendBottom = 0;
+            const legendAnchorY = Math.max(0, Math.round(headerTopPaddingPx));
             legendNodes.forEach((legendNode) => {
-                const legend = d3.select(legendNode);
-                const bbox = legendNode.getBBox();
-                const padX = 8;
-                const padY = 6;
-                const legendHeight = Math.max(0, Math.ceil(bbox.height) + padY * 2);
-                stickyLegendBottom = Math.max(stickyLegendBottom, legendPinTop + legendHeight);
-
-                legend.selectAll("rect.pinned-top-legend-bg").remove();
-                legend.insert("rect", ":first-child")
-                    .attr("class", "pinned-top-legend-bg")
-                    .attr("x", -padX)
-                    .attr("y", -padY)
-                    .attr("width", Math.max(0, Math.ceil(bbox.width) + padX * 2))
-                    .attr("height", Math.max(0, Math.ceil(bbox.height) + padY * 2))
-                    .attr("fill", this.getThemeBackground("#ffffff"))
-                    .attr("opacity", 0.98)
-                    .attr("rx", 6)
-                    .attr("pointer-events", "none");
-
-                legend
-                    .classed("pinned-top-legend", true)
-                    .attr("data-pin-left", `${legendPinLeft}`)
-                    .attr("data-pin-top", `${legendPinTop}`)
-                    .attr("transform", `translate(${legendPinLeft}, ${legendPinTop})`);
+                const transform = String(legendNode.getAttribute("transform") || "");
+                const match = transform.match(/translate\(\s*([-\d.]+)[,\s]+([-\d.]+)\s*\)/i);
+                const x = match ? Number(match[1]) : 0;
+                const y = match ? Number(match[2]) : legendAnchorY;
+                const naturalX = Number.isFinite(x) ? x : 0;
+                const naturalY = Number.isFinite(y) ? Math.max(legendAnchorY, y) : legendAnchorY;
+                d3.select(legendNode)
+                    .attr("transform", `translate(${Math.round(naturalX)}, ${Math.round(naturalY)})`)
+                    .attr("data-lock-x", "true")
+                    .attr("data-natural-x", `${Math.round(naturalX)}`)
+                    .attr("data-natural-y", `${Math.round(naturalY)}`);
             });
-
-            // Keep axis glued to the legend (no vertical gap) while scrolling.
-            if (topAxisGroup) {
-                const axisTop = Math.max(0, Math.round(stickyLegendBottom + sortControlReserve));
-                topAxisGroup
-                    .attr("data-pin-top", `${axisTop}`)
-                    .attr("data-sticky-offset", `${axisTop}`);
-            }
         }
     }
 }

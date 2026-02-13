@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.4.5 - 2026-02-13
+
+### Added
+- World History Timeline: native drill support on `Start` hierarchy (`Year -> Quarter -> Month -> Day`) with drill role metadata in capabilities.
+- World History Timeline: hierarchy-aware top axis rendering for drill levels, with improved contextual label rows.
+
+### Changed
+- Upgraded visual toolchain across workspaces to `powerbi-visuals-api ~5.11.0` and `powerbi-visuals-tools ^7.0.2` (plus aligned ESLint plugin versions).
+- Updated all visuals to `apiVersion: 5.11.0` in `pbiviz.json`.
+- World History Timeline: updated visual GUID/version and refreshed sample dataset for hierarchy/drill testing.
+- Build wrapper (`scripts/pbiviz-wrapper.mjs`) now prefers repo-root binaries and auto-reconciles local `powerbi-visuals-api` links to the manifest API version.
+
+### Fixed
+- World History Timeline: `Today` marker label no longer overlaps timeline row labels; it is now rendered in header-safe space.
+- World History Timeline: legend/sort/axis layout and scroll behavior regressions addressed to reduce header drift and blank-gap artifacts during navigation.
+
 ## v1.4.0 - 2026-02-10
 
 ### Added

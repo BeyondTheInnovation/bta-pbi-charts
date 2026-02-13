@@ -9,6 +9,7 @@ import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import ITooltipService = powerbi.extensibility.ITooltipService;
 import ISelectionId = powerbi.visuals.ISelectionId;
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import {
     d3,
@@ -28,7 +29,11 @@ import {
     bindSelectionByDataKey
 } from "@pbi-visuals/shared";
 import { IWorldHistoryTimelineVisualSettings, TimelineSortMode, parseSettings } from "./settings";
-import { WorldHistoryTimelineData, WorldHistoryTimelineTransformer } from "./WorldHistoryTimelineTransformer";
+import {
+    TimelineTemporalLevel,
+    WorldHistoryTimelineData,
+    WorldHistoryTimelineTransformer
+} from "./WorldHistoryTimelineTransformer";
 import { WorldHistoryTimelineRenderer } from "./WorldHistoryTimelineRenderer";
 
 interface SortControlOption {
@@ -199,6 +204,7 @@ export class Visual implements IVisual {
     private allowInteractions: boolean;
 
     private regionSelectionIds: Map<string, ISelectionId> = new Map();
+    private pointSelectionIds: Map<string, ISelectionId> = new Map();
     private regions: string[] = [];
     private regionColors: Map<string, string> = new Map();
     private regionFieldIndex: number = -1;
@@ -213,14 +219,21 @@ export class Visual implements IVisual {
     private sortControlReservePx: number = 0;
 
     private static readonly MIN_CONTENT_WIDTH: number = 900;
-    private static readonly MAX_CONTENT_WIDTH: number = 9000;
-    private static readonly PX_PER_YEAR: number = 0.72;
+    private static readonly MAX_CONTENT_WIDTH: number = 300000;
+    private static readonly PX_PER_YEAR: number = 24;
+    private static readonly PX_PER_QUARTER: number = 18;
+    private static readonly PX_PER_MONTH: number = 14;
+    private static readonly PX_PER_DAY: number = 6;
     private static readonly MILLISECONDS_PER_YEAR: number = 1000 * 60 * 60 * 24 * 365.25;
+    private static readonly MILLISECONDS_PER_DAY: number = 1000 * 60 * 60 * 24;
     private static readonly WIDTH_PADDING: number = 220;
     private static readonly ROW_HEIGHT: number = 20;
     private static readonly HEIGHT_PADDING: number = 140;
     private static readonly MIN_CONTENT_HEIGHT: number = 460;
     private static readonly MAX_CONTENT_HEIGHT: number = 12000;
+    private static readonly HEADER_TOP_PADDING: number = 6;
+    private static readonly HEADER_LEFT_PADDING: number = 8;
+    private static readonly HEADER_LAYER_GAP: number = 4;
     private lastLayoutKey: string = "";
     private lastViewportWidth: number = 0;
     private lastViewportHeight: number = 0;
@@ -311,6 +324,7 @@ export class Visual implements IVisual {
 
             this.regionFieldIndex = findCategoryIndex(dataView, "region");
             this.buildRegionSelectionIds(dataView);
+            this.buildPointSelectionIds(dataView);
             this.regionColors = readCategoryColorsFromDataView(dataView, this.regionFieldIndex);
 
             const context: RenderContext = {
@@ -357,8 +371,8 @@ export class Visual implements IVisual {
                 ?? (settingsSortValid ? this.settings.timeline.sortBy : fallbackSortBy);
             this.syncSortControl(true, effectiveSortBy, sortOptions);
             this.sortControlReservePx = this.sortControlRoot?.offsetHeight
-                ? Math.max(0, Math.ceil(this.sortControlRoot.offsetHeight) + 4)
-                : 32;
+                ? Math.max(0, Math.ceil(this.sortControlRoot.offsetHeight))
+                : 28;
 
             const virtualCanvas = this.computeVirtualCanvasSize(width, height, chartData);
             this.svg
@@ -383,7 +397,10 @@ export class Visual implements IVisual {
                 timeline: {
                     ...this.settings.timeline,
                     sortBy: effectiveSortBy,
-                    sortControlReservePx: this.sortControlReservePx
+                    sortControlReservePx: this.sortControlReservePx,
+                    sortHeightPx: this.sortControlReservePx,
+                    axisHeaderHeightPx: this.computeTopAxisHeaderHeight(this.settings, chartData),
+                    headerTopPaddingPx: Visual.HEADER_TOP_PADDING
                 }
             };
 
@@ -419,11 +436,32 @@ export class Visual implements IVisual {
     ): { width: number; height: number } {
         const rowCount = Math.max(1, chartData.items.length);
         const rawSpan = Math.max(1, chartData.maxYear - chartData.minYear);
-        const yearSpan = chartData.timeScaleMode === "date"
-            ? Math.max(1, rawSpan / Visual.MILLISECONDS_PER_YEAR)
-            : Math.max(1, rawSpan);
+        const widthByYears = (() => {
+            if (chartData.timeScaleMode !== "date") {
+                const numericYearSpan = Math.max(1, rawSpan);
+                return Math.round((numericYearSpan * Visual.PX_PER_YEAR) + Visual.WIDTH_PADDING);
+            }
 
-        const widthByYears = Math.round((yearSpan * Visual.PX_PER_YEAR) + Visual.WIDTH_PADDING);
+            const spanMs = Math.max(Visual.MILLISECONDS_PER_DAY, rawSpan);
+            switch (chartData.timeTemporalLevel) {
+                case "day": {
+                    const daySpan = Math.max(1, spanMs / Visual.MILLISECONDS_PER_DAY);
+                    return Math.round((daySpan * Visual.PX_PER_DAY) + Visual.WIDTH_PADDING);
+                }
+                case "month": {
+                    const monthSpan = Math.max(1, spanMs / (Visual.MILLISECONDS_PER_YEAR / 12));
+                    return Math.round((monthSpan * Visual.PX_PER_MONTH) + Visual.WIDTH_PADDING);
+                }
+                case "quarter": {
+                    const quarterSpan = Math.max(1, spanMs / (Visual.MILLISECONDS_PER_YEAR / 4));
+                    return Math.round((quarterSpan * Visual.PX_PER_QUARTER) + Visual.WIDTH_PADDING);
+                }
+                default: {
+                    const yearSpan = Math.max(1, spanMs / Visual.MILLISECONDS_PER_YEAR);
+                    return Math.round((yearSpan * Visual.PX_PER_YEAR) + Visual.WIDTH_PADDING);
+                }
+            }
+        })();
         const heightByRows = Math.round((rowCount * Visual.ROW_HEIGHT) + Visual.HEIGHT_PADDING);
 
         const width = Math.max(
@@ -445,28 +483,88 @@ export class Visual implements IVisual {
         return { width, height };
     }
 
+    private computeTopAxisHeaderHeight(
+        settings: IWorldHistoryTimelineVisualSettings,
+        chartData: WorldHistoryTimelineData
+    ): number {
+        if (!settings.showXAxis || !settings.timeline.showTopAxis) {
+            return 0;
+        }
+
+        const axisFontSize = this.getConfiguredAxisFontSize(settings);
+        const axisLevels = this.getAxisLevels(chartData);
+        const rowCount = Math.max(1, axisLevels.length);
+        const showBanner = chartData.timeScaleMode === "date"
+            && !chartData.timeHasYearContext
+            && axisLevels.length > 0
+            && chartData.timeTemporalLevel !== "year"
+            && chartData.timeTemporalLevel !== "none"
+            && chartData.timeTemporalLevel !== "date";
+
+        const headerPadTop = 4;
+        const bannerHeight = showBanner ? Math.max(11, axisFontSize) : 0;
+        const bannerGap = showBanner ? 3 : 0;
+        const rowHeight = Math.max(12, Math.round(axisFontSize + 6));
+        const baselineGap = 6;
+        const headerPadBottom = 10;
+
+        return headerPadTop + bannerHeight + bannerGap + (rowCount * rowHeight) + baselineGap + headerPadBottom;
+    }
+
+    private getConfiguredAxisFontSize(settings: IWorldHistoryTimelineVisualSettings): number {
+        const preferred = settings.textSizes.xAxisFontSize > 0
+            ? settings.textSizes.xAxisFontSize
+            : settings.xAxisFontSize;
+        const n = Number(preferred);
+        if (!Number.isFinite(n) || n <= 0) {
+            return 9;
+        }
+        return Math.max(6, Math.min(40, n));
+    }
+
+    private getAxisLevels(chartData: WorldHistoryTimelineData): TimelineTemporalLevel[] {
+        if (chartData.timeScaleMode !== "date") {
+            return ["year"];
+        }
+
+        switch (chartData.timeTemporalLevel) {
+            case "quarter":
+                return ["year", "quarter"];
+            case "month":
+                return ["year", "quarter", "month"];
+            case "day":
+                return ["year", "quarter", "month", "day"];
+            case "year":
+                return ["year"];
+            default:
+                return chartData.timeHasYearContext ? ["year"] : ["date"];
+        }
+    }
+
     private syncPinnedLayers(): void {
         const scrollTop = this.target.scrollTop || 0;
         const scrollLeft = this.target.scrollLeft || 0;
-        const pinnedAxes = this.target.querySelectorAll<SVGGElement>("g.pinned-top-axis");
-        pinnedAxes.forEach((axis) => {
-            const baseY = Number(axis.getAttribute("data-base-y") ?? "0");
-            const stickyOffset = Number(axis.getAttribute("data-sticky-offset") ?? "0");
-            const pinTop = Number(axis.getAttribute("data-pin-top") ?? "0");
-            const snappedY = baseY + Math.max(scrollTop + pinTop, stickyOffset);
-            axis.setAttribute("transform", `translate(0, ${Math.round(snappedY)})`);
-        });
 
-        const pinnedLegends = this.target.querySelectorAll<SVGGElement>("g.pinned-top-legend, g.color-legend[data-pin-left]");
-        pinnedLegends.forEach((legend) => {
-            const pinLeft = Number(legend.getAttribute("data-pin-left") ?? "8");
-            const pinTop = Number(legend.getAttribute("data-pin-top") ?? "6");
-            const x = Math.round(scrollLeft + pinLeft);
-            const y = Math.round(scrollTop + pinTop);
+        const horizontalPinnedLegends = this.target.querySelectorAll<SVGGElement>('g.color-legend[data-lock-x="true"]');
+        horizontalPinnedLegends.forEach((legend) => {
+            const naturalX = Number(legend.getAttribute("data-natural-x") ?? "0");
+            const naturalY = Number(legend.getAttribute("data-natural-y") ?? "0");
+            const x = Math.round(scrollLeft + (Number.isFinite(naturalX) ? naturalX : 0));
+            const y = Math.round(Number.isFinite(naturalY) ? naturalY : 0);
             legend.setAttribute("transform", `translate(${x}, ${y})`);
         });
 
         this.syncSortControlPlacement();
+
+        const pinnedAxes = this.target.querySelectorAll<SVGGElement>("g.pinned-top-axis");
+        pinnedAxes.forEach((axis) => {
+            const panelTop = Number(axis.getAttribute("data-panel-top") ?? "0");
+            const axisNaturalTop = Number(axis.getAttribute("data-axis-natural-top") ?? "0");
+            // Let the axis scroll naturally until it reaches the viewport top, then pin at y=0.
+            const globalTop = Math.max(axisNaturalTop, scrollTop);
+            const y = globalTop - panelTop;
+            axis.setAttribute("transform", `translate(0, ${Math.round(y)})`);
+        });
     }
 
     private renderNoData(width: number, height: number): void {
@@ -622,7 +720,7 @@ export class Visual implements IVisual {
 
         this.syncSortControlPlacement();
         this.sortControlReservePx = this.sortControlRoot.offsetHeight
-            ? Math.max(0, Math.ceil(this.sortControlRoot.offsetHeight) + 4)
+            ? Math.max(0, Math.ceil(this.sortControlRoot.offsetHeight))
             : this.sortControlReservePx;
     }
 
@@ -642,47 +740,53 @@ export class Visual implements IVisual {
             return;
         }
 
-        const legendNodes = Array.from(this.target.querySelectorAll<SVGGElement>(
-            "g.pinned-top-legend, g.color-legend[data-pin-left]"
-        ));
+        const legendNodes = Array.from(this.target.querySelectorAll<SVGGElement>("g.color-legend"));
 
-        let computedTop = 10;
-        let computedLeft = 10;
+        let computedTop = Visual.HEADER_TOP_PADDING;
+        let computedLeft = Visual.HEADER_LEFT_PADDING;
 
         if (legendNodes.length > 0) {
-            let legendBottom = 0;
-            let legendLeft = 10;
+            let legendBottom = Visual.HEADER_TOP_PADDING;
+            let legendLeft = Visual.HEADER_LEFT_PADDING;
 
             legendNodes.forEach((node) => {
-                const pinLeft = Number(node.getAttribute("data-pin-left") ?? "8");
-                const pinTop = Number(node.getAttribute("data-pin-top") ?? "6");
                 let bboxY = 0;
                 let bboxHeight = 0;
-
+                let bboxX = 0;
+                const naturalXAttr = Number(node.getAttribute("data-natural-x") ?? "NaN");
+                const naturalYAttr = Number(node.getAttribute("data-natural-y") ?? "NaN");
                 try {
                     const bbox = node.getBBox();
+                    bboxX = Number.isFinite(bbox.x) ? bbox.x : 0;
                     bboxY = Number.isFinite(bbox.y) ? bbox.y : 0;
                     bboxHeight = Number.isFinite(bbox.height) ? bbox.height : 0;
                 } catch {
-                    // Ignore getBBox failures and fall back to pin position.
+                    // Ignore getBBox failures and keep defaults.
                 }
 
-                legendLeft = Math.min(legendLeft, pinLeft);
-                legendBottom = Math.max(legendBottom, pinTop + bboxY + bboxHeight);
+                const effectiveX = Number.isFinite(naturalXAttr) ? naturalXAttr : bboxX;
+                const effectiveY = Number.isFinite(naturalYAttr) ? naturalYAttr : bboxY;
+
+                legendLeft = Math.min(legendLeft, Math.round(effectiveX));
+                legendBottom = Math.max(legendBottom, Math.round(effectiveY + bboxHeight));
             });
 
-            computedLeft = Math.round(legendLeft);
-            computedTop = Math.max(8, Math.round(legendBottom + 4));
+            computedLeft = Math.max(Visual.HEADER_LEFT_PADDING, legendLeft);
+            computedTop = Math.max(Visual.HEADER_TOP_PADDING, legendBottom + Visual.HEADER_LAYER_GAP);
         }
 
         const hostWidth = this.target.clientWidth || 0;
         const controlWidth = Math.ceil(this.sortControlRoot.getBoundingClientRect().width || 140);
         if (hostWidth > 0) {
-            computedLeft = Math.max(8, Math.min(computedLeft, Math.max(8, hostWidth - controlWidth - 8)));
+            computedLeft = Math.max(
+                Visual.HEADER_LEFT_PADDING,
+                Math.min(computedLeft, Math.max(Visual.HEADER_LEFT_PADDING, hostWidth - controlWidth - 8))
+            );
         }
 
-        this.sortControlRoot.style.top = `${computedTop}px`;
-        this.sortControlRoot.style.left = `${computedLeft}px`;
+        // Keep the control in chart-content coordinates so it scrolls away with content.
+        this.sortControlRoot.style.top = `${Math.round(computedTop)}px`;
+        this.sortControlRoot.style.left = `${Math.round(computedLeft)}px`;
     }
 
     private syncHtmlTooltip(): void {
@@ -729,6 +833,39 @@ export class Visual implements IVisual {
         }
 
         this.regions.sort((a, b) => a.localeCompare(b));
+    }
+
+    private buildPointSelectionIds(dataView: powerbi.DataView): void {
+        this.pointSelectionIds.clear();
+
+        const categories = dataView.categorical?.categories ?? [];
+        const startColumns = categories.filter((column) => column.source?.roles?.startYear) as DataViewCategoryColumn[];
+        if (!startColumns.length) {
+            return;
+        }
+
+        const rowCount = Math.max(...startColumns.map((column) => column.values.length));
+        for (let i = 0; i < rowCount; i++) {
+            const hasAnyValue = startColumns.some((column) => {
+                const rawValue = column.values[i];
+                return rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "";
+            });
+
+            if (!hasAnyValue) {
+                continue;
+            }
+
+            const builder = this.host.createSelectionIdBuilder();
+            startColumns.forEach((column) => {
+                if (i < column.values.length) {
+                    builder.withCategory(column, i);
+                }
+            });
+
+            const selectionId = builder.createSelectionId();
+
+            this.pointSelectionIds.set(String(i), selectionId);
+        }
     }
 
     public getFormattingModel(): powerbi.visuals.FormattingModel {
@@ -820,12 +957,12 @@ export class Visual implements IVisual {
             return;
         }
 
-        if (this.regionSelectionIds.size > 0) {
+        if (this.pointSelectionIds.size > 0) {
             const binding = bindSelectionByDataKey({
                 root: this.target,
                 selectionManager: this.selectionManager,
                 markSelector: ".timeline-bar[data-selection-key]",
-                selectionIdsByKey: this.regionSelectionIds,
+                selectionIdsByKey: this.pointSelectionIds,
                 dimOpacity: 0.2,
                 selectedOpacity: 1
             });
