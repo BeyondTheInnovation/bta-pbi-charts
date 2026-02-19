@@ -137,16 +137,8 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
 
             const total = donutData.totalsByGroup.get(groupName) ?? d3.sum(segments, d => d.value);
 
-            // If nothing to show in this panel, render a subtle empty note.
-                if (!segments.length || total <= 0) {
-                    panelGroup.append("text")
-                        .attr("x", centerX)
-                        .attr("y", centerY)
-                        .attr("text-anchor", "middle")
-                        .attr("font-size", `${sliceFontSize}px`)
-                        .attr("fill", this.getThemeForeground("#9ca3af"))
-                        .text("No data");
-
+            // Keep empty panels blank when a group has no plottable values.
+            if (!segments.length || total <= 0) {
                 currentY += groupHeight + interPanelGap;
                 return;
             }

@@ -23,6 +23,12 @@
       "name": "endYear",
       "kind": "GroupingOrMeasure",
       "description": "End date or numeric year (supports hierarchy levels)"
+    },
+    {
+      "displayName": "Value",
+      "name": "measure",
+      "kind": "GroupingOrMeasure",
+      "description": "Optional value shown next to labels and in tooltip"
     }
   ],
   "tooltips": {
@@ -95,6 +101,39 @@
         },
         "showLabels": {
           "displayName": "Show Labels",
+          "type": { "bool": true }
+        }
+      }
+    },
+    "dataLabelSettings": {
+      "displayName": "Data Labels",
+      "properties": {
+        "show": {
+          "displayName": "Show",
+          "type": { "bool": true }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "fontFamily": {
+          "displayName": "Font Family",
+          "type": { "text": true }
+        },
+        "color": {
+          "displayName": "Color",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "bold": {
+          "displayName": "Bold",
+          "type": { "bool": true }
+        },
+        "italic": {
+          "displayName": "Italic",
+          "type": { "bool": true }
+        },
+        "underline": {
+          "displayName": "Underline",
           "type": { "bool": true }
         }
       }
@@ -323,6 +362,15 @@
           "type": { "formatting": { "fontSize": true } }
         }
       }
+    },
+    "interactionDiagnostics": {
+      "displayName": "Interaction Diagnostics",
+      "properties": {
+        "show": {
+          "displayName": "Show Diagnostics",
+          "type": { "bool": true }
+        }
+      }
     }
   },
   "dataViewMappings": [
@@ -332,7 +380,8 @@
           "civilization": { "max": 5 },
           "region": { "max": 5 },
           "startYear": { "max": 1 },
-          "endYear": { "max": 5 }
+          "endYear": { "max": 5 },
+          "measure": { "max": 1 }
         }
       ],
       "categorical": {
@@ -349,16 +398,19 @@
         },
         "values": {
           "select": [
-            { "for": { "in": "endYear" } }
+            { "for": { "in": "endYear" } },
+            { "for": { "in": "measure" } }
           ]
         }
       }
     }
   ],
-  "supportsHighlight": true,
+  "supportsHighlight": false,
   "supportsKeyboardFocus": true,
   "supportsLandingPage": true,
   "supportsEmptyDataView": true,
   "supportsMultiVisualSelection": true,
-  "privileges": []
+  "privileges": [
+    { "name": "ExportContent" }
+  ]
 }

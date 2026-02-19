@@ -36,6 +36,16 @@ export interface IWorldHistoryTimelineSettings {
     showLabels: boolean;
 }
 
+export interface IWorldHistoryTimelineDataLabelSettings {
+    show: boolean;
+    fontSize: number;
+    fontFamily: string;
+    color: string;
+    bold: boolean;
+    italic: boolean;
+    underline: boolean;
+}
+
 export interface IWorldHistoryTimelineTextSizeSettings {
     xAxisFontSize: number;
     yAxisFontSize: number;
@@ -43,10 +53,16 @@ export interface IWorldHistoryTimelineTextSizeSettings {
     endLabelFontSize: number;
 }
 
+export interface IWorldHistoryTimelineInteractionDiagnosticsSettings {
+    show: boolean;
+}
+
 export interface IWorldHistoryTimelineVisualSettings extends IBaseVisualSettings {
     showLegend: boolean;
     timeline: IWorldHistoryTimelineSettings;
+    dataLabels: IWorldHistoryTimelineDataLabelSettings;
     textSizes: IWorldHistoryTimelineTextSizeSettings;
+    interactionDiagnostics: IWorldHistoryTimelineInteractionDiagnosticsSettings;
 }
 
 export const defaultSettings: IWorldHistoryTimelineVisualSettings = {
@@ -86,11 +102,23 @@ export const defaultSettings: IWorldHistoryTimelineVisualSettings = {
         showTodayLine: true,
         showLabels: true
     },
+    dataLabels: {
+        show: true,
+        fontSize: 9,
+        fontFamily: "Segoe UI",
+        color: "#111827",
+        bold: false,
+        italic: false,
+        underline: false
+    },
     textSizes: {
         xAxisFontSize: 0,
         yAxisFontSize: 0,
         legendFontSize: 0,
         endLabelFontSize: 0
+    },
+    interactionDiagnostics: {
+        show: false
     }
 };
 
@@ -215,6 +243,29 @@ export function parseSettings(dataView: DataView): IWorldHistoryTimelineVisualSe
         settings.timeline.lanePadding = Math.max(0, Math.min(0.9, settings.timeline.lanePadding));
         settings.timeline.barCornerRadius = Math.max(0, Math.min(24, settings.timeline.barCornerRadius));
         settings.timeline.minBarWidth = Math.max(1, Math.min(20, settings.timeline.minBarWidth));
+    }
+
+    const dataLabelsObj = objects["dataLabelSettings"];
+    if (dataLabelsObj) {
+        settings.dataLabels.show = (dataLabelsObj["show"] as boolean) ?? settings.timeline.showLabels;
+        settings.dataLabels.fontSize = (dataLabelsObj["fontSize"] as number) ?? defaultSettings.dataLabels.fontSize;
+        settings.dataLabels.fontFamily = (dataLabelsObj["fontFamily"] as string) ?? defaultSettings.dataLabels.fontFamily;
+        settings.dataLabels.bold = (dataLabelsObj["bold"] as boolean) ?? defaultSettings.dataLabels.bold;
+        settings.dataLabels.italic = (dataLabelsObj["italic"] as boolean) ?? defaultSettings.dataLabels.italic;
+        settings.dataLabels.underline = (dataLabelsObj["underline"] as boolean) ?? defaultSettings.dataLabels.underline;
+        const labelColor = dataLabelsObj["color"] as any;
+        if (labelColor?.solid?.color) settings.dataLabels.color = labelColor.solid.color;
+
+        const n = Number(settings.dataLabels.fontSize);
+        settings.dataLabels.fontSize = Number.isFinite(n) ? Math.max(6, Math.min(40, n)) : defaultSettings.dataLabels.fontSize;
+    } else {
+        // Backward compatibility: keep old timeline showLabels behavior if new card is not configured.
+        settings.dataLabels.show = settings.timeline.showLabels;
+    }
+
+    const diagnosticsObj = objects["interactionDiagnostics"];
+    if (diagnosticsObj) {
+        settings.interactionDiagnostics.show = (diagnosticsObj["show"] as boolean) ?? defaultSettings.interactionDiagnostics.show;
     }
 
     return settings;

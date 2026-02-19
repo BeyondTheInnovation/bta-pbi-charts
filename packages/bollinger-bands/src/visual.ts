@@ -12,6 +12,8 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 
 import {
     d3,
+    createExportControl,
+    ExportControl,
     RenderContext,
     createLegendCard,
     createSmallMultiplesCard,
@@ -20,7 +22,6 @@ import {
     createXAxisCard,
     createYAxisCard,
     findCategoryIndex,
-    renderEmptyState,
     HtmlTooltip,
     bindSelectionByDataKey
 } from "@pbi-visuals/shared";
@@ -132,6 +133,7 @@ export class Visual implements IVisual {
     private seriesSelectionIds: Map<string, ISelectionId> = new Map();
     private legendFieldIndex: number = -1;
     private allowInteractions: boolean;
+    private exportControl: ExportControl;
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
@@ -157,6 +159,12 @@ export class Visual implements IVisual {
 
         this.container = this.svg.append("g")
             .classed("chart-container", true);
+
+        this.exportControl = createExportControl({
+            host: this.host,
+            root: this.target,
+            fileNamePrefix: "bollinger-bands"
+        });
     }
 
     public update(options: VisualUpdateOptions) {
@@ -173,6 +181,15 @@ export class Visual implements IVisual {
         const height = options.viewport.height;
 
         this.svg.attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
+        this.exportControl.setSnapshotSource({
+            svgElement: this.svg.node(),
+            viewportWidth: width,
+            viewportHeight: height,
+            scrollLeft: this.target.scrollLeft || 0,
+            scrollTop: this.target.scrollTop || 0
+        });
+        this.exportControl.setHasData(false);
+        void this.exportControl.refreshCapability();
 
         // Hide tooltip when mouse leaves the chart entirely
         this.svg.on("mouseleave", () => {
@@ -181,7 +198,7 @@ export class Visual implements IVisual {
         });
 
         if (!options.dataViews || !options.dataViews[0] || !options.dataViews[0].categorical) {
-            this.renderNoData(width, height);
+            this.renderNoData();
             return;
         }
 
@@ -212,10 +229,11 @@ export class Visual implements IVisual {
         );
 
         if (!chartData.dataPoints || chartData.dataPoints.length === 0) {
-            this.renderNoData(width, height);
+            this.renderNoData();
             return;
         }
 
+        this.exportControl.setHasData(true);
         this.renderer.render(chartData, this.settings);
         this.bindInteractions();
         } catch (error) {
@@ -229,17 +247,8 @@ export class Visual implements IVisual {
         }
     }
 
-    private renderNoData(width: number, height: number): void {
-        renderEmptyState(this.container, width, height, {
-            title: "Set up Bollinger Bands",
-            lines: [
-                "Date/Time: Date field for X-axis",
-                "Legend (optional): Split into series",
-                "Value: Numeric measure (e.g., closing price)",
-                "Group (optional): Split into panels"
-            ],
-            hint: "Tip: Adjust Period (N) and Std Deviations (K) in the Format pane."
-        });
+    private renderNoData(): void {
+        this.container.selectAll("*").remove();
     }
 
     private syncHtmlTooltip(): void {
@@ -317,6 +326,7 @@ export class Visual implements IVisual {
 
     public destroy(): void {
         try {
+            this.exportControl.destroy();
             this.htmlTooltip?.destroy();
             this.htmlTooltip = null;
             this.target.querySelectorAll('[data-bta-tooltip="true"]').forEach(el => el.remove());

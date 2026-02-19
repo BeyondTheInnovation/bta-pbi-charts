@@ -4,7 +4,7 @@
     "displayName": "World History Timeline",
     "guid": "worldHistoryTimelineVisualA13D8C7E6B5F4A3291C0D2E3F4A5B6C7",
     "visualClassName": "Visual",
-    "version": "1.1.18.0",
+    "version": "1.1.35.0",
     "description": "Timeline bars from start/end years with region coloring and BCE/CE axis formatting.",
     "supportUrl": "https://github.com/example/bta-pbi-charts",
     "gitHubUrl": ""

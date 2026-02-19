@@ -51,7 +51,7 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
             40
         );
         const labelFontSize = this.getEffectiveFontSize(
-            settings.textSizes.endLabelFontSize > 0 ? settings.textSizes.endLabelFontSize : settings.yAxisFontSize,
+            settings.textSizes.endLabelFontSize > 0 ? settings.textSizes.endLabelFontSize : settings.dataLabels.fontSize,
             6,
             40
         );
@@ -124,16 +124,42 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
             if (!isDateScale) {
                 return ["year"];
             }
+            const levels: AxisLevel[] = [];
+            const pushLevel = (level: AxisLevel): void => {
+                if (!levels.includes(level)) {
+                    levels.push(level);
+                }
+            };
+
+            const includeQuarter = timelineData.timeHasQuarterLevel
+                && (temporalLevel === "quarter" || temporalLevel === "month" || temporalLevel === "day");
+            const includeMonth = temporalLevel === "month" || temporalLevel === "day";
+
+            // Keep year as persistent context row for all date hierarchy drill depths.
+            pushLevel("year");
+            if (includeQuarter) {
+                pushLevel("quarter");
+            }
+            if (includeMonth) {
+                pushLevel("month");
+            }
+
             switch (temporalLevel) {
                 case "quarter":
-                    return ["year", "quarter"];
+                    pushLevel("quarter");
+                    break;
                 case "month":
-                    return ["year", "quarter", "month"];
+                    pushLevel("month");
+                    break;
                 case "day":
-                    return ["year", "quarter", "month", "day"];
+                    pushLevel("day");
+                    break;
                 default:
-                    return ["year"];
+                    pushLevel("year");
+                    break;
             }
+
+            return levels.length > 0 ? levels : ["year"];
         })();
         const showAllYearsBanner = missingYearContext && (temporalLevel === "quarter" || temporalLevel === "month" || temporalLevel === "day");
         const axisHeaderHeightFromSettings = Number((settings.timeline as any).axisHeaderHeightPx ?? 0);
@@ -834,7 +860,8 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
             .data(rows)
             .enter()
             .append("g")
-            .attr("class", "timeline-row");
+            .attr("class", "timeline-row")
+            .attr("data-selection-key", (row) => String(row.point.index));
 
         rowGroups.each((row, idx, nodes) => {
             const point = row.point;
@@ -868,6 +895,15 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                 { displayName: "End", value: formatTooltipDateValue(point.endYear) },
                 { displayName: "Duration", value: formatDuration(point.duration) }
             ];
+            const tooltipMeasureValue = point.measureValue !== null
+                ? formatMeasureValue(point.measureValue, timelineData.measureFormatString)
+                : (point.measureDisplayText ?? "");
+            if (tooltipMeasureValue) {
+                rows.push({
+                    displayName: "Value",
+                    value: tooltipMeasureValue
+                });
+            }
 
             this.addTooltip(bar as any, rows, {
                 title: point.civilization,
@@ -875,7 +911,7 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                 color: fill
             });
 
-            if (settings.timeline.showLabels) {
+            if (settings.dataLabels.show) {
                 const leftSpace = Math.max(0, startX - 8);
                 const rightSpace = Math.max(0, chartWidth - (startX + barWidth) - 8);
                 const insideSpace = Math.max(0, barWidth - 8);
@@ -897,7 +933,15 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                     : labelMode === "right"
                         ? rightSpace
                         : insideSpace;
-                const display = formatLabel(point.civilization, Math.max(24, maxWidth), labelFontSize);
+                const labelMeasureValue = point.measureValue !== null
+                    ? formatMeasureValue(
+                        point.measureValue,
+                        undefined,
+                        { notation: "compact", maximumFractionDigits: 1 }
+                    )
+                    : (point.measureDisplayText ?? "");
+                const fullLabelText = labelMeasureValue ? `${point.civilization} ${labelMeasureValue}` : point.civilization;
+                const display = formatLabel(fullLabelText, Math.max(24, maxWidth), labelFontSize);
                 const textX = labelMode === "left"
                     ? (startX - 6)
                     : labelMode === "right"
@@ -910,7 +954,7 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                         : "middle";
                 const labelColor = labelMode === "inside"
                     ? this.getContrastColor(fill)
-                    : (this.isHighContrastMode() ? this.getThemeForeground(settings.yAxisColor) : settings.yAxisColor);
+                    : (this.isHighContrastMode() ? this.getThemeForeground(settings.dataLabels.color) : settings.dataLabels.color);
 
                 const label = rowGroup.append("text")
                     .attr("class", "timeline-label")
@@ -919,15 +963,24 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                     .attr("dy", "0.35em")
                     .attr("text-anchor", textAnchor)
                     .attr("font-size", `${labelFontSize}px`)
-                    .attr("font-family", settings.yAxisFontFamily)
-                    .style("font-weight", settings.yAxisBold ? "700" : "400")
-                    .style("font-style", settings.yAxisItalic ? "italic" : "normal")
-                    .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
+                    .attr("font-family", settings.dataLabels.fontFamily)
+                    .style("font-weight", settings.dataLabels.bold ? "700" : "400")
+                    .style("font-style", settings.dataLabels.italic ? "italic" : "normal")
+                    .style("text-decoration", settings.dataLabels.underline ? "underline" : "none")
                     .attr("fill", labelColor)
                     .text(display);
 
-                if (display !== point.civilization) {
-                    this.addTooltip(label as any, [{ displayName: "Civilization", value: point.civilization }], {
+                if (display !== fullLabelText) {
+                    const labelRows: Array<{ displayName: string; value: string }> = [
+                        { displayName: "Civilization", value: point.civilization }
+                    ];
+                    if (tooltipMeasureValue) {
+                        labelRows.push({
+                            displayName: "Value",
+                            value: tooltipMeasureValue
+                        });
+                    }
+                    this.addTooltip(label as any, labelRows, {
                         title: point.civilization,
                         color: fill
                     });
@@ -1012,6 +1065,28 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
             });
         }
 
+        const stickyHeaderHeight = Math.max(0, Math.round(margin.top));
+        if (stickyHeaderHeight > 0) {
+            const panelLeft = Math.round(margin.left);
+            const panelTop = Math.round(margin.top);
+            const stickyViewportWidth = Math.max(0, Math.round(this.context.root?.clientWidth || this.context.width));
+
+            panel.append("rect")
+                .attr("class", "sticky-header-backdrop")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", stickyViewportWidth)
+                .attr("height", stickyHeaderHeight)
+                .attr("transform", `translate(${-panelLeft}, ${-panelTop})`)
+                .attr("fill", this.getThemeBackground("#ffffff"))
+                .attr("stroke", "none")
+                .attr("pointer-events", "none")
+                .attr("data-lock-x", "true")
+                .attr("data-lock-y", "true")
+                .attr("data-natural-x", `${-panelLeft}`)
+                .attr("data-natural-y", `${-panelTop}`);
+        }
+
         // Keep sticky top axis above bars/grid/crosshair.
         topAxisGroup?.raise();
 
@@ -1027,7 +1102,7 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                 availableHeight: legendAvailableHeight
             });
 
-            // Keep legend anchored under the title while allowing vertical scroll with content.
+            // Keep legend anchored under the title and let Visual.syncPinnedLayers keep it sticky.
             const legendNodes = this.context.container.selectAll<SVGGElement, unknown>("g.color-legend").nodes();
             const legendAnchorY = Math.max(0, Math.round(headerTopPaddingPx));
             legendNodes.forEach((legendNode) => {
@@ -1040,8 +1115,32 @@ export class WorldHistoryTimelineRenderer extends BaseRenderer<IWorldHistoryTime
                 d3.select(legendNode)
                     .attr("transform", `translate(${Math.round(naturalX)}, ${Math.round(naturalY)})`)
                     .attr("data-lock-x", "true")
+                    .attr("data-lock-y", "true")
                     .attr("data-natural-x", `${Math.round(naturalX)}`)
                     .attr("data-natural-y", `${Math.round(naturalY)}`);
+
+                // Add an opaque background so hovered timeline labels/bars don't bleed through sticky legend content.
+                try {
+                    const legendSelection = d3.select(legendNode);
+                    legendSelection.selectAll("rect.legend-sticky-bg").remove();
+                    const bbox = legendNode.getBBox();
+                    const padX = 8;
+                    const padY = 4;
+                    legendSelection.insert("rect", ":first-child")
+                        .attr("class", "legend-sticky-bg")
+                        .attr("x", Math.floor(bbox.x - padX))
+                        .attr("y", Math.floor(bbox.y - padY))
+                        .attr("width", Math.ceil(Math.max(0, bbox.width + (padX * 2))))
+                        .attr("height", Math.ceil(Math.max(0, bbox.height + (padY * 2))))
+                        .attr("rx", 8)
+                        .attr("ry", 8)
+                        .attr("fill", this.getThemeBackground("#ffffff"))
+                        .attr("stroke", this.isHighContrastMode() ? this.getThemeForeground("#d1d5db") : "rgba(17, 24, 39, 0.08)")
+                        .attr("stroke-width", 1)
+                        .style("pointer-events", "none");
+                } catch {
+                    // Ignore getBBox failures for legend background fallback.
+                }
             });
         }
     }

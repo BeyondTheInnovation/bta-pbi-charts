@@ -13,6 +13,8 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import {
     d3,
+    createExportControl,
+    ExportControl,
     RenderContext,
     createColorSchemeCard,
     createDataColorsCard,
@@ -24,9 +26,7 @@ import {
     readCategoryColorsFromDataView,
     findCategoryIndex,
     getSchemeColors,
-    renderEmptyState,
-    HtmlTooltip,
-    bindSelectionByDataKey
+    HtmlTooltip
 } from "@pbi-visuals/shared";
 import { IWorldHistoryTimelineVisualSettings, TimelineSortMode, parseSettings } from "./settings";
 import {
@@ -41,6 +41,8 @@ interface SortControlOption {
     label: string;
     disabled?: boolean;
 }
+
+type InteractionSource = "callback" | "localClick" | "postRenderSync" | "clear";
 
 const SUPPORTED_SORT_OPTIONS: Record<TimelineSortMode, { label: string; requiresRegion?: boolean }> = {
     region: { label: "region", requiresRegion: true },
@@ -127,17 +129,6 @@ function createTimelineCard(settings: IWorldHistoryTimelineVisualSettings): powe
                         }
                     } as powerbi.visuals.FormattingSlice,
                     {
-                        uid: "timeline_showLabels",
-                        displayName: "Show Labels",
-                        control: {
-                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
-                            properties: {
-                                descriptor: { objectName: "timelineSettings", propertyName: "showLabels" },
-                                value: settings.timeline.showLabels
-                            }
-                        }
-                    } as powerbi.visuals.FormattingSlice,
-                    {
                         uid: "timeline_showCrosshair",
                         displayName: "Show Crosshair",
                         control: {
@@ -187,6 +178,130 @@ function createTimelineCard(settings: IWorldHistoryTimelineVisualSettings): powe
     };
 }
 
+function createDataLabelsCard(settings: IWorldHistoryTimelineVisualSettings["dataLabels"]): powerbi.visuals.FormattingCard {
+    return {
+        displayName: "Data Labels",
+        uid: "data_labels_card",
+        groups: [
+            {
+                displayName: "Labels",
+                uid: "data_labels_group",
+                slices: [
+                    {
+                        uid: "data_labels_show",
+                        displayName: "Show",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "dataLabelSettings", propertyName: "show" },
+                                value: settings.show
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "data_labels_fontSize",
+                        displayName: "Font Size",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.NumUpDown,
+                            properties: {
+                                descriptor: { objectName: "dataLabelSettings", propertyName: "fontSize" },
+                                value: settings.fontSize,
+                                options: {
+                                    minValue: { type: powerbi.visuals.ValidatorType.Min, value: 6 },
+                                    maxValue: { type: powerbi.visuals.ValidatorType.Max, value: 40 }
+                                }
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "data_labels_fontFamily",
+                        displayName: "Font Family",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.TextInput,
+                            properties: {
+                                descriptor: { objectName: "dataLabelSettings", propertyName: "fontFamily" },
+                                value: settings.fontFamily
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "data_labels_color",
+                        displayName: "Color",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ColorPicker,
+                            properties: {
+                                descriptor: { objectName: "dataLabelSettings", propertyName: "color" },
+                                value: { value: settings.color }
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "data_labels_bold",
+                        displayName: "Bold",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "dataLabelSettings", propertyName: "bold" },
+                                value: settings.bold
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "data_labels_italic",
+                        displayName: "Italic",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "dataLabelSettings", propertyName: "italic" },
+                                value: settings.italic
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice,
+                    {
+                        uid: "data_labels_underline",
+                        displayName: "Underline",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "dataLabelSettings", propertyName: "underline" },
+                                value: settings.underline
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice
+                ]
+            }
+        ]
+    };
+}
+
+function createInteractionDiagnosticsCard(
+    settings: IWorldHistoryTimelineVisualSettings["interactionDiagnostics"]
+): powerbi.visuals.FormattingCard {
+    return {
+        displayName: "Interaction Diagnostics",
+        uid: "interaction_diagnostics_card",
+        groups: [
+            {
+                displayName: "Diagnostics",
+                uid: "interaction_diagnostics_group",
+                slices: [
+                    {
+                        uid: "interaction_diagnostics_show",
+                        displayName: "Show Diagnostics",
+                        control: {
+                            type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                            properties: {
+                                descriptor: { objectName: "interactionDiagnostics", propertyName: "show" },
+                                value: settings.show
+                            }
+                        }
+                    } as powerbi.visuals.FormattingSlice
+                ]
+            }
+        ]
+    };
+}
+
 export class Visual implements IVisual {
     private static instanceCounter: number = 0;
     private target: HTMLElement;
@@ -200,11 +315,17 @@ export class Visual implements IVisual {
     private htmlTooltip: HtmlTooltip | null = null;
     private tooltipOwnerId: string;
     private emptySelectionId: ISelectionId;
-    private applySelectionState: ((ids: ISelectionId[]) => void) | null = null;
     private allowInteractions: boolean;
+    private currentSelectionIds: ISelectionId[] = [];
+    private lastInteractionSource: InteractionSource = "clear";
+    private callbackFireCount: number = 0;
+    private latestChartData: WorldHistoryTimelineData | null = null;
+    private latestMatchedSelectionRowKeys: Set<string> = new Set();
+    private diagnosticsOverlay: HTMLDivElement | null = null;
 
     private regionSelectionIds: Map<string, ISelectionId> = new Map();
     private pointSelectionIds: Map<string, ISelectionId> = new Map();
+    private pointSelectionCandidateIds: Map<string, ISelectionId[]> = new Map();
     private regions: string[] = [];
     private regionColors: Map<string, string> = new Map();
     private regionFieldIndex: number = -1;
@@ -217,6 +338,7 @@ export class Visual implements IVisual {
     private canSortByRegion: boolean = false;
     private lastUpdateOptions: VisualUpdateOptions | null = null;
     private sortControlReservePx: number = 0;
+    private exportControl: ExportControl;
 
     private static readonly MIN_CONTENT_WIDTH: number = 900;
     private static readonly MAX_CONTENT_WIDTH: number = 300000;
@@ -234,6 +356,7 @@ export class Visual implements IVisual {
     private static readonly HEADER_TOP_PADDING: number = 6;
     private static readonly HEADER_LEFT_PADDING: number = 8;
     private static readonly HEADER_LAYER_GAP: number = 4;
+    private static readonly VISUAL_VERSION: string = "1.1.35.0";
     private lastLayoutKey: string = "";
     private lastViewportWidth: number = 0;
     private lastViewportHeight: number = 0;
@@ -268,8 +391,9 @@ export class Visual implements IVisual {
             document.addEventListener("mousedown", this.onDocumentPointerDown, true);
         }
 
-        this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
-            this.applySelectionState?.(ids);
+        this.selectionManager.registerOnSelectCallback((ids: powerbi.extensibility.ISelectionId[]) => {
+            this.callbackFireCount++;
+            this.setSelectionState(ids, "callback");
         });
 
         this.svg = d3.select(this.target)
@@ -282,6 +406,12 @@ export class Visual implements IVisual {
 
         this.container = this.svg.append("g")
             .classed("chart-container", true);
+
+        this.exportControl = createExportControl({
+            host: this.host,
+            root: this.target,
+            fileNamePrefix: "world-history-timeline"
+        });
 
         this.ensureSortControl();
     }
@@ -302,6 +432,15 @@ export class Visual implements IVisual {
             const viewportChanged = width !== this.lastViewportWidth || height !== this.lastViewportHeight;
             this.target.style.overflowX = "auto";
             this.target.style.overflowY = "auto";
+            this.exportControl.setSnapshotSource({
+                svgElement: this.svg.node(),
+                viewportWidth: width,
+                viewportHeight: height,
+                scrollLeft: this.target.scrollLeft || 0,
+                scrollTop: this.target.scrollTop || 0
+            });
+            this.exportControl.setHasData(false);
+            void this.exportControl.refreshCapability();
 
             this.svg.on("mouseleave", () => {
                 this.htmlTooltip?.hide();
@@ -310,16 +449,20 @@ export class Visual implements IVisual {
 
             if (!options.dataViews || !options.dataViews[0] || !options.dataViews[0].categorical) {
                 this.syncSortControl(false, "time", []);
+                this.latestChartData = null;
+                this.latestMatchedSelectionRowKeys = new Set();
                 this.lastLayoutKey = "";
                 this.lastViewportWidth = width;
                 this.lastViewportHeight = height;
                 this.svg.attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
-                this.renderNoData(width, height);
+                this.renderNoData();
+                this.updateDiagnosticsOverlay();
                 return;
             }
 
             const dataView = options.dataViews[0];
             this.settings = parseSettings(dataView);
+            this.ensureDiagnosticsOverlay();
             this.syncHtmlTooltip();
 
             this.regionFieldIndex = findCategoryIndex(dataView, "region");
@@ -341,14 +484,17 @@ export class Visual implements IVisual {
             };
 
             const chartData = WorldHistoryTimelineTransformer.transform(dataView.categorical);
+            this.latestChartData = chartData;
 
             if (!chartData.items.length) {
                 this.syncSortControl(false, "time", []);
+                this.latestMatchedSelectionRowKeys = new Set();
                 this.lastLayoutKey = "";
                 this.lastViewportWidth = width;
                 this.lastViewportHeight = height;
                 this.svg.attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
-                this.renderNoData(width, height);
+                this.renderNoData();
+                this.updateDiagnosticsOverlay();
                 return;
             }
 
@@ -416,8 +562,11 @@ export class Visual implements IVisual {
             chartData.categoryColorMap = seededColors;
 
             this.renderer.render(chartData, effectiveSettings);
+            this.exportControl.setHasData(true);
             this.syncPinnedLayers();
             this.bindInteractions();
+            this.syncSelectionStateFromManager("postRenderSync");
+            this.updateDiagnosticsOverlay();
         } catch (error) {
             completed = false;
             eventService?.renderingFailed(options, error instanceof Error ? error.message : String(error));
@@ -527,31 +676,63 @@ export class Visual implements IVisual {
             return ["year"];
         }
 
+        const axisLevels: TimelineTemporalLevel[] = [];
+        const pushLevel = (level: TimelineTemporalLevel): void => {
+            if (!axisLevels.includes(level)) {
+                axisLevels.push(level);
+            }
+        };
+
+        const temporalLevel = chartData.timeTemporalLevel;
+        const includeQuarter = chartData.timeHasQuarterLevel
+            && (temporalLevel === "quarter" || temporalLevel === "month" || temporalLevel === "day");
+        const includeMonth = temporalLevel === "month" || temporalLevel === "day";
+
+        // Keep year as the persistent top context when using date hierarchy drill.
+        pushLevel("year");
+        if (includeQuarter) {
+            pushLevel("quarter");
+        }
+        if (includeMonth) {
+            pushLevel("month");
+        }
+
         switch (chartData.timeTemporalLevel) {
             case "quarter":
-                return ["year", "quarter"];
+                pushLevel("quarter");
+                break;
             case "month":
-                return ["year", "quarter", "month"];
+                pushLevel("month");
+                break;
             case "day":
-                return ["year", "quarter", "month", "day"];
+                pushLevel("day");
+                break;
             case "year":
-                return ["year"];
+            case "date":
+            case "none":
+                pushLevel("year");
+                break;
             default:
-                return chartData.timeHasYearContext ? ["year"] : ["date"];
+                pushLevel("year");
+                break;
         }
+
+        return axisLevels.length > 0 ? axisLevels : ["year"];
     }
 
     private syncPinnedLayers(): void {
         const scrollTop = this.target.scrollTop || 0;
         const scrollLeft = this.target.scrollLeft || 0;
 
-        const horizontalPinnedLegends = this.target.querySelectorAll<SVGGElement>('g.color-legend[data-lock-x="true"]');
-        horizontalPinnedLegends.forEach((legend) => {
-            const naturalX = Number(legend.getAttribute("data-natural-x") ?? "0");
-            const naturalY = Number(legend.getAttribute("data-natural-y") ?? "0");
-            const x = Math.round(scrollLeft + (Number.isFinite(naturalX) ? naturalX : 0));
-            const y = Math.round(Number.isFinite(naturalY) ? naturalY : 0);
-            legend.setAttribute("transform", `translate(${x}, ${y})`);
+        const pinnedElements = this.target.querySelectorAll<SVGGraphicsElement>('[data-lock-x="true"],[data-lock-y="true"]');
+        pinnedElements.forEach((element) => {
+            const naturalX = Number(element.getAttribute("data-natural-x") ?? "0");
+            const naturalY = Number(element.getAttribute("data-natural-y") ?? "0");
+            const lockX = element.getAttribute("data-lock-x") === "true";
+            const lockY = element.getAttribute("data-lock-y") === "true";
+            const x = Math.round((lockX ? scrollLeft : 0) + (Number.isFinite(naturalX) ? naturalX : 0));
+            const y = Math.round((lockY ? scrollTop : 0) + (Number.isFinite(naturalY) ? naturalY : 0));
+            element.setAttribute("transform", `translate(${x}, ${y})`);
         });
 
         this.syncSortControlPlacement();
@@ -560,24 +741,16 @@ export class Visual implements IVisual {
         pinnedAxes.forEach((axis) => {
             const panelTop = Number(axis.getAttribute("data-panel-top") ?? "0");
             const axisNaturalTop = Number(axis.getAttribute("data-axis-natural-top") ?? "0");
-            // Let the axis scroll naturally until it reaches the viewport top, then pin at y=0.
-            const globalTop = Math.max(axisNaturalTop, scrollTop);
+            // Keep the axis pinned below the sticky legend/sort header stack.
+            const stickyHeaderOffset = Math.max(0, axisNaturalTop);
+            const globalTop = Math.max(axisNaturalTop, scrollTop + stickyHeaderOffset);
             const y = globalTop - panelTop;
             axis.setAttribute("transform", `translate(0, ${Math.round(y)})`);
         });
     }
 
-    private renderNoData(width: number, height: number): void {
-        renderEmptyState(this.container, width, height, {
-            title: "Set up World History Timeline",
-            lines: [
-                "Category: Label for each bar (supports hierarchy)",
-                "Start: Date or numeric year (supports hierarchy)",
-                "End: Date or numeric year (supports hierarchy)",
-                "Legend (optional): Color grouping"
-            ],
-            hint: "Tip: hierarchy levels are joined from left to right."
-        });
+    private renderNoData(): void {
+        this.container.selectAll("*").remove();
     }
 
     private resolveSortControlOptions(config: string, canSortByRegion: boolean): SortControlOption[] {
@@ -784,9 +957,12 @@ export class Visual implements IVisual {
             );
         }
 
-        // Keep the control in chart-content coordinates so it scrolls away with content.
-        this.sortControlRoot.style.top = `${Math.round(computedTop)}px`;
-        this.sortControlRoot.style.left = `${Math.round(computedLeft)}px`;
+        const scrollTop = this.target.scrollTop || 0;
+        const scrollLeft = this.target.scrollLeft || 0;
+
+        // Keep the control sticky to the viewport while preserving its natural header placement.
+        this.sortControlRoot.style.top = `${Math.round(scrollTop + computedTop)}px`;
+        this.sortControlRoot.style.left = `${Math.round(scrollLeft + computedLeft)}px`;
     }
 
     private syncHtmlTooltip(): void {
@@ -837,35 +1013,477 @@ export class Visual implements IVisual {
 
     private buildPointSelectionIds(dataView: powerbi.DataView): void {
         this.pointSelectionIds.clear();
+        this.pointSelectionCandidateIds.clear();
 
         const categories = dataView.categorical?.categories ?? [];
+        const civilizationColumns = categories.filter((column) => column.source?.roles?.civilization) as DataViewCategoryColumn[];
+        const regionColumns = categories.filter((column) => column.source?.roles?.region) as DataViewCategoryColumn[];
         const startColumns = categories.filter((column) => column.source?.roles?.startYear) as DataViewCategoryColumn[];
-        if (!startColumns.length) {
-            return;
-        }
+        const endColumns = categories.filter((column) => column.source?.roles?.endYear) as DataViewCategoryColumn[];
+        const allColumns = [
+            ...civilizationColumns,
+            ...regionColumns,
+            ...startColumns,
+            ...endColumns
+        ];
+        const rowCount = allColumns.length > 0
+            ? Math.max(...allColumns.map((column) => column.values.length))
+            : 0;
 
-        const rowCount = Math.max(...startColumns.map((column) => column.values.length));
+        const candidateGroups: DataViewCategoryColumn[][] = [
+            [...civilizationColumns, ...regionColumns],
+            [...civilizationColumns],
+            [...regionColumns],
+            [...startColumns, ...endColumns],
+            [...startColumns],
+            [...endColumns]
+        ].filter((group) => group.length > 0);
+
         for (let i = 0; i < rowCount; i++) {
-            const hasAnyValue = startColumns.some((column) => {
-                const rawValue = column.values[i];
-                return rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "";
-            });
+            const candidateIds: ISelectionId[] = [];
+            const seenCandidateKeys = new Set<string>();
 
-            if (!hasAnyValue) {
+            const addCandidateId = (columns: DataViewCategoryColumn[]): void => {
+                const selectionId = this.buildSelectionIdForRow(columns, i);
+                if (!selectionId) {
+                    return;
+                }
+
+                const selectionKey = this.getSelectionIdentityKey(selectionId);
+                if (seenCandidateKeys.has(selectionKey)) {
+                    return;
+                }
+
+                seenCandidateKeys.add(selectionKey);
+                candidateIds.push(selectionId);
+            };
+
+            candidateGroups.forEach((group) => addCandidateId(group));
+            allColumns.forEach((column) => addCandidateId([column]));
+
+            if (!candidateIds.length) {
                 continue;
             }
 
-            const builder = this.host.createSelectionIdBuilder();
-            startColumns.forEach((column) => {
-                if (i < column.values.length) {
-                    builder.withCategory(column, i);
+            const rowKey = String(i);
+            this.pointSelectionIds.set(rowKey, candidateIds[0]);
+            this.pointSelectionCandidateIds.set(rowKey, candidateIds);
+        }
+    }
+
+    private hasCategoryValueAtRow(column: DataViewCategoryColumn, rowIndex: number): boolean {
+        const rawValue = column?.values?.[rowIndex];
+        if (rawValue === null || rawValue === undefined) {
+            return false;
+        }
+
+        if (typeof rawValue === "string") {
+            return rawValue.trim().length > 0;
+        }
+
+        return true;
+    }
+
+    private buildSelectionIdForRow(columns: DataViewCategoryColumn[], rowIndex: number): ISelectionId | null {
+        if (!columns.length) {
+            return null;
+        }
+
+        const builder = this.host.createSelectionIdBuilder();
+        let appended = false;
+
+        for (const column of columns) {
+            if (!this.hasCategoryValueAtRow(column, rowIndex)) {
+                continue;
+            }
+
+            try {
+                builder.withCategory(column, rowIndex);
+                appended = true;
+            } catch {
+                // Ignore invalid row/category references and continue assembling fallback IDs.
+            }
+        }
+
+        if (!appended) {
+            return null;
+        }
+
+        try {
+            return builder.createSelectionId();
+        } catch {
+            return null;
+        }
+    }
+
+    private ensureDiagnosticsOverlay(): void {
+        if (this.diagnosticsOverlay || typeof document === "undefined") {
+            return;
+        }
+
+        const overlay = document.createElement("div");
+        overlay.className = "timeline-interaction-diagnostics";
+        overlay.style.display = "none";
+        this.target.appendChild(overlay);
+        this.diagnosticsOverlay = overlay;
+    }
+
+    private updateDiagnosticsOverlay(): void {
+        if (!this.diagnosticsOverlay) {
+            return;
+        }
+
+        if (!this.settings?.interactionDiagnostics.show) {
+            this.diagnosticsOverlay.style.display = "none";
+            return;
+        }
+
+        const chartData = this.latestChartData;
+        const rowCount = chartData?.items.length ?? 0;
+        const highlightedRows = chartData?.items.filter((point) => point.isHighlighted).length ?? 0;
+        const matchedSelectionRows = this.latestMatchedSelectionRowKeys.size;
+
+        let valueColCount = 0;
+        let hasHighlightArrays = false;
+        try {
+            const dv = this.lastUpdateOptions?.dataViews?.[0];
+            const vals = dv?.categorical?.values;
+            if (vals) {
+                valueColCount = vals.length;
+                hasHighlightArrays = vals.some((col: any) => Array.isArray(col?.highlights));
+            }
+        } catch { /* ignore */ }
+
+        let hasSelection = false;
+        try {
+            hasSelection = this.selectionManager.hasSelection();
+        } catch { /* ignore */ }
+
+        this.diagnosticsOverlay.style.display = "block";
+        this.diagnosticsOverlay.textContent = [
+            `v ${Visual.VISUAL_VERSION}`,
+            `rows=${rowCount}`,
+            `valueCols=${valueColCount}`,
+            `hlArrays=${hasHighlightArrays}`,
+            `hasIncomingHL=${chartData?.hasIncomingHighlights === true}`,
+            `hlRows=${highlightedRows}`,
+            `selIds=${this.currentSelectionIds.length}`,
+            `matchedRows=${matchedSelectionRows}`,
+            `hasSel=${hasSelection}`,
+            `cbFires=${this.callbackFireCount}`,
+            `src=${this.lastInteractionSource}`
+        ].join(" | ");
+    }
+
+    private resolveSelectionKeyFromTarget(target: Element | null): string | null {
+        const selectionTarget = target?.closest(".timeline-row[data-selection-key], .timeline-bar[data-selection-key]") as Element | null;
+        if (!selectionTarget) {
+            return null;
+        }
+
+        const directKey = selectionTarget.getAttribute("data-selection-key");
+        if (directKey) {
+            return directKey;
+        }
+
+        const parentKey = selectionTarget.closest(".timeline-row[data-selection-key]")?.getAttribute("data-selection-key");
+        return parentKey ?? null;
+    }
+
+    private getSelectionIdentityKey(selectionId: ISelectionId): string {
+        const anySelectionId = selectionId as any;
+        if (typeof anySelectionId?.getKey === "function") {
+            return String(anySelectionId.getKey());
+        }
+        if (typeof anySelectionId?.getSelector === "function") {
+            try {
+                return JSON.stringify(anySelectionId.getSelector());
+            } catch {
+                // ignore and use fallback
+            }
+        }
+        return String(anySelectionId);
+    }
+
+    private stableStringify(value: any): string {
+        if (value === null || typeof value !== "object") {
+            return JSON.stringify(value);
+        }
+
+        if (Array.isArray(value)) {
+            return `[${value.map((item) => this.stableStringify(item)).join(",")}]`;
+        }
+
+        const keys = Object.keys(value).sort();
+        const props = keys.map((key) => `${JSON.stringify(key)}:${this.stableStringify(value[key])}`);
+        return `{${props.join(",")}}`;
+    }
+
+    private getSelectionSelectorKey(selectionId: ISelectionId): string | null {
+        const anySelectionId = selectionId as any;
+        if (typeof anySelectionId?.getSelector !== "function") {
+            return null;
+        }
+
+        try {
+            return this.stableStringify(anySelectionId.getSelector());
+        } catch {
+            return null;
+        }
+    }
+
+    private getSelectionSelector(selectionId: ISelectionId): any | null {
+        const anySelectionId = selectionId as any;
+        if (typeof anySelectionId?.getSelector !== "function") {
+            return null;
+        }
+
+        try {
+            return anySelectionId.getSelector();
+        } catch {
+            return null;
+        }
+    }
+
+    private selectorContains(container: any, subset: any): boolean {
+        if (container === subset) {
+            return true;
+        }
+
+        if (subset === null || subset === undefined) {
+            return container === subset;
+        }
+
+        if (Array.isArray(subset)) {
+            if (!Array.isArray(container)) {
+                return false;
+            }
+
+            return subset.every((subsetItem) =>
+                container.some((containerItem) => this.selectorContains(containerItem, subsetItem))
+            );
+        }
+
+        if (typeof subset === "object") {
+            if (typeof container !== "object" || container === null || Array.isArray(container)) {
+                return false;
+            }
+
+            return Object.keys(subset).every((key) => this.selectorContains(container[key], subset[key]));
+        }
+
+        return container === subset;
+    }
+
+    private normalizeSelectionText(value: string): string {
+        return value.toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    private extractSelectorStrings(selectorPart: any, sink: Set<string>): void {
+        if (selectorPart === null || selectorPart === undefined) {
+            return;
+        }
+
+        if (typeof selectorPart === "string") {
+            const normalized = this.normalizeSelectionText(selectorPart);
+            if (normalized.length >= 2) {
+                sink.add(normalized);
+            }
+            return;
+        }
+
+        if (Array.isArray(selectorPart)) {
+            selectorPart.forEach((item) => this.extractSelectorStrings(item, sink));
+            return;
+        }
+
+        if (typeof selectorPart === "object") {
+            Object.values(selectorPart).forEach((value) => this.extractSelectorStrings(value, sink));
+        }
+    }
+
+    private getSelectionSelectorTextTokens(selectionId: ISelectionId): string[] {
+        const selector = this.getSelectionSelector(selectionId);
+        if (!selector) {
+            return [];
+        }
+
+        const sink = new Set<string>();
+        this.extractSelectorStrings(selector, sink);
+        return Array.from(sink);
+    }
+
+    private selectionIdsMatch(left: ISelectionId, right: ISelectionId): boolean {
+        // Use the canonical Power BI equals() method first — it handles cross-visual scope matching.
+        try {
+            if (left.equals(right)) {
+                return true;
+            }
+        } catch {
+            // equals() may not be available on all runtime objects
+        }
+
+        const leftKey = this.getSelectionIdentityKey(left);
+        const rightKey = this.getSelectionIdentityKey(right);
+        if (leftKey === rightKey) {
+            return true;
+        }
+
+        const leftSelectorKey = this.getSelectionSelectorKey(left);
+        const rightSelectorKey = this.getSelectionSelectorKey(right);
+        if (leftSelectorKey && rightSelectorKey) {
+            if (leftSelectorKey === rightSelectorKey) {
+                return true;
+            }
+
+            const leftSelector = this.getSelectionSelector(left);
+            const rightSelector = this.getSelectionSelector(right);
+            if (leftSelector && rightSelector) {
+                const leftContainsRight = this.selectorContains(leftSelector, rightSelector);
+                const rightContainsLeft = this.selectorContains(rightSelector, leftSelector);
+                if (leftContainsRight || rightContainsLeft) {
+                    return true;
+                }
+            }
+        }
+
+        const leftAny = left as any;
+        const rightAny = right as any;
+        const leftIncludesRight = typeof leftAny?.includes === "function" ? Boolean(leftAny.includes(right)) : false;
+        const rightIncludesLeft = typeof rightAny?.includes === "function" ? Boolean(rightAny.includes(left)) : false;
+        return leftIncludesRight || rightIncludesLeft;
+    }
+
+    private setSelectionState(
+        ids: ISelectionId[] | powerbi.extensibility.ISelectionId[] | undefined | null,
+        source: InteractionSource
+    ): void {
+        this.currentSelectionIds = Array.isArray(ids) ? (ids as ISelectionId[]) : [];
+        this.lastInteractionSource = source;
+        this.recomputeInteractionStateAndApply();
+    }
+
+    private syncSelectionStateFromManager(source: InteractionSource): void {
+        const managerIds = this.selectionManager.getSelectionIds() as ISelectionId[];
+        // getSelectionIds() only returns IDs from our own select() calls, NOT
+        // cross-visual selections received via registerOnSelectCallback.
+        // When the manager is empty, preserve the existing currentSelectionIds
+        // so that callback-provided cross-visual state survives an update() cycle.
+        const effectiveIds = managerIds.length > 0 ? managerIds : this.currentSelectionIds;
+        this.setSelectionState(effectiveIds, source);
+    }
+
+    private recomputeInteractionStateAndApply(): void {
+        const chartData = this.latestChartData;
+        if (!chartData) {
+            this.latestMatchedSelectionRowKeys = new Set();
+            this.updateDiagnosticsOverlay();
+            return;
+        }
+
+        const matchedSelectionRowKeys = new Set<string>();
+        const selectedIds = this.currentSelectionIds;
+
+        if (selectedIds.length > 0) {
+            this.pointSelectionIds.forEach((pointSelectionId, rowKey) => {
+                const rowCandidates = this.pointSelectionCandidateIds.get(rowKey) ?? [pointSelectionId];
+                const matches = selectedIds.some((selectedId) =>
+                    rowCandidates.some((candidateId) => this.selectionIdsMatch(selectedId, candidateId))
+                );
+                if (matches) {
+                    matchedSelectionRowKeys.add(rowKey);
                 }
             });
 
-            const selectionId = builder.createSelectionId();
+            // Fallback path for cross-visual selections coming from different model lineages:
+            // use selector string literals (often includes selected category captions such as Plant Name).
+            if (matchedSelectionRowKeys.size === 0) {
+                const selectorTokens = new Set<string>();
+                selectedIds.forEach((selectionId) => {
+                    this.getSelectionSelectorTextTokens(selectionId).forEach((token) => selectorTokens.add(token));
+                });
 
-            this.pointSelectionIds.set(String(i), selectionId);
+                if (selectorTokens.size > 0) {
+                    const selectorTokenList = Array.from(selectorTokens);
+                    const exactTokenSet = new Set(selectorTokenList);
+
+                    chartData.items.forEach((point) => {
+                        const rowKey = String(point.index);
+                        if (matchedSelectionRowKeys.has(rowKey)) {
+                            return;
+                        }
+
+                        const pointTextTokens = [
+                            this.normalizeSelectionText(point.civilization),
+                            this.normalizeSelectionText(point.region)
+                        ].filter((token) => token.length > 0);
+
+                        const hasExactMatch = pointTextTokens.some((token) => exactTokenSet.has(token));
+                        if (hasExactMatch) {
+                            matchedSelectionRowKeys.add(rowKey);
+                            return;
+                        }
+
+                        const hasLooseCaptionMatch = pointTextTokens.some((token) =>
+                            token.length >= 8
+                            && token.includes(" ")
+                            && selectorTokenList.some((selectorToken) => selectorToken.includes(token))
+                        );
+
+                        if (hasLooseCaptionMatch) {
+                            matchedSelectionRowKeys.add(rowKey);
+                        }
+                    });
+                }
+            }
         }
+
+        this.latestMatchedSelectionRowKeys = matchedSelectionRowKeys;
+        chartData.hasIncomingSelectionIds = selectedIds.length > 0;
+        chartData.hasIncomingSelectionMatches = matchedSelectionRowKeys.size > 0;
+
+        chartData.items.forEach((point) => {
+            point.isSelectionMatched = matchedSelectionRowKeys.has(String(point.index));
+        });
+
+        this.applyRowOpacityState();
+        this.updateDiagnosticsOverlay();
+    }
+
+    private applyRowOpacityState(): void {
+        const chartData = this.latestChartData;
+        if (!chartData) {
+            return;
+        }
+
+        const pointByKey = new Map<string, typeof chartData.items[number]>(
+            chartData.items.map((point) => [String(point.index), point])
+        );
+
+        const rowElements = this.target.querySelectorAll<SVGGElement>(".timeline-row[data-selection-key]");
+        rowElements.forEach((rowElement) => {
+            const rowKey = rowElement.getAttribute("data-selection-key");
+            if (!rowKey) {
+                rowElement.style.opacity = "";
+                return;
+            }
+
+            const point = pointByKey.get(rowKey);
+            if (!point) {
+                rowElement.style.opacity = "";
+                return;
+            }
+
+            const opacity = chartData.hasIncomingSelectionMatches
+                ? (point.isSelectionMatched ? 1 : 0.2)
+                : chartData.hasIncomingHighlights
+                    ? (point.isHighlighted ? 1 : 0.25)
+                    : chartData.hasIncomingSelectionIds
+                        ? 0.4
+                        : 1;
+
+            rowElement.style.opacity = String(opacity);
+        });
     }
 
     public getFormattingModel(): powerbi.visuals.FormattingModel {
@@ -914,14 +1532,17 @@ export class Visual implements IVisual {
             color: this.settings.xAxisColor
         }));
 
+        cards.push(createDataLabelsCard(this.settings.dataLabels));
+
         cards.push(createTextSizesCard({
             xAxisFontSize: this.settings.textSizes.xAxisFontSize || this.settings.xAxisFontSize,
             yAxisFontSize: this.settings.textSizes.yAxisFontSize || this.settings.yAxisFontSize,
             legendFontSize: this.settings.textSizes.legendFontSize || this.settings.legendFontSize,
-            endLabelFontSize: this.settings.textSizes.endLabelFontSize || this.settings.yAxisFontSize
+            endLabelFontSize: this.settings.textSizes.endLabelFontSize || this.settings.dataLabels.fontSize
         }));
 
         cards.push(createTimelineCard(this.settings));
+        cards.push(createInteractionDiagnosticsCard(this.settings.interactionDiagnostics));
 
         return { cards };
     }
@@ -932,6 +1553,7 @@ export class Visual implements IVisual {
             document.removeEventListener("mousedown", this.onDocumentPointerDown, true);
         }
         try {
+            this.exportControl.destroy();
             this.htmlTooltip?.destroy();
             this.htmlTooltip = null;
             this.target.querySelectorAll('[data-bta-tooltip="true"]').forEach(el => el.remove());
@@ -939,6 +1561,8 @@ export class Visual implements IVisual {
             this.sortControlRoot = null;
             this.sortControlTrigger = null;
             this.sortControlMenu = null;
+            this.diagnosticsOverlay?.remove();
+            this.diagnosticsOverlay = null;
         } catch {
             // ignore
         }
@@ -949,40 +1573,50 @@ export class Visual implements IVisual {
         }
         this.renderer = null;
         this.settings = null;
+        this.latestChartData = null;
+        this.latestMatchedSelectionRowKeys = new Set();
+        this.currentSelectionIds = [];
+        this.pointSelectionCandidateIds.clear();
     }
 
     private bindInteractions(): void {
-        this.applySelectionState = null;
         if (!this.allowInteractions) {
             return;
         }
 
-        if (this.pointSelectionIds.size > 0) {
-            const binding = bindSelectionByDataKey({
-                root: this.target,
-                selectionManager: this.selectionManager,
-                markSelector: ".timeline-bar[data-selection-key]",
-                selectionIdsByKey: this.pointSelectionIds,
-                dimOpacity: 0.2,
-                selectedOpacity: 1
-            });
-            this.applySelectionState = binding.applySelection;
-            binding.applySelection(this.selectionManager.getSelectionIds());
-        }
-
-        this.svg.on("click", async (event: MouseEvent) => {
+        this.svg.on("click", (event: MouseEvent) => {
             const target = event.target as Element | null;
-            if (target?.closest(".timeline-bar[data-selection-key]")) {
+            const selectionKey = this.resolveSelectionKeyFromTarget(target);
+            if (selectionKey) {
+                const selectionId = this.pointSelectionIds.get(selectionKey);
+                if (!selectionId) {
+                    return;
+                }
+
+                const isMultiSelect = event.ctrlKey || event.metaKey;
+                this.selectionManager.select(selectionId, isMultiSelect)
+                    .then((ids) => this.setSelectionState(ids, "localClick"))
+                    .catch(() => undefined);
                 return;
             }
 
-            await this.selectionManager.clear();
-            this.applySelectionState?.([]);
+            this.selectionManager.clear()
+                .then(() => this.setSelectionState([], "clear"))
+                .catch(() => undefined);
         });
 
         this.svg.on("contextmenu", (event: MouseEvent) => {
             const target = event.target as Element | null;
-            if (target?.closest(".timeline-bar[data-selection-key]")) {
+            const selectionKey = this.resolveSelectionKeyFromTarget(target);
+            if (selectionKey) {
+                const selectionId = this.pointSelectionIds.get(selectionKey);
+                if (!selectionId) {
+                    return;
+                }
+
+                event.preventDefault();
+                this.selectionManager.showContextMenu(selectionId, { x: event.clientX, y: event.clientY })
+                    .catch(() => undefined);
                 return;
             }
 

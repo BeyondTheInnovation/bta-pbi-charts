@@ -10,7 +10,6 @@ import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import { IBaseVisualSettings, colorSchemes } from "./settings";
 import { measureMaxLabelWidth } from "./textUtils";
 import { formatMeasureValue } from "./utils";
-import { renderEmptyState } from "./emptyState";
 import { HtmlTooltip, TooltipMeta, toTooltipRows } from "./tooltip";
 
 export interface RenderContext {
@@ -793,12 +792,6 @@ export abstract class BaseRenderer<TSettings extends IBaseVisualSettings = IBase
     }
 
     protected renderNoData(): void {
-        renderEmptyState(this.context.container, this.context.width, this.context.height, {
-            title: "Set up the visual",
-            lines: [
-                "Add fields to the visual roles",
-                "Then use the Format pane to style it"
-            ]
-        });
+        this.context.container.selectAll("*").remove();
     }
 }

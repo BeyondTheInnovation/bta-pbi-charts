@@ -2,7 +2,7 @@
 
 import powerbi from "powerbi-visuals-api";
 import DataViewCategorical = powerbi.DataViewCategorical;
-import { ChartData, DataPoint, formatDataValue, formatGroupValue } from "@pbi-visuals/shared";
+import { ChartData, DataPoint, formatDataValue, formatGroupValue, getCategoricalHighlightState } from "@pbi-visuals/shared";
 
 type RoleColumn = {
     values: any[];
@@ -17,6 +17,10 @@ export interface WorldHistoryTimelinePoint extends DataPoint {
     startYear: number;
     endYear: number;
     duration: number;
+    measureValue: number | null;
+    measureDisplayText: string | null;
+    isHighlighted: boolean;
+    isSelectionMatched: boolean;
 }
 
 export interface WorldHistoryTimelineData extends ChartData {
@@ -25,14 +29,100 @@ export interface WorldHistoryTimelineData extends ChartData {
     minYear: number;
     maxYear: number;
     hasRegionRoleData: boolean;
+    hasIncomingHighlights: boolean;
+    hasIncomingSelectionIds: boolean;
+    hasIncomingSelectionMatches: boolean;
     startFormatString?: string;
     endFormatString?: string;
+    measureFormatString?: string;
     timeScaleMode: "numeric" | "date";
     timeTemporalLevel: TimelineTemporalLevel;
     timeHasYearContext: boolean;
+    timeHasYearLevel: boolean;
+    timeHasQuarterLevel: boolean;
+    timeHasMonthLevel: boolean;
+    timeHasDayLevel: boolean;
 }
 
 export class WorldHistoryTimelineTransformer {
+    private static detectHierarchyLevels(columns: RoleColumn[]): {
+        hasYearLevel: boolean;
+        hasQuarterLevel: boolean;
+        hasMonthLevel: boolean;
+        hasDayLevel: boolean;
+    } {
+        let hasYearLevel = false;
+        let hasQuarterLevel = false;
+        let hasMonthLevel = false;
+        let hasDayLevel = false;
+
+        columns.forEach((column) => {
+            const name = WorldHistoryTimelineTransformer.getColumnName(column);
+            if (/\byear\b|\.year$/.test(name)) hasYearLevel = true;
+            if (/\bquarter\b|\bqtr\b|\.quarter$/.test(name)) hasQuarterLevel = true;
+            if (/\bmonth\b|\.month$/.test(name)) hasMonthLevel = true;
+            if (/\bday\b|\.day$/.test(name)) hasDayLevel = true;
+        });
+
+        return {
+            hasYearLevel,
+            hasQuarterLevel,
+            hasMonthLevel,
+            hasDayLevel
+        };
+    }
+
+    private static resolveAxisLevelPresence(
+        isDateScale: boolean,
+        temporalLevel: TimelineTemporalLevel,
+        detected: { hasYearLevel: boolean; hasQuarterLevel: boolean; hasMonthLevel: boolean; hasDayLevel: boolean; },
+        hasYearContext: boolean
+    ): {
+        timeHasYearLevel: boolean;
+        timeHasQuarterLevel: boolean;
+        timeHasMonthLevel: boolean;
+        timeHasDayLevel: boolean;
+    } {
+        if (!isDateScale) {
+            return {
+                timeHasYearLevel: true,
+                timeHasQuarterLevel: false,
+                timeHasMonthLevel: false,
+                timeHasDayLevel: false
+            };
+        }
+
+        const hasExplicitHierarchyLevels = detected.hasYearLevel || detected.hasQuarterLevel || detected.hasMonthLevel || detected.hasDayLevel;
+        if (hasExplicitHierarchyLevels) {
+            return {
+                timeHasYearLevel: detected.hasYearLevel,
+                timeHasQuarterLevel: detected.hasQuarterLevel,
+                timeHasMonthLevel: detected.hasMonthLevel,
+                timeHasDayLevel: detected.hasDayLevel
+            };
+        }
+
+        // Fallback for date fields where explicit hierarchy role names are unavailable.
+        switch (temporalLevel) {
+            case "quarter":
+                return { timeHasYearLevel: true, timeHasQuarterLevel: true, timeHasMonthLevel: false, timeHasDayLevel: false };
+            case "month":
+                return { timeHasYearLevel: true, timeHasQuarterLevel: false, timeHasMonthLevel: true, timeHasDayLevel: false };
+            case "day":
+                return { timeHasYearLevel: true, timeHasQuarterLevel: false, timeHasMonthLevel: true, timeHasDayLevel: true };
+            case "year":
+            case "date":
+                return { timeHasYearLevel: true, timeHasQuarterLevel: false, timeHasMonthLevel: false, timeHasDayLevel: false };
+            default:
+                return {
+                    timeHasYearLevel: hasYearContext,
+                    timeHasQuarterLevel: false,
+                    timeHasMonthLevel: false,
+                    timeHasDayLevel: false
+                };
+        }
+    }
+
     private static getValueColumnsByRole(categorical: DataViewCategorical, roleName: string): RoleColumn[] {
         const values = categorical.values || [];
         const matches: RoleColumn[] = [];
@@ -949,6 +1039,7 @@ export class WorldHistoryTimelineTransformer {
 
         const startColumns = WorldHistoryTimelineTransformer.getRoleColumns(categorical, "startYear");
         const endColumns = WorldHistoryTimelineTransformer.getRoleColumns(categorical, "endYear");
+        const measureColumns = WorldHistoryTimelineTransformer.getRoleColumns(categorical, "measure");
 
         const occupiedColumns = new Set<RoleColumn>([...startColumns, ...endColumns]);
         if (!startColumns.length) {
@@ -982,11 +1073,22 @@ export class WorldHistoryTimelineTransformer {
                 minYear: 0,
                 maxYear: 0,
                 hasRegionRoleData: regionColumns.length > 0,
+                hasIncomingHighlights: false,
+                hasIncomingSelectionIds: false,
+                hasIncomingSelectionMatches: false,
                 timeScaleMode: "numeric",
                 timeTemporalLevel: "none",
-                timeHasYearContext: true
+                timeHasYearContext: true,
+                timeHasYearLevel: false,
+                timeHasQuarterLevel: false,
+                timeHasMonthLevel: false,
+                timeHasDayLevel: false
             };
         }
+
+        const highlightState = getCategoricalHighlightState(categorical, {
+            preferredRoles: ["endYear", "startYear"]
+        });
 
         const isDateScale = WorldHistoryTimelineTransformer.hasHierarchyHints(startColumns)
             || WorldHistoryTimelineTransformer.hasHierarchyHints(endColumns)
@@ -998,11 +1100,20 @@ export class WorldHistoryTimelineTransformer {
         const fallbackReferenceYear = isDateScale
             ? WorldHistoryTimelineTransformer.inferReferenceYear([...startColumns, ...endColumns])
             : null;
+        const resolvedHasYearContext = combinedTemporalContext.hasYearContext || fallbackReferenceYear !== null;
+        const detectedLevels = WorldHistoryTimelineTransformer.detectHierarchyLevels([...startColumns, ...endColumns]);
+        const axisLevelPresence = WorldHistoryTimelineTransformer.resolveAxisLevelPresence(
+            isDateScale,
+            temporalContext.level,
+            detectedLevels,
+            resolvedHasYearContext
+        );
         const allColumns = [
             ...civilizationColumns,
             ...regionColumns,
             ...startColumns,
-            ...endColumns
+            ...endColumns,
+            ...measureColumns
         ];
         const rowCount = allColumns.length > 0
             ? Math.max(...allColumns.map((column) => column.values.length))
@@ -1074,6 +1185,23 @@ export class WorldHistoryTimelineTransformer {
             const region = WorldHistoryTimelineTransformer.joinGroupLabel(regionColumns, i, "World");
 
             const duration = Math.max(0, endYear - startYear);
+            const measureRawValue = measureColumns[0]?.values?.[i];
+            let measureValue: number | null = null;
+            let measureDisplayText: string | null = null;
+            if (typeof measureRawValue === "number" && Number.isFinite(measureRawValue)) {
+                measureValue = measureRawValue;
+            } else if (typeof measureRawValue === "string") {
+                const normalizedNumber = Number(measureRawValue.replace(/,/g, ""));
+                if (Number.isFinite(normalizedNumber)) {
+                    measureValue = normalizedNumber;
+                }
+            }
+            if (measureRawValue !== null && measureRawValue !== undefined) {
+                const formattedMeasureValue = formatDataValue(measureRawValue, i).trim();
+                if (formattedMeasureValue.length > 0 && formattedMeasureValue !== "(Blank)") {
+                    measureDisplayText = formattedMeasureValue;
+                }
+            }
 
             minYear = Math.min(minYear, startYear);
             maxYear = Math.max(maxYear, endYear);
@@ -1092,7 +1220,11 @@ export class WorldHistoryTimelineTransformer {
                 region,
                 startYear,
                 endYear,
-                duration
+                duration,
+                measureValue,
+                measureDisplayText,
+                isHighlighted: !highlightState.hasIncomingHighlights || highlightState.isHighlightedRow(i),
+                isSelectionMatched: false
             };
 
             dataPoints.push(point);
@@ -1127,11 +1259,19 @@ export class WorldHistoryTimelineTransformer {
             minYear,
             maxYear,
             hasRegionRoleData: regionColumns.length > 0,
+            hasIncomingHighlights: highlightState.hasIncomingHighlights,
+            hasIncomingSelectionIds: false,
+            hasIncomingSelectionMatches: false,
             startFormatString: WorldHistoryTimelineTransformer.getFormatString(startColumns),
             endFormatString: WorldHistoryTimelineTransformer.getFormatString(endColumns),
+            measureFormatString: WorldHistoryTimelineTransformer.getFormatString(measureColumns),
             timeScaleMode: isDateScale ? "date" : "numeric",
             timeTemporalLevel: temporalContext.level,
-            timeHasYearContext: combinedTemporalContext.hasYearContext || fallbackReferenceYear !== null
+            timeHasYearContext: resolvedHasYearContext,
+            timeHasYearLevel: axisLevelPresence.timeHasYearLevel,
+            timeHasQuarterLevel: axisLevelPresence.timeHasQuarterLevel,
+            timeHasMonthLevel: axisLevelPresence.timeHasMonthLevel,
+            timeHasDayLevel: axisLevelPresence.timeHasDayLevel
         };
     }
 }

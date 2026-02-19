@@ -12,6 +12,8 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 
 import {
     d3,
+    createExportControl,
+    ExportControl,
     RenderContext,
     createColorSchemeCard,
     createDataColorsCard,
@@ -24,7 +26,6 @@ import {
     findCategoryIndex,
     getSchemeColors,
     readCategoryColorsFromDataView,
-    renderEmptyState,
     HtmlTooltip,
     bindSelectionByDataKey
 } from "@pbi-visuals/shared";
@@ -53,6 +54,7 @@ export class Visual implements IVisual {
     private categories: string[] = [];
     private categoryColors: Map<string, string> = new Map();
     private categoryFieldIndex: number = -1;
+    private exportControl: ExportControl;
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
@@ -78,6 +80,12 @@ export class Visual implements IVisual {
 
         this.container = this.svg.append("g")
             .classed("chart-container", true);
+
+        this.exportControl = createExportControl({
+            host: this.host,
+            root: this.target,
+            fileNamePrefix: "donut-chart"
+        });
     }
 
     public update(options: VisualUpdateOptions) {
@@ -94,6 +102,15 @@ export class Visual implements IVisual {
         const height = options.viewport.height;
 
         this.svg.attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
+        this.exportControl.setSnapshotSource({
+            svgElement: this.svg.node(),
+            viewportWidth: width,
+            viewportHeight: height,
+            scrollLeft: this.target.scrollLeft || 0,
+            scrollTop: this.target.scrollTop || 0
+        });
+        this.exportControl.setHasData(false);
+        void this.exportControl.refreshCapability();
 
         // Hide tooltip when mouse leaves the chart entirely
         this.svg.on("mouseleave", () => {
@@ -102,7 +119,7 @@ export class Visual implements IVisual {
         });
 
         if (!options.dataViews || !options.dataViews[0] || !options.dataViews[0].categorical) {
-            this.renderNoData(width, height);
+            this.renderNoData();
             return;
         }
 
@@ -131,7 +148,7 @@ export class Visual implements IVisual {
         const chartData = DonutChartTransformer.transform(dataView.categorical);
 
         if (!chartData.dataPoints || chartData.dataPoints.length === 0) {
-            this.renderNoData(width, height);
+            this.renderNoData();
             return;
         }
 
@@ -146,6 +163,7 @@ export class Visual implements IVisual {
             }
         });
         chartData.categoryColorMap = seededColors;
+        this.exportControl.setHasData(true);
         this.renderer.render(chartData, this.settings);
         this.bindInteractions();
         } catch (error) {
@@ -185,16 +203,8 @@ export class Visual implements IVisual {
         this.categories.sort();
     }
 
-    private renderNoData(width: number, height: number): void {
-        renderEmptyState(this.container, width, height, {
-            title: "Set up Donut Chart",
-            lines: [
-                "Legend: Slice labels",
-                "Values: Measure (slice size)",
-                "Group (optional): Split into panels"
-            ],
-            hint: "Tip: Use the Tooltips and Data Labels cards for a polished experience."
-        });
+    private renderNoData(): void {
+        this.container.selectAll("*").remove();
     }
 
     private syncHtmlTooltip(): void {
@@ -269,6 +279,7 @@ export class Visual implements IVisual {
 
     public destroy(): void {
         try {
+            this.exportControl.destroy();
             this.htmlTooltip?.destroy();
             this.htmlTooltip = null;
             this.target.querySelectorAll('[data-bta-tooltip="true"]').forEach(el => el.remove());

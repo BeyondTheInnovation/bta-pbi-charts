@@ -12,6 +12,8 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 
 import {
     d3,
+    createExportControl,
+    ExportControl,
     RenderContext,
     createCalendarSettingsCard,
     createColorSchemeCard,
@@ -21,7 +23,6 @@ import {
     createTooltipCard,
     createYAxisCard,
     findCategoryIndex,
-    renderEmptyState,
     HtmlTooltip,
     bindSelectionByDataKey
 } from "@pbi-visuals/shared";
@@ -46,6 +47,7 @@ export class Visual implements IVisual {
     private dateSelectionIds: Map<string, ISelectionId> = new Map();
     private xAxisFieldIndex: number = -1;
     private allowInteractions: boolean;
+    private exportControl: ExportControl;
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
@@ -71,6 +73,12 @@ export class Visual implements IVisual {
 
         this.container = this.svg.append("g")
             .classed("chart-container", true);
+
+        this.exportControl = createExportControl({
+            host: this.host,
+            root: this.target,
+            fileNamePrefix: "calendar-heatmap"
+        });
     }
 
     public update(options: VisualUpdateOptions) {
@@ -88,6 +96,15 @@ export class Visual implements IVisual {
         const height = options.viewport.height;
 
         this.svg.attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
+        this.exportControl.setSnapshotSource({
+            svgElement: this.svg.node(),
+            viewportWidth: width,
+            viewportHeight: height,
+            scrollLeft: this.target.scrollLeft || 0,
+            scrollTop: this.target.scrollTop || 0
+        });
+        this.exportControl.setHasData(false);
+        void this.exportControl.refreshCapability();
 
         // Hide tooltip when mouse leaves the chart entirely
         this.svg.on("mouseleave", () => {
@@ -97,7 +114,7 @@ export class Visual implements IVisual {
 
         // Validate data
         if (!options.dataViews || !options.dataViews[0] || !options.dataViews[0].categorical) {
-            this.renderNoData(width, height);
+            this.renderNoData();
             return;
         }
 
@@ -131,11 +148,12 @@ export class Visual implements IVisual {
 
         // Check if data is empty
         if (!chartData.calendarPoints || chartData.calendarPoints.length === 0) {
-            this.renderNoData(width, height);
+            this.renderNoData();
             return;
         }
 
         // Render the chart
+        this.exportControl.setHasData(true);
         this.renderer.render(chartData, this.settings);
         this.bindInteractions();
         } catch (error) {
@@ -149,16 +167,8 @@ export class Visual implements IVisual {
         }
     }
 
-    private renderNoData(width: number, height: number): void {
-        renderEmptyState(this.container, width, height, {
-            title: "Set up Calendar Heatmap",
-            lines: [
-                "Date: Daily date field",
-                "Values: Measure (cell intensity)",
-                "Group (optional): Split into panels"
-            ],
-            hint: "Tip: Use a Date column (not Month name) for proper daily placement."
-        });
+    private renderNoData(): void {
+        this.container.selectAll("*").remove();
     }
 
     private syncHtmlTooltip(): void {
@@ -224,6 +234,7 @@ export class Visual implements IVisual {
 
     public destroy(): void {
         try {
+            this.exportControl.destroy();
             this.htmlTooltip?.destroy();
             this.htmlTooltip = null;
             this.target.querySelectorAll('[data-bta-tooltip="true"]').forEach(el => el.remove());

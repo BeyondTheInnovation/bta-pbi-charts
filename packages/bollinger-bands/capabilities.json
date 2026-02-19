@@ -365,5 +365,7 @@
   "supportsLandingPage": true,
   "supportsEmptyDataView": true,
   "supportsMultiVisualSelection": true,
-  "privileges": []
+  "privileges": [
+    { "name": "ExportContent" }
+  ]
 }

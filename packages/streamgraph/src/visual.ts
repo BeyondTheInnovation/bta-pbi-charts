@@ -12,6 +12,8 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 
 import {
     d3,
+    createExportControl,
+    ExportControl,
     RenderContext,
     createColorSchemeCard,
     createDataColorsCard,
@@ -25,7 +27,6 @@ import {
     findCategoryIndex,
     getSchemeColors,
     readCategoryColorsFromDataView,
-    renderEmptyState,
     HtmlTooltip,
     bindSelectionByDataKey
 } from "@pbi-visuals/shared";
@@ -54,6 +55,7 @@ export class Visual implements IVisual {
     private categories: string[] = [];
     private categoryColors: Map<string, string> = new Map();
     private categoryFieldIndex: number = -1;
+    private exportControl: ExportControl;
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
@@ -79,6 +81,12 @@ export class Visual implements IVisual {
 
         this.container = this.svg.append("g")
             .classed("chart-container", true);
+
+        this.exportControl = createExportControl({
+            host: this.host,
+            root: this.target,
+            fileNamePrefix: "streamgraph"
+        });
     }
 
     public update(options: VisualUpdateOptions) {
@@ -96,6 +104,15 @@ export class Visual implements IVisual {
         const height = options.viewport.height;
 
         this.svg.attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
+        this.exportControl.setSnapshotSource({
+            svgElement: this.svg.node(),
+            viewportWidth: width,
+            viewportHeight: height,
+            scrollLeft: this.target.scrollLeft || 0,
+            scrollTop: this.target.scrollTop || 0
+        });
+        this.exportControl.setHasData(false);
+        void this.exportControl.refreshCapability();
 
         // Hide tooltip when mouse leaves the chart entirely
         this.svg.on("mouseleave", () => {
@@ -105,7 +122,7 @@ export class Visual implements IVisual {
 
         // Validate data
         if (!options.dataViews || !options.dataViews[0] || !options.dataViews[0].categorical) {
-            this.renderNoData(width, height);
+            this.renderNoData();
             return;
         }
 
@@ -148,7 +165,7 @@ export class Visual implements IVisual {
 
         // Check if data is empty
         if (!chartData.dataPoints || chartData.dataPoints.length === 0) {
-            this.renderNoData(width, height);
+            this.renderNoData();
             return;
         }
 
@@ -165,6 +182,7 @@ export class Visual implements IVisual {
         chartData.categoryColorMap = seededColors;
 
         // Render the chart
+        this.exportControl.setHasData(true);
         this.renderer.render(chartData, this.settings);
         this.bindInteractions();
         } catch (error) {
@@ -209,18 +227,8 @@ export class Visual implements IVisual {
         this.categories.sort((a, b) => a.localeCompare(b));
     }
 
-    private renderNoData(width: number, height: number): void {
-        renderEmptyState(this.container, width, height, {
-            title: "Set up Streamgraph",
-            lines: [
-                "X-Axis: Date / Period",
-                "Y-Axis: Category (layers)",
-                "Values: Measure (area size)",
-                "Legend (optional): Color by field",
-                "Group (optional): Split into panels"
-            ],
-            hint: "Tip: Use Curve Smoothing and Opacity in the Format pane."
-        });
+    private renderNoData(): void {
+        this.container.selectAll("*").remove();
     }
 
     private syncHtmlTooltip(): void {
@@ -341,6 +349,7 @@ export class Visual implements IVisual {
 
     public destroy(): void {
         try {
+            this.exportControl.destroy();
             this.htmlTooltip?.destroy();
             this.htmlTooltip = null;
             this.target.querySelectorAll('[data-bta-tooltip="true"]').forEach(el => el.remove());
