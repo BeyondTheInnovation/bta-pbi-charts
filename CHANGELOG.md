@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.4.6 - 2026-02-19
+
+### Added
+- In-visual PDF download action across all visuals via the shared export control and SVG snapshot pipeline.
+- Shared export modules in `@pbi-visuals/shared` (`pdfExport` + `exportControl`) with privilege-aware availability checks.
+- `ExportContent` privilege declaration in each visual `capabilities.json`.
+- Release runbook for this feature in `docs/export-pdf.md`.
+
+### Changed
+- PDF action UI switched to a compact icon-only control pinned to the visual corner, with scroll-safe positioning.
+- README updated with usage/behavior notes for custom visual PDF download.
+- Bundled shared dependency update to include `pdf-lib` for PDF document generation.
+
+### Fixed
+- Disabled/admin-restricted download scenarios now surface deterministic tooltip messaging instead of failing silently.
+- Exported PDF captures the visible viewport region consistently for scrolled visuals.
+
 ## v1.4.5 - 2026-02-13
 
 ### Added
