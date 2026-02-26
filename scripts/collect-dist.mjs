@@ -28,7 +28,19 @@ const prettyNames = {
     "donut-chart": "BTA-Donut-Chart.pbiviz",
     "bollinger-bands": "BTA-Bollinger-Bands.pbiviz",
     "inline-labels-line": "BTA-Inline-Labels-Line.pbiviz",
-    "world-history-timeline": "BTA-World-History-Timeline.pbiviz"
+    "world-history-timeline": "BTA-World-History-Timeline.pbiviz",
+    "box-plot": "BTA-Box-Plot.pbiviz",
+    "histogram": "BTA-Histogram.pbiviz",
+    "candlestick-chart": "BTA-Candlestick-Chart.pbiviz",
+    "parallel-coordinates": "BTA-Parallel-Coordinates.pbiviz",
+    "scatterplot-matrix": "BTA-Scatterplot-Matrix.pbiviz",
+    "sankey-diagram": "BTA-Sankey-Diagram.pbiviz",
+    "zoomable-treemap": "BTA-Zoomable-Treemap.pbiviz",
+    "zoomable-sunburst": "BTA-Zoomable-Sunburst.pbiviz",
+    "zoomable-icicle": "BTA-Zoomable-Icicle.pbiviz",
+    "choropleth-map": "BTA-Choropleth-Map.pbiviz",
+    "chord-diagram": "BTA-Chord-Diagram.pbiviz",
+    "waterfall-chart": "BTA-Waterfall-Chart.pbiviz"
 };
 
 let copied = 0;

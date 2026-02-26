@@ -38,6 +38,12 @@ const categories = [
 
 const regions = ["East", "North", "South", "West"];
 const channels = ["Online", "Retail"];
+const countriesByRegion = {
+  East: ["Japan", "South Korea", "China", "Vietnam", "Thailand", "Philippines"],
+  North: ["United States", "Canada", "United Kingdom", "Ireland", "Norway", "Sweden"],
+  South: ["Brazil", "Argentina", "Chile", "Peru", "South Africa", "Kenya"],
+  West: ["France", "Germany", "Spain", "Portugal", "Netherlands", "Italy"]
+};
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -83,10 +89,16 @@ const header = [
   "Year",
   "Category",
   "Subcategory",
+  "HierarchyPath",
   "Region",
+  "MapCountry",
   "Channel",
   "Scenario",
   "Value",
+  "Open",
+  "High",
+  "Low",
+  "Close",
   "Units",
   "Profit"
 ];
@@ -147,6 +159,18 @@ for (let t = start.getTime(); t <= end.getTime(); t += 24 * 3600 * 1000, dayInde
 
       const value = isZeroDay ? 0 : clampInt(valueRaw, 0, 9000);
 
+      const open = clampInt(
+        value * (1 + (rng() - 0.5) * 0.16),
+        0,
+        9000
+      );
+      const lowWiggle = 5 + rng() * Math.max(8, Math.max(open, value) * 0.12);
+      const highWiggle = 5 + rng() * Math.max(8, Math.max(open, value) * 0.12);
+      let low = clampInt(Math.min(open, value) - lowWiggle, 0, 9000);
+      let high = clampInt(Math.max(open, value) + highWiggle, 0, 9000);
+      low = Math.min(low, open, value);
+      high = Math.max(high, open, value);
+
       // Units loosely tied to Value but varies by category.
       const avgPrice = 40 + cIdx * 6 + (channel === "Online" ? -2 : 3);
       const units = Math.max(
@@ -160,6 +184,11 @@ for (let t = start.getTime(); t <= end.getTime(); t += 24 * 3600 * 1000, dayInde
       if (scenario === "Forecast" && cat.name === "Electronics" && region === "South") margin -= 0.25; // occasional losses
 
       const profit = clampInt(value * margin + (rng() - 0.5) * 80, -1200, 2500);
+      const hierarchyPath = `${cat.name} > ${sub} > ${region}`;
+      const countryPool = countriesByRegion[region];
+      const mapCountry = countryPool[
+        (dayIndex + cIdx + rIdx + (channel === "Online" ? 0 : 2)) % countryPool.length
+      ];
 
       const row = [
         iso,
@@ -169,9 +198,15 @@ for (let t = start.getTime(); t <= end.getTime(); t += 24 * 3600 * 1000, dayInde
         String(year),
         cat.name,
         sub,
+        hierarchyPath,
         region,
+        mapCountry,
         channel,
         scenario,
+        String(value),
+        String(open),
+        String(high),
+        String(low),
         String(value),
         String(units),
         String(profit)

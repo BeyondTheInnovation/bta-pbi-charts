@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "zoomableIcicleVisual",
+    "displayName": "Zoomable Icicle",
+    "guid": "zoomableIcicleVisual1021324354657689A0B1C2D3E4F5A6B7",
+    "visualClassName": "Visual",
+    "version": "1.4.8.0",
+    "description": "A zoomable icicle visualization for Power BI for hierarchical drill-down analysis.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

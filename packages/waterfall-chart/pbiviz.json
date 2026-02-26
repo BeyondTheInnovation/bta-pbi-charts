@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "waterfallChartVisual",
+    "displayName": "Waterfall Chart",
+    "guid": "waterfallChartVisualC4E7F1209A3B4D5E6F718293A4B5C6D7",
+    "visualClassName": "Visual",
+    "version": "1.4.1.0",
+    "description": "A stacked waterfall chart for Power BI with custom header, value, and percentage annotations per column.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

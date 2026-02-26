@@ -1,0 +1,64 @@
+.pbi-visual {
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: visible;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+
+    .chart-container {
+        overflow: visible;
+    }
+
+    .panel-title {
+        font-weight: 600;
+        fill: #1f2937;
+        letter-spacing: -0.01em;
+    }
+
+    .treemap-cell {
+        transition: filter 120ms ease, opacity 120ms ease;
+
+        &:hover {
+            filter: brightness(1.08);
+        }
+
+        &.leaf-cell:hover {
+            filter: brightness(1.12);
+        }
+    }
+
+    .cell-label {
+        user-select: none;
+        letter-spacing: 0.01em;
+
+        &.header-label {
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+            font-weight: 700;
+        }
+
+        &.leaf-label {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+    }
+
+    .breadcrumb-bar {
+        rect {
+            filter: none;
+        }
+
+        text {
+            user-select: none;
+            letter-spacing: 0.01em;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .no-data-message {
+        fill: #9ca3af;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}

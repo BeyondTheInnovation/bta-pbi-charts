@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "sankeyDiagramVisual",
+    "displayName": "Sankey Diagram",
+    "guid": "sankeyDiagramVisualD1E2F30415263748A9B0C1D2E3F4A5B6",
+    "visualClassName": "Visual",
+    "version": "1.4.8.0",
+    "description": "A Sankey diagram visualization for Power BI showing weighted flow from source to target.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

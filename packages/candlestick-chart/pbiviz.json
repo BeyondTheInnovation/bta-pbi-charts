@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "candlestickChartVisual",
+    "displayName": "Candlestick Chart",
+    "guid": "candlestickChartVisualA2B4C6D8E0F1357924680ABCDEF12345",
+    "visualClassName": "Visual",
+    "version": "1.4.8.0",
+    "description": "A candlestick chart visualization for Power BI using open, high, low, and close values.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

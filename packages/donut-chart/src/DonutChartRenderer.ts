@@ -68,11 +68,33 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
             left: 12 + legendReserve.left
         };
 
-        const totalSpacing = (groupCount - 1) * interPanelGap;
-        const availableHeight = this.context.height - margin.top - margin.bottom - totalSpacing;
         const chartWidth = this.context.width - margin.left - margin.right;
+        const baseAvailableHeight = this.context.height - margin.top - margin.bottom;
 
-        if (availableHeight <= 0 || chartWidth <= 0) {
+        if (baseAvailableHeight <= 0 || chartWidth <= 0) {
+            return;
+        }
+
+        const horizontalPanelGap = groupCount > 1 ? Math.max(12, Math.round(interPanelGap * 0.85)) : 0;
+        const verticalPanelGap = interPanelGap;
+        const desiredColumns = Math.max(1, Math.min(groupCount, settings.smallMultiples.columns || 1));
+
+        const minPanelWidth = settings.donutLabels.labelPosition === "outside" ? 280 : 190;
+        const minPanelHeight = settings.donutLabels.labelPosition === "outside" ? 180 : 150;
+
+        let columnCount = desiredColumns;
+        let rowCount = Math.max(1, Math.ceil(groupCount / columnCount));
+        let panelWidth = (chartWidth - Math.max(0, columnCount - 1) * horizontalPanelGap) / columnCount;
+        let panelHeight = (baseAvailableHeight - Math.max(0, rowCount - 1) * verticalPanelGap) / rowCount;
+
+        while (columnCount > 1 && (panelWidth < minPanelWidth || panelHeight < minPanelHeight)) {
+            columnCount -= 1;
+            rowCount = Math.max(1, Math.ceil(groupCount / columnCount));
+            panelWidth = (chartWidth - Math.max(0, columnCount - 1) * horizontalPanelGap) / columnCount;
+            panelHeight = (baseAvailableHeight - Math.max(0, rowCount - 1) * verticalPanelGap) / rowCount;
+        }
+
+        if (panelWidth <= 0 || panelHeight <= 0) {
             return;
         }
 
@@ -96,13 +118,15 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
             120
         );
 
-        let currentY = margin.top;
-
         groups.forEach((groupName, groupIndex) => {
-            const groupHeight = availableHeight / groupCount;
+            const rowIndex = Math.floor(groupIndex / columnCount);
+            const columnIndex = groupIndex % columnCount;
+            const panelX = margin.left + columnIndex * (panelWidth + horizontalPanelGap);
+            const panelY = margin.top + rowIndex * (panelHeight + verticalPanelGap);
+
             const panelGroup = this.context.container.append("g")
                 .attr("class", "donut-panel")
-                .attr("transform", `translate(${Math.round(margin.left)}, ${Math.round(currentY)})`);
+                .attr("transform", `translate(${Math.round(panelX)}, ${Math.round(panelY)})`);
 
             // Group title
             if (settings.smallMultiples.showTitle && groups.length > 1 && groupName !== "All" && groupName !== "(Blank)") {
@@ -110,7 +134,7 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                 const titleBase = settings.smallMultiples.titleFontSize;
                 const titleRequested = settings.textSizes.panelTitleFontSize > 0 ? settings.textSizes.panelTitleFontSize : titleBase;
                 const titleFontSize = this.getEffectiveFontSize(titleRequested, 6, 40);
-                const displayTitle = formatLabel(groupName, chartWidth, titleFontSize);
+                const displayTitle = formatLabel(groupName, panelWidth, titleFontSize);
                 const title = panelGroup.append("text")
                     .attr("class", "panel-title")
                     .attr("x", 0)
@@ -125,9 +149,9 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                 }
             }
 
-            const centerX = chartWidth / 2;
-            const centerY = groupHeight / 2;
-            const radius = Math.max(10, Math.min(chartWidth, groupHeight) / 2 - 8);
+            const centerX = panelWidth / 2;
+            const centerY = panelHeight / 2;
+            const radius = Math.max(10, Math.min(panelWidth, panelHeight) / 2 - 8);
             const innerRadius = Math.max(0, radius * settings.donut.innerRadiusRatio);
 
             const allSegments = donutData.segmentsByGroup.get(groupName) ?? [];
@@ -139,7 +163,6 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
 
             // Keep empty panels blank when a group has no plottable values.
             if (!segments.length || total <= 0) {
-                currentY += groupHeight + interPanelGap;
                 return;
             }
 
@@ -224,7 +247,7 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                     const columnX = radius + pad;
                     const elbowX = radius + 8;
 
-                    const maxLabelWidth = Math.max(0, (chartWidth / 2) - radius - (pad + 10));
+                    const maxLabelWidth = Math.max(0, (panelWidth / 2) - radius - (pad + 10));
 
                     const line = d3.line<[number, number]>().curve(d3.curveLinear);
                     const pOuter = d3.arc<d3.PieArcDatum<Segment>>().innerRadius(radius + 1).outerRadius(radius + 1);
@@ -532,8 +555,6 @@ export class DonutChartRenderer extends BaseRenderer<IDonutVisualSettings> {
                         .text(formatMeasureValue(total, this.valueFormatString));
                 }
             }
-
-            currentY += groupHeight + interPanelGap;
         });
 
         // Legend (categorical)

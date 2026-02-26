@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "parallelCoordinatesVisual",
+    "displayName": "Parallel Coordinates",
+    "guid": "parallelCoordinatesVisualB1C2D3E4F5061728394A5B6C7D8E9F01",
+    "visualClassName": "Visual",
+    "version": "1.4.12.0",
+    "description": "A parallel coordinates visualization for Power BI for comparing multi-metric profiles.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

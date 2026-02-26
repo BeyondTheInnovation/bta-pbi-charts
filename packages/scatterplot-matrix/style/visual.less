@@ -1,0 +1,118 @@
+.pbi-visual {
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: visible;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+
+    .chart-container {
+        overflow: visible;
+    }
+
+    // Grid structure
+    .grid-bg {
+        fill: #fafbfc;
+        stroke: none;
+    }
+
+    .grid-frame {
+        fill: none;
+        stroke: #d1d5db;
+        stroke-width: 0.75;
+    }
+
+    // Cell styling
+    .cell-bg {
+        fill: #ffffff;
+        stroke: none;
+    }
+
+    .cell-bg-diag {
+        fill: #f4f5f7;
+    }
+
+    .cell-border {
+        stroke: #e5e7eb;
+        stroke-width: 0.5;
+        shape-rendering: crispEdges;
+    }
+
+    // Diagonal dimension labels
+    .dim-label {
+        text-anchor: middle;
+        dominant-baseline: central;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        fill: #374151;
+    }
+
+    // Min/max range indicators on diagonal
+    .dim-range {
+        fill: #6b7280;
+        font-weight: 500;
+        text-anchor: start;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .dim-range-end {
+        text-anchor: end;
+    }
+
+    // Data points
+    .mark {
+        cursor: pointer;
+        transition: fill-opacity 0.12s ease;
+
+        &:hover {
+            fill-opacity: 0.85 !important;
+            stroke-opacity: 0.6 !important;
+        }
+    }
+
+    // Panel titles (small multiples)
+    .panel-title {
+        font-weight: 600;
+        fill: #1f2937;
+        letter-spacing: -0.01em;
+    }
+
+    // Single measure mode
+    .single-measure-title {
+        font-weight: 600;
+        fill: #374151;
+        letter-spacing: -0.01em;
+    }
+
+    .strip-axis {
+        stroke: #d1d5db;
+        stroke-width: 0.75;
+        shape-rendering: crispEdges;
+    }
+
+    .strip-tick {
+        stroke: #d1d5db;
+        stroke-width: 0.5;
+        shape-rendering: crispEdges;
+    }
+
+    .strip-tick-label {
+        fill: #9ca3af;
+        font-weight: 400;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // Empty state overrides
+    .empty-state-hint {
+        fill: #9ca3af;
+        font-size: 11px;
+        font-weight: 500;
+        font-style: italic;
+    }
+
+    .no-data-message {
+        fill: #9ca3af;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}

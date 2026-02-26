@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "histogramVisual",
+    "displayName": "Histogram",
+    "guid": "histogramVisual8C7D6E5F4A3B2C1D0E9F8A7B6C5D4E3F",
+    "visualClassName": "Visual",
+    "version": "1.4.14.0",
+    "description": "A histogram visualization for Power BI with configurable bins and distribution shape.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

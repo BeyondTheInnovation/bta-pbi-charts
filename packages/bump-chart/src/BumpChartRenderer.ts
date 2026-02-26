@@ -304,7 +304,18 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
 
             // Y-axis: Category labels on LEFT (colored to match lines)
             if (settings.showYAxis) {
-                // Get the first data point for each category to find their starting rank
+                type RankLabelCandidate = {
+                    yVal: string;
+                    rank: number;
+                    color: string;
+                    displayLabel: string;
+                    fromFirstX: boolean;
+                    xOrder: number;
+                };
+
+                const firstXValue = xValues[0];
+                const rankLabelMap = new Map<number, RankLabelCandidate>();
+
                 groupYValues.forEach(yVal => {
                     const seriesData = rankedData.get(yVal);
                     if (!seriesData || seriesData.length === 0) return;
@@ -312,27 +323,60 @@ export class BumpChartRenderer extends BaseRenderer<IBumpChartVisualSettings> {
                     const points = seriesData.filter(d => d.groupValue === groupName);
                     if (points.length === 0) return;
 
-                    const firstPoint = points[0];
+                    const firstPoint = points.find((p) => p.xValue === firstXValue) ?? points[0];
                     const seriesColor = colorScale(yVal);
                     const maxLabelWidth = Math.max(0, baseMargin.left - 18);
                     const displayLabel = formatLabel(yVal, maxLabelWidth, yAxisFontSize);
+                    const xOrderIndex = Math.max(0, xValues.indexOf(firstPoint.xValue));
+                    const candidate: RankLabelCandidate = {
+                        yVal,
+                        rank: firstPoint.rank,
+                        color: seriesColor,
+                        displayLabel,
+                        fromFirstX: firstPoint.xValue === firstXValue,
+                        xOrder: xOrderIndex
+                    };
 
-                    const label = panelGroup.append("text")
-                        .attr("class", "y-axis-label")
-                        .attr("x", -8)
-                        .attr("y", Math.round(yScale(firstPoint.rank)))
-                        .attr("dy", "0.35em")
-                        .attr("text-anchor", "end")
-                        .attr("font-size", `${yAxisFontSize}px`)
-                        .attr("font-family", settings.yAxisFontFamily)
-                        .style("font-weight", settings.yAxisBold ? "700" : "400")
-                        .style("font-style", settings.yAxisItalic ? "italic" : "normal")
-                        .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
-                        .attr("fill", overrideYAxisColor ? yAxisColor : seriesColor)
-                        .text(displayLabel);
+                    const existing = rankLabelMap.get(candidate.rank);
+                    if (!existing) {
+                        rankLabelMap.set(candidate.rank, candidate);
+                        return;
+                    }
 
-                    if (displayLabel !== yVal) {
-                        this.addTooltip(label as any, [{ displayName: "Category", value: yVal }]);
+                    // Keep one clear label per rank lane.
+                    // Prefer series visible at the first period, then earliest period.
+                    if (
+                        (candidate.fromFirstX && !existing.fromFirstX)
+                        || (candidate.fromFirstX === existing.fromFirstX && candidate.xOrder < existing.xOrder)
+                        || (
+                            candidate.fromFirstX === existing.fromFirstX
+                            && candidate.xOrder === existing.xOrder
+                            && candidate.yVal.localeCompare(existing.yVal) < 0
+                        )
+                    ) {
+                        rankLabelMap.set(candidate.rank, candidate);
+                    }
+                });
+
+                Array.from(rankLabelMap.values())
+                    .sort((a, b) => a.rank - b.rank)
+                    .forEach((candidate) => {
+                        const label = panelGroup.append("text")
+                            .attr("class", "y-axis-label")
+                            .attr("x", -8)
+                            .attr("y", Math.round(yScale(candidate.rank)))
+                            .attr("dy", "0.35em")
+                            .attr("text-anchor", "end")
+                            .attr("font-size", `${yAxisFontSize}px`)
+                            .attr("font-family", settings.yAxisFontFamily)
+                            .style("font-weight", settings.yAxisBold ? "700" : "400")
+                            .style("font-style", settings.yAxisItalic ? "italic" : "normal")
+                            .style("text-decoration", settings.yAxisUnderline ? "underline" : "none")
+                            .attr("fill", overrideYAxisColor ? yAxisColor : candidate.color)
+                            .text(candidate.displayLabel);
+
+                    if (candidate.displayLabel !== candidate.yVal) {
+                        this.addTooltip(label as any, [{ displayName: "Category", value: candidate.yVal }]);
                     }
                 });
             } else {

@@ -1,0 +1,523 @@
+{
+  "dataRoles": [
+    {
+      "displayName": "Hierarchy",
+      "name": "category",
+      "kind": "Grouping",
+      "description": "Hierarchy path (e.g. Region > Country > City)"
+    },
+    {
+      "displayName": "Group",
+      "name": "group",
+      "kind": "Grouping",
+      "description": "Optional small multiples grouping"
+    },
+    {
+      "displayName": "Values",
+      "name": "values",
+      "kind": "Measure",
+      "description": "Size value"
+    }
+  ],
+  "tooltips": {
+    "supportedTypes": {
+      "default": true,
+      "canvas": true
+    },
+    "roles": [
+      "tooltips"
+    ]
+  },
+  "objects": {
+    "tooltipSettings": {
+      "displayName": "Tooltips",
+      "properties": {
+        "enabled": {
+          "displayName": "Enabled",
+          "type": {
+            "bool": true
+          }
+        },
+        "style": {
+          "displayName": "Style",
+          "type": {
+            "enumeration": [
+              {
+                "value": "powerbi",
+                "displayName": "Power BI"
+              },
+              {
+                "value": "custom",
+                "displayName": "Custom"
+              }
+            ]
+          }
+        },
+        "theme": {
+          "displayName": "Theme",
+          "type": {
+            "enumeration": [
+              {
+                "value": "light",
+                "displayName": "Light"
+              },
+              {
+                "value": "dark",
+                "displayName": "Dark"
+              }
+            ]
+          }
+        },
+        "backgroundColor": {
+          "displayName": "Background",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "textColor": {
+          "displayName": "Text Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "borderColor": {
+          "displayName": "Border Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "borderRadius": {
+          "displayName": "Border Radius",
+          "type": {
+            "numeric": true
+          }
+        },
+        "shadow": {
+          "displayName": "Shadow",
+          "type": {
+            "bool": true
+          }
+        },
+        "maxWidth": {
+          "displayName": "Max Width",
+          "type": {
+            "numeric": true
+          }
+        },
+        "showColorSwatch": {
+          "displayName": "Show Color Swatch",
+          "type": {
+            "bool": true
+          }
+        }
+      }
+    },
+    "legend": {
+      "displayName": "Legend",
+      "properties": {
+        "show": {
+          "displayName": "Show",
+          "type": {
+            "bool": true
+          }
+        },
+        "position": {
+          "displayName": "Position",
+          "type": {
+            "enumeration": [
+              {
+                "value": "topLeft",
+                "displayName": "Top Left"
+              },
+              {
+                "value": "topCenter",
+                "displayName": "Top Center"
+              },
+              {
+                "value": "topRight",
+                "displayName": "Top Right"
+              },
+              {
+                "value": "topLeftStacked",
+                "displayName": "Top Left (Stacked)"
+              },
+              {
+                "value": "topRightStacked",
+                "displayName": "Top Right (Stacked)"
+              },
+              {
+                "value": "centerLeft",
+                "displayName": "Center Left"
+              },
+              {
+                "value": "centerRight",
+                "displayName": "Center Right"
+              },
+              {
+                "value": "bottomLeft",
+                "displayName": "Bottom Left"
+              },
+              {
+                "value": "bottomCenter",
+                "displayName": "Bottom Center"
+              },
+              {
+                "value": "bottomRight",
+                "displayName": "Bottom Right"
+              }
+            ]
+          }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "maxItems": {
+          "displayName": "Max Items",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    },
+    "smallMultiples": {
+      "displayName": "Small Multiples",
+      "properties": {
+        "spacing": {
+          "displayName": "Panel Spacing",
+          "type": {
+            "numeric": true
+          }
+        },
+        "showTitle": {
+          "displayName": "Show Panel Titles",
+          "type": {
+            "bool": true
+          }
+        },
+        "titleFontSize": {
+          "displayName": "Title Font Size",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "titleSpacing": {
+          "displayName": "Title Spacing",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    },
+    "textSizes": {
+      "displayName": "Text Sizes",
+      "properties": {
+        "legendFontSize": {
+          "displayName": "Legend Font Size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "panelTitleFontSize": {
+          "displayName": "Panel Title Font Size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "xAxisFontSize": {
+          "displayName": "Label Font Size",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    },
+    "colorScheme": {
+      "displayName": "Color Scheme",
+      "properties": {
+        "scheme": {
+          "displayName": "Color Scheme",
+          "type": {
+            "enumeration": [
+              {
+                "value": "blues",
+                "displayName": "Blues"
+              },
+              {
+                "value": "greens",
+                "displayName": "Greens"
+              },
+              {
+                "value": "reds",
+                "displayName": "Reds"
+              },
+              {
+                "value": "purples",
+                "displayName": "Purples"
+              },
+              {
+                "value": "oranges",
+                "displayName": "Oranges"
+              },
+              {
+                "value": "teals",
+                "displayName": "Teals"
+              },
+              {
+                "value": "pinks",
+                "displayName": "Pinks"
+              },
+              {
+                "value": "warm",
+                "displayName": "Warm"
+              },
+              {
+                "value": "rainbow",
+                "displayName": "Rainbow"
+              },
+              {
+                "value": "pastel",
+                "displayName": "Pastel"
+              },
+              {
+                "value": "vibrant",
+                "displayName": "Vibrant"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "xAxisSettings": {
+      "displayName": "X-Axis",
+      "properties": {
+        "show": {
+          "displayName": "Show X-Axis",
+          "type": {
+            "bool": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "rotateLabels": {
+          "displayName": "Rotate Labels",
+          "type": {
+            "enumeration": [
+              {
+                "value": "auto",
+                "displayName": "Auto"
+              },
+              {
+                "value": "always",
+                "displayName": "Always"
+              },
+              {
+                "value": "never",
+                "displayName": "Never"
+              }
+            ]
+          }
+        },
+        "fontFamily": {
+          "displayName": "Font Family",
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "bold": {
+          "displayName": "Bold",
+          "type": {
+            "bool": true
+          }
+        },
+        "italic": {
+          "displayName": "Italic",
+          "type": {
+            "bool": true
+          }
+        },
+        "underline": {
+          "displayName": "Underline",
+          "type": {
+            "bool": true
+          }
+        },
+        "color": {
+          "displayName": "Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "yAxisSettings": {
+      "displayName": "Y-Axis",
+      "properties": {
+        "show": {
+          "displayName": "Show Y-Axis",
+          "type": {
+            "bool": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "fontFamily": {
+          "displayName": "Font Family",
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "bold": {
+          "displayName": "Bold",
+          "type": {
+            "bool": true
+          }
+        },
+        "italic": {
+          "displayName": "Italic",
+          "type": {
+            "bool": true
+          }
+        },
+        "underline": {
+          "displayName": "Underline",
+          "type": {
+            "bool": true
+          }
+        },
+        "color": {
+          "displayName": "Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "dataViewMappings": [
+    {
+      "conditions": [
+        {
+          "category": {
+            "max": 1
+          },
+          "group": {
+            "max": 0
+          },
+          "values": {
+            "max": 1
+          }
+        }
+      ],
+      "categorical": {
+        "categories": {
+          "select": [
+            {
+              "for": {
+                "in": "category"
+              }
+            }
+          ]
+        },
+        "values": {
+          "select": [
+            {
+              "for": {
+                "in": "values"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "conditions": [
+        {
+          "category": {
+            "max": 1
+          },
+          "group": {
+            "max": 1,
+            "min": 1
+          },
+          "values": {
+            "max": 1
+          }
+        }
+      ],
+      "categorical": {
+        "categories": {
+          "select": [
+            {
+              "for": {
+                "in": "category"
+              }
+            },
+            {
+              "for": {
+                "in": "group"
+              }
+            }
+          ]
+        },
+        "values": {
+          "select": [
+            {
+              "for": {
+                "in": "values"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "supportsHighlight": true,
+  "supportsKeyboardFocus": true,
+  "supportsLandingPage": true,
+  "supportsEmptyDataView": true,
+  "supportsMultiVisualSelection": true,
+  "privileges": []
+}

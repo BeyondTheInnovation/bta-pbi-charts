@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "boxPlotVisual",
+    "displayName": "Box Plot",
+    "guid": "boxPlotVisual9E1A2B3C4D5E6F708192A3B4C5D6E7F8",
+    "visualClassName": "Visual",
+    "version": "1.4.13.0",
+    "description": "A box plot visualization for Power BI showing quartiles, median, and outliers by category.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}
