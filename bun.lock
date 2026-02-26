@@ -25,7 +25,7 @@
     },
     "packages/box-plot": {
       "name": "@pbi-visuals/box-plot",
-      "version": "1.4.0",
+      "version": "1.4.13",
       "dependencies": {
         "powerbi-visuals-api": "~5.11.0",
       },
@@ -65,7 +65,7 @@
     },
     "packages/candlestick-chart": {
       "name": "@pbi-visuals/candlestick-chart",
-      "version": "1.4.0",
+      "version": "1.4.8",
       "dependencies": {
         "powerbi-visuals-api": "~5.11.0",
       },
@@ -78,7 +78,7 @@
     },
     "packages/chord-diagram": {
       "name": "@pbi-visuals/chord-diagram",
-      "version": "1.4.0",
+      "version": "1.4.8",
       "dependencies": {
         "d3-chord": "^3.0.1",
         "powerbi-visuals-api": "~5.11.0",
@@ -92,7 +92,7 @@
     },
     "packages/choropleth-map": {
       "name": "@pbi-visuals/choropleth-map",
-      "version": "1.4.0",
+      "version": "1.4.8",
       "dependencies": {
         "d3-geo": "^3.1.1",
         "powerbi-visuals-api": "~5.11.0",
@@ -134,7 +134,7 @@
     },
     "packages/histogram": {
       "name": "@pbi-visuals/histogram",
-      "version": "1.4.0",
+      "version": "1.4.14",
       "dependencies": {
         "powerbi-visuals-api": "~5.11.0",
       },
@@ -173,7 +173,7 @@
     },
     "packages/parallel-coordinates": {
       "name": "@pbi-visuals/parallel-coordinates",
-      "version": "1.4.0",
+      "version": "1.4.12",
       "dependencies": {
         "powerbi-visuals-api": "~5.11.0",
       },
@@ -186,7 +186,7 @@
     },
     "packages/sankey-diagram": {
       "name": "@pbi-visuals/sankey-diagram",
-      "version": "1.4.0",
+      "version": "1.4.8",
       "dependencies": {
         "d3-sankey": "^0.12.3",
         "powerbi-visuals-api": "~5.11.0",
@@ -200,7 +200,7 @@
     },
     "packages/scatterplot-matrix": {
       "name": "@pbi-visuals/scatterplot-matrix",
-      "version": "1.4.0",
+      "version": "1.4.8",
       "dependencies": {
         "powerbi-visuals-api": "~5.11.0",
       },
@@ -250,6 +250,19 @@
         "typescript": "^5.5.4",
       },
     },
+    "packages/waterfall-chart": {
+      "name": "@pbi-visuals/waterfall-chart",
+      "version": "1.4.1",
+      "dependencies": {
+        "powerbi-visuals-api": "~5.11.0",
+      },
+      "devDependencies": {
+        "eslint": "^10.0.1",
+        "eslint-plugin-powerbi-visuals": "^1.1.0",
+        "powerbi-visuals-tools": "^7.0.2",
+        "typescript": "^5.5.4",
+      },
+    },
     "packages/world-history-timeline": {
       "name": "@pbi-visuals/world-history-timeline",
       "version": "1.0.1",
@@ -266,7 +279,7 @@
     },
     "packages/zoomable-icicle": {
       "name": "@pbi-visuals/zoomable-icicle",
-      "version": "1.4.0",
+      "version": "1.4.8",
       "dependencies": {
         "d3-hierarchy": "^3.1.2",
         "powerbi-visuals-api": "~5.11.0",
@@ -280,7 +293,7 @@
     },
     "packages/zoomable-sunburst": {
       "name": "@pbi-visuals/zoomable-sunburst",
-      "version": "1.4.0",
+      "version": "1.4.8",
       "dependencies": {
         "d3-hierarchy": "^3.1.2",
         "powerbi-visuals-api": "~5.11.0",
@@ -294,7 +307,7 @@
     },
     "packages/zoomable-treemap": {
       "name": "@pbi-visuals/zoomable-treemap",
-      "version": "1.4.0",
+      "version": "1.4.8",
       "dependencies": {
         "d3-hierarchy": "^3.1.2",
         "powerbi-visuals-api": "~5.11.0",
@@ -431,6 +444,8 @@
     "@pbi-visuals/shared": ["@pbi-visuals/shared@workspace:packages/shared"],
 
     "@pbi-visuals/streamgraph": ["@pbi-visuals/streamgraph@workspace:packages/streamgraph"],
+
+    "@pbi-visuals/waterfall-chart": ["@pbi-visuals/waterfall-chart@workspace:packages/waterfall-chart"],
 
     "@pbi-visuals/world-history-timeline": ["@pbi-visuals/world-history-timeline@workspace:packages/world-history-timeline"],
 
