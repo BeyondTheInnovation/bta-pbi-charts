@@ -238,6 +238,19 @@
         "typescript": "^5.5.4",
       },
     },
+    "packages/strategic-journey-timeline": {
+      "name": "@pbi-visuals/strategic-journey-timeline",
+      "version": "1.6.0",
+      "dependencies": {
+        "powerbi-visuals-api": "~5.11.0",
+      },
+      "devDependencies": {
+        "eslint": "^10.0.1",
+        "eslint-plugin-powerbi-visuals": "^1.1.0",
+        "powerbi-visuals-tools": "^7.0.2",
+        "typescript": "^5.5.4",
+      },
+    },
     "packages/streamgraph": {
       "name": "@pbi-visuals/streamgraph",
       "version": "1.4.0",
@@ -443,6 +456,8 @@
     "@pbi-visuals/scatterplot-matrix": ["@pbi-visuals/scatterplot-matrix@workspace:packages/scatterplot-matrix"],
 
     "@pbi-visuals/shared": ["@pbi-visuals/shared@workspace:packages/shared"],
+
+    "@pbi-visuals/strategic-journey-timeline": ["@pbi-visuals/strategic-journey-timeline@workspace:packages/strategic-journey-timeline"],
 
     "@pbi-visuals/streamgraph": ["@pbi-visuals/streamgraph@workspace:packages/streamgraph"],
 
