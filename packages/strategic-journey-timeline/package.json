@@ -1,6 +1,6 @@
 {
   "name": "@pbi-visuals/strategic-journey-timeline",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "scripts": {
     "start": "node ../../scripts/pbiviz-wrapper.mjs start",
     "package": "node ../../scripts/pbiviz-wrapper.mjs package",

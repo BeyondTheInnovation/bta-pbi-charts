@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.6.1 - 2026-03-06
+
+### Fixed
+- Release workflow: synced `bun.lock` with the new `@pbi-visuals/strategic-journey-timeline` workspace so `bun install --frozen-lockfile` passes in GitHub Actions.
+
 ## v1.6.0 - 2026-03-06
 
 ### Added
