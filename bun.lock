@@ -224,6 +224,7 @@
         "d3-selection": "^3.0.0",
         "d3-shape": "^3.2.0",
         "powerbi-visuals-api": "~5.11.0",
+        "powerbi-visuals-utils-dataviewutils": "^6.1.0",
       },
       "devDependencies": {
         "@types/d3-array": "^3.2.1",
@@ -1136,6 +1137,8 @@
     "powerbi-visuals-api": ["powerbi-visuals-api@5.11.0", "", { "dependencies": { "semver": "^7.6.0" } }, "sha512-OWvhexc4Dqz4swiQiZLnGj+NWUoX84metePeRw5Or3wG3lN/0x6Yd3xqJwBH67uYyjqQ/eomuF7lvbryxCqTbQ=="],
 
     "powerbi-visuals-tools": ["powerbi-visuals-tools@7.0.2", "", { "dependencies": { "@typescript-eslint/parser": "^8.50.0", "async": "^3.2.6", "chalk": "^5.4.1", "commander": "^13.1.0", "compare-versions": "^6.1.1", "css-loader": "^7.1.2", "eslint-plugin-powerbi-visuals": "1.1.0", "extra-watch-webpack-plugin": "^1.0.3", "fs-extra": "^11.3.3", "inline-source-map": "^0.6.3", "json-loader": "0.5.7", "jszip": "^3.10.1", "less": "^4.5.1", "less-loader": "^12.3.0", "lodash.clonedeep": "4.5.0", "lodash.defaults": "4.2.0", "lodash.isequal": "4.5.0", "lodash.ismatch": "^4.4.0", "mini-css-extract-plugin": "^2.9.4", "powerbi-visuals-webpack-plugin": "^4.3.1", "terser-webpack-plugin": "^5.3.16", "ts-loader": "^9.5.4", "typescript": "^5.9.3", "webpack": "^5.104.1", "webpack-bundle-analyzer": "4.10.2", "webpack-dev-server": "^5.2.2" }, "optionalDependencies": { "fsevents": "*" }, "bin": { "pbiviz": "bin/pbiviz.js" } }, "sha512-rN+SWJgzgcZDQrvEOWmVmMOKxmeRiIT88CG6ImELRRpliuVUmMJ8oyqusiHMe+g67GE4cnoXFKol4uf4jv29HQ=="],
+
+    "powerbi-visuals-utils-dataviewutils": ["powerbi-visuals-utils-dataviewutils@6.1.0", "", { "optionalDependencies": { "fsevents": "*" } }, "sha512-m/pcpaB5thXdwCSg+AKyaJxVibCPmwC5ezsgccoI0H5jpsvu78lxFRTf+Tzoi1IAbLaWHyJAfxJ0F56jmioTOg=="],
 
     "powerbi-visuals-utils-formattingmodel": ["powerbi-visuals-utils-formattingmodel@6.2.2", "", { "dependencies": { "powerbi-visuals-api": "^5.11.0" } }, "sha512-v+cRtAgL9KWBL99wmTjorEGe7JtwGzJzxQWjLSZQoOWoT42nIi9UgUWp+Y4fpEmTKCJXjYyMXMHa7XsMyMM+8Q=="],
 

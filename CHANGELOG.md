@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.6.0 - 2026-03-06
+
+### Added
+- New visual: Strategic Journey Timeline with mixed span and milestone support, top/bottom card lanes, status markers, tooltips, selection, and horizontal scrolling for dense roadmaps.
+- Dedicated sample dataset in `sample-data-strategic-journey-timeline.csv` for milestone, span, lane, status, and dense-data testing.
+- README gallery entry and screenshot for Strategic Journey Timeline.
+
+### Changed
+- Added root `start:strategic-journey` and `package:strategic-journey` workspace scripts plus `collect-dist` support for `BTA-Strategic-Journey-Timeline.pbiviz`.
+- Shared formatting helper now emits FX-capable category color descriptors using wildcard selectors, `altConstantValueSelector`, and `ConstantOrRule` metadata.
+- Strategic Journey Timeline package/icon metadata updated for release packaging and Power BI picker visibility.
+
+### Fixed
+- Strategic Journey Timeline: field wells now appear correctly through `dataViewMappings` and drill is enabled on the `Title` hierarchy.
+- Strategic Journey Timeline: rows with `StartDate + EndDate + MilestoneDate` now stay spans, preventing broken milestone-only rendering when milestone anchors are bound.
+- Strategic Journey Timeline: dense datasets now use scroll-aware card rendering and a dashed Today line for clearer roadmap navigation.
+
 ## v1.4.6 - 2026-02-19
 
 ### Added

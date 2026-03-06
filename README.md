@@ -42,6 +42,11 @@ All screenshots are stored in `docs/screenshots/`.
     <td><strong>Zoomable Sunburst</strong><br/><code>@pbi-visuals/zoomable-sunburst</code><br/><img src="docs/screenshots/zoomable-sunburst.png" alt="Zoomable Sunburst"/></td>
     <td><strong>Zoomable Treemap</strong><br/><code>@pbi-visuals/zoomable-treemap</code><br/><img src="docs/screenshots/zoomable-treemap.png" alt="Zoomable Treemap"/></td>
   </tr>
+  <tr>
+    <td><strong>Strategic Journey Timeline</strong><br/><code>@pbi-visuals/strategic-journey-timeline</code><br/><img src="docs/screenshots/strategic-journey-timeline.png" alt="Strategic Journey Timeline"/></td>
+    <td></td>
+    <td></td>
+  </tr>
 </table>
 
 Each visual ships with a dedicated `assets/icon.png` (generated from `assets/icon.svg`) for a clear picker experience in Power BI.
@@ -78,6 +83,7 @@ To regenerate PNG icons on macOS: `scripts/generate-icons.sh`
   - `bun run package:sankey`
   - `bun run package:scatterplot-matrix`
   - `bun run package:streamgraph`
+  - `bun run package:strategic-journey`
   - `bun run package:sunburst`
   - `bun run package:treemap`
   - `bun run package:waterfall`
@@ -106,6 +112,7 @@ Note: `pbiviz` is Node-based. This repo includes a small shim so `pbiviz` works 
 - `bun run start:sankey`
 - `bun run start:scatterplot-matrix`
 - `bun run start:streamgraph`
+- `bun run start:strategic-journey`
 - `bun run start:sunburst`
 - `bun run start:treemap`
 - `bun run start:waterfall`

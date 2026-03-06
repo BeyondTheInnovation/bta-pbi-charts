@@ -1,6 +1,7 @@
 "use strict";
 
 import powerbi from "powerbi-visuals-api";
+import { dataViewWildcard } from "powerbi-visuals-utils-dataviewutils";
 import ISelectionId = powerbi.visuals.ISelectionId;
 import DataView = powerbi.DataView;
 import { ColorScheme, RotateLabelsMode, ITooltipSettings } from "./settings";
@@ -46,6 +47,10 @@ export function createDataColorsCard(
     categoryColors: Map<string, string>,
     defaultColors: string[]
 ): powerbi.visuals.FormattingCard {
+    const wildcardSelector = dataViewWildcard.createDataViewWildcardSelector(
+        dataViewWildcard.DataViewWildcardMatchingOption.InstancesAndTotals
+    );
+
     const slices: powerbi.visuals.FormattingSlice[] = categories.map((category, index) => {
         const selectionId = categorySelectionIds.get(category);
         const currentColor = categoryColors.get(category) || defaultColors[index % defaultColors.length];
@@ -59,7 +64,9 @@ export function createDataColorsCard(
                     descriptor: {
                         objectName: "categoryColors",
                         propertyName: "fill",
-                        selector: selectionId ? selectionId.getSelector() : null
+                        selector: wildcardSelector,
+                        altConstantValueSelector: selectionId ? selectionId.getSelector() : undefined,
+                        instanceKind: powerbi.VisualEnumerationInstanceKinds.ConstantOrRule
                     },
                     value: { value: currentColor }
                 }

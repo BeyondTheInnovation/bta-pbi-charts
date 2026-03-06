@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "strategicJourneyTimelineVisual",
+    "displayName": "Strategic Journey Timeline",
+    "guid": "strategicJourneyTimelineVisualA14E5B6C7D8F90231B4C5D6E7F8A9012",
+    "visualClassName": "Visual",
+    "version": "1.6.0.0",
+    "description": "Roadmap-style journey timeline with top and bottom milestone cards, status markers, and a today line.",
+    "supportUrl": "https://github.com/example/bta-pbi-charts",
+    "gitHubUrl": ""
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Custom Visual Developer",
+    "email": "developer@example.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

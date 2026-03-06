@@ -1,0 +1,63 @@
+.pbi-visual {
+    font-family: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: visible;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    svg {
+        shape-rendering: geometricPrecision;
+    }
+
+    .chart-container {
+        overflow: visible;
+    }
+
+    .journey-band {
+        fill: #f8fafc;
+        pointer-events: none;
+    }
+
+    .journey-band-top,
+    .journey-band-bottom {
+        opacity: 0.7;
+    }
+
+    .journey-spine,
+    .journey-tick,
+    .journey-axis-label,
+    .journey-today-line,
+    .journey-today-label {
+        pointer-events: none;
+    }
+
+    .journey-connector,
+    .journey-span,
+    .journey-marker,
+    .journey-card {
+        cursor: pointer;
+    }
+
+    .journey-item {
+        transition: opacity 0.16s ease;
+    }
+
+    .journey-card {
+        transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    .journey-card-title,
+    .journey-card-subtitle,
+    .journey-card-group {
+        pointer-events: none;
+    }
+
+    .color-legend text {
+        letter-spacing: 0;
+    }
+
+    .no-data-message {
+        fill: #94a3b8;
+        font-size: 13px;
+        font-weight: 600;
+    }
+}

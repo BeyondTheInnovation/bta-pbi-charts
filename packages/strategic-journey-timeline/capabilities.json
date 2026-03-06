@@ -1,0 +1,571 @@
+{
+  "dataRoles": [
+    {
+      "displayName": "Title",
+      "name": "title",
+      "kind": "Grouping",
+      "description": "Primary roadmap card title"
+    },
+    {
+      "displayName": "Subtitle",
+      "name": "subtitle",
+      "kind": "Grouping",
+      "description": "Optional card subtitle"
+    },
+    {
+      "displayName": "Group",
+      "name": "group",
+      "kind": "Grouping",
+      "description": "Optional group or phase label"
+    },
+    {
+      "displayName": "Status",
+      "name": "status",
+      "kind": "Grouping",
+      "description": "Status key used for marker color and legend"
+    },
+    {
+      "displayName": "Lane",
+      "name": "lane",
+      "kind": "Grouping",
+      "description": "Optional lane value: top or bottom"
+    },
+    {
+      "displayName": "Start Date",
+      "name": "startDate",
+      "kind": "Grouping",
+      "description": "Start date for range items"
+    },
+    {
+      "displayName": "End Date",
+      "name": "endDate",
+      "kind": "GroupingOrMeasure",
+      "description": "End date for range items"
+    },
+    {
+      "displayName": "Milestone Date",
+      "name": "milestoneDate",
+      "kind": "Grouping",
+      "description": "Single date for milestone items"
+    },
+    {
+      "displayName": "Sort Order",
+      "name": "sortOrder",
+      "kind": "Measure",
+      "description": "Optional numeric sort order"
+    }
+  ],
+  "tooltips": {
+    "supportedTypes": {
+      "default": true,
+      "canvas": true
+    },
+    "roles": ["tooltips"]
+  },
+  "drilldown": {
+    "roles": ["title"]
+  },
+  "objects": {
+    "categoryColors": {
+      "displayName": "Status Colors",
+      "properties": {
+        "fill": {
+          "displayName": "Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "tooltipSettings": {
+      "displayName": "Tooltips",
+      "properties": {
+        "enabled": {
+          "displayName": "Enabled",
+          "type": {
+            "bool": true
+          }
+        },
+        "style": {
+          "displayName": "Style",
+          "type": {
+            "enumeration": [
+              {
+                "value": "powerbi",
+                "displayName": "Power BI"
+              },
+              {
+                "value": "custom",
+                "displayName": "Custom"
+              }
+            ]
+          }
+        },
+        "theme": {
+          "displayName": "Theme",
+          "type": {
+            "enumeration": [
+              {
+                "value": "light",
+                "displayName": "Light"
+              },
+              {
+                "value": "dark",
+                "displayName": "Dark"
+              }
+            ]
+          }
+        },
+        "backgroundColor": {
+          "displayName": "Background",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "textColor": {
+          "displayName": "Text Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "borderColor": {
+          "displayName": "Border Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "borderRadius": {
+          "displayName": "Border Radius",
+          "type": {
+            "numeric": true
+          }
+        },
+        "shadow": {
+          "displayName": "Shadow",
+          "type": {
+            "bool": true
+          }
+        },
+        "maxWidth": {
+          "displayName": "Max Width",
+          "type": {
+            "numeric": true
+          }
+        },
+        "showColorSwatch": {
+          "displayName": "Show Color Swatch",
+          "type": {
+            "bool": true
+          }
+        }
+      }
+    },
+    "customColors": {
+      "displayName": "Custom Colors",
+      "properties": {
+        "useCustomColors": {
+          "displayName": "Use Custom Colors",
+          "description": "Enable custom status color palette fallback",
+          "type": {
+            "bool": true
+          }
+        },
+        "colorList": {
+          "displayName": "Colors",
+          "description": "Comma-separated fallback colors",
+          "type": {
+            "text": true
+          }
+        }
+      }
+    },
+    "colorScheme": {
+      "displayName": "Color Scheme",
+      "properties": {
+        "scheme": {
+          "displayName": "Color Scheme",
+          "type": {
+            "enumeration": [
+              {
+                "value": "blues",
+                "displayName": "Blues"
+              },
+              {
+                "value": "greens",
+                "displayName": "Greens"
+              },
+              {
+                "value": "reds",
+                "displayName": "Reds"
+              },
+              {
+                "value": "purples",
+                "displayName": "Purples"
+              },
+              {
+                "value": "oranges",
+                "displayName": "Oranges"
+              },
+              {
+                "value": "teals",
+                "displayName": "Teals"
+              },
+              {
+                "value": "pinks",
+                "displayName": "Pinks"
+              },
+              {
+                "value": "warm",
+                "displayName": "Warm"
+              },
+              {
+                "value": "rainbow",
+                "displayName": "Rainbow"
+              },
+              {
+                "value": "pastel",
+                "displayName": "Pastel"
+              },
+              {
+                "value": "vibrant",
+                "displayName": "Vibrant"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "legend": {
+      "displayName": "Legend",
+      "properties": {
+        "show": {
+          "displayName": "Show",
+          "type": {
+            "bool": true
+          }
+        },
+        "position": {
+          "displayName": "Position",
+          "type": {
+            "enumeration": [
+              {
+                "value": "topLeft",
+                "displayName": "Top Left"
+              },
+              {
+                "value": "topCenter",
+                "displayName": "Top Center"
+              },
+              {
+                "value": "topRight",
+                "displayName": "Top Right"
+              },
+              {
+                "value": "topLeftStacked",
+                "displayName": "Top Left (Stacked)"
+              },
+              {
+                "value": "topRightStacked",
+                "displayName": "Top Right (Stacked)"
+              },
+              {
+                "value": "centerLeft",
+                "displayName": "Center Left"
+              },
+              {
+                "value": "centerRight",
+                "displayName": "Center Right"
+              },
+              {
+                "value": "bottomLeft",
+                "displayName": "Bottom Left"
+              },
+              {
+                "value": "bottomCenter",
+                "displayName": "Bottom Center"
+              },
+              {
+                "value": "bottomRight",
+                "displayName": "Bottom Right"
+              }
+            ]
+          }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "maxItems": {
+          "displayName": "Max Items",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    },
+    "timelineSettings": {
+      "displayName": "Timeline",
+      "properties": {
+        "showTodayLine": {
+          "displayName": "Show Today Line",
+          "type": {
+            "bool": true
+          }
+        },
+        "spineThickness": {
+          "displayName": "Spine Thickness",
+          "type": {
+            "numeric": true
+          }
+        },
+        "laneGap": {
+          "displayName": "Lane Gap",
+          "type": {
+            "numeric": true
+          }
+        },
+        "cardBandHeight": {
+          "displayName": "Card Band Height",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    },
+    "cardSettings": {
+      "displayName": "Cards",
+      "properties": {
+        "minWidth": {
+          "displayName": "Min Width",
+          "type": {
+            "numeric": true
+          }
+        },
+        "maxWidth": {
+          "displayName": "Max Width",
+          "type": {
+            "numeric": true
+          }
+        },
+        "cornerRadius": {
+          "displayName": "Corner Radius",
+          "type": {
+            "numeric": true
+          }
+        },
+        "borderWidth": {
+          "displayName": "Border Width",
+          "type": {
+            "numeric": true
+          }
+        },
+        "shadow": {
+          "displayName": "Shadow",
+          "type": {
+            "bool": true
+          }
+        }
+      }
+    },
+    "textSettings": {
+      "displayName": "Card Text",
+      "properties": {
+        "titleFontSize": {
+          "displayName": "Title Font Size",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "subtitleFontSize": {
+          "displayName": "Subtitle Font Size",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "titleColor": {
+          "displayName": "Title Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "subtitleColor": {
+          "displayName": "Subtitle Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "markerSettings": {
+      "displayName": "Markers",
+      "properties": {
+        "milestoneRadius": {
+          "displayName": "Milestone Radius",
+          "type": {
+            "numeric": true
+          }
+        },
+        "spanThickness": {
+          "displayName": "Span Thickness",
+          "type": {
+            "numeric": true
+          }
+        },
+        "connectorOpacity": {
+          "displayName": "Connector Opacity",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    },
+    "xAxisSettings": {
+      "displayName": "Axis",
+      "properties": {
+        "show": {
+          "displayName": "Show Axis Labels",
+          "type": {
+            "bool": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Font Size",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "rotateLabels": {
+          "displayName": "Rotate Labels",
+          "type": {
+            "enumeration": [
+              {
+                "value": "auto",
+                "displayName": "Auto"
+              },
+              {
+                "value": "always",
+                "displayName": "Always"
+              },
+              {
+                "value": "never",
+                "displayName": "Never"
+              }
+            ]
+          }
+        },
+        "fontFamily": {
+          "displayName": "Font Family",
+          "type": {
+            "text": true
+          }
+        },
+        "bold": {
+          "displayName": "Bold",
+          "type": {
+            "bool": true
+          }
+        },
+        "italic": {
+          "displayName": "Italic",
+          "type": {
+            "bool": true
+          }
+        },
+        "underline": {
+          "displayName": "Underline",
+          "type": {
+            "bool": true
+          }
+        },
+        "color": {
+          "displayName": "Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "dataViewMappings": [
+    {
+      "conditions": [
+        {
+          "title": { "max": 1 },
+          "subtitle": { "max": 1 },
+          "group": { "max": 1 },
+          "status": { "max": 1 },
+          "lane": { "max": 1 },
+          "startDate": { "max": 1 },
+          "endDate": { "max": 1 },
+          "milestoneDate": { "max": 1 },
+          "sortOrder": { "max": 1 }
+        }
+      ],
+      "categorical": {
+        "categories": {
+          "select": [
+            { "for": { "in": "title" } },
+            { "for": { "in": "subtitle" } },
+            { "for": { "in": "group" } },
+            { "for": { "in": "status" } },
+            { "for": { "in": "lane" } },
+            { "for": { "in": "startDate" } },
+            { "for": { "in": "milestoneDate" } },
+            { "for": { "in": "endDate" } }
+          ],
+          "dataReductionAlgorithm": {
+            "top": { "count": 30000 }
+          }
+        },
+        "values": {
+          "select": [
+            { "for": { "in": "endDate" } },
+            { "for": { "in": "sortOrder" } }
+          ]
+        }
+      }
+    }
+  ],
+  "supportsHighlight": true,
+  "supportsEmptyDataView": true,
+  "supportsMultiVisualSelection": true,
+  "privileges": []
+}

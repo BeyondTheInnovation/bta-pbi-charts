@@ -29,6 +29,7 @@ const prettyNames = {
     "bollinger-bands": "BTA-Bollinger-Bands.pbiviz",
     "inline-labels-line": "BTA-Inline-Labels-Line.pbiviz",
     "world-history-timeline": "BTA-World-History-Timeline.pbiviz",
+    "strategic-journey-timeline": "BTA-Strategic-Journey-Timeline.pbiviz",
     "box-plot": "BTA-Box-Plot.pbiviz",
     "histogram": "BTA-Histogram.pbiviz",
     "candlestick-chart": "BTA-Candlestick-Chart.pbiviz",

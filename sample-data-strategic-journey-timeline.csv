@@ -1,0 +1,141 @@
+Title,Subtitle,Group,Status,Lane,StartDate,EndDate,MilestoneDate,SortOrder,Owner,RiskScore
+Kickoff 01,Decision point for platform,Platform,On Track,top,,,2026-01-16,10,PMO,8
+Integration Window 02,Execution window for experience,Experience,At Risk,bottom,2026-01-15,2026-02-08,2026-01-28,20,Design,15
+Optimization Sprint 03,Execution window for core services,Core Services,Blocked,top,2026-01-24,2026-02-23,2026-02-10,30,Engineering,22
+Approval 04,Decision point for intelligence,Intelligence,Done,bottom,,,2026-02-22,40,Backend,29
+Migration Track 05,Execution window for insights,Insights,On Track,top,2026-02-11,2026-03-25,2026-03-06,50,Frontend,36
+Enablement Phase 06,Execution window for program,Program,At Risk,bottom,2026-02-20,2026-03-10,2026-03-02,60,Data,43
+Readiness 07,Decision point for growth,Growth,Blocked,top,,,2026-03-14,70,QA,50
+Stabilization 08,Execution window for scale,Scale,On Track,bottom,2026-03-10,2026-04-09,2026-03-27,80,Operations,57
+Implementation Sprint 09,Execution window for platform,Platform,At Risk,top,2026-03-19,2026-04-24,2026-04-08,90,Support,64
+Review 10,Decision point for experience,Experience,Blocked,bottom,,,2026-04-20,100,Growth,10
+Optimization Sprint 11,Execution window for core services,Core Services,Done,top,2026-04-06,2026-04-24,2026-04-16,110,PMO,17
+Hypercare 12,Execution window for intelligence,Intelligence,On Track,bottom,2026-04-15,2026-05-09,2026-04-28,120,Design,24
+Launch Gate 13,Decision point for insights,Insights,At Risk,top,,,2026-05-11,130,Engineering,31
+Enablement Phase 14,Execution window for program,Program,Blocked,bottom,2026-05-03,2026-06-08,2026-05-23,140,Backend,38
+Validation Cycle 15,Execution window for growth,Growth,On Track,top,2026-05-12,2026-06-23,2026-06-04,150,Frontend,45
+Rollout 16,Decision point for scale,Scale,At Risk,bottom,,,2026-05-31,160,Data,52
+Implementation Sprint 17,Execution window for platform,Platform,Blocked,top,2026-05-30,2026-06-23,2026-06-12,170,QA,59
+Integration Window 18,Execution window for experience,Experience,Done,bottom,2026-06-08,2026-07-08,2026-06-25,180,Operations,66
+Checkpoint 19,Decision point for core services,Core Services,On Track,top,,,2026-07-07,190,Support,12
+Hypercare 20,Execution window for intelligence,Intelligence,At Risk,bottom,2026-06-26,2026-08-07,2026-07-19,200,Growth,19
+Migration Track 21,Execution window for insights,Insights,Blocked,top,2026-07-05,2026-07-23,2026-07-15,210,PMO,26
+Pilot 22,Decision point for program,Program,On Track,bottom,,,2026-07-27,220,Design,33
+Validation Cycle 23,Execution window for growth,Growth,At Risk,top,2026-07-23,2026-08-22,2026-08-09,230,Engineering,40
+Stabilization 24,Execution window for scale,Scale,Blocked,bottom,2026-08-01,2026-09-06,2026-08-21,240,Backend,47
+Kickoff 25,Decision point for platform,Platform,Done,top,,,2026-09-02,250,Frontend,54
+Integration Window 26,Execution window for experience,Experience,On Track,bottom,2026-08-19,2026-09-06,2026-08-29,260,Data,61
+Optimization Sprint 27,Execution window for core services,Core Services,At Risk,top,2026-08-28,2026-09-21,2026-09-10,270,QA,68
+Approval 28,Decision point for intelligence,Intelligence,Blocked,bottom,,,2026-09-23,280,Operations,14
+Migration Track 29,Execution window for insights,Insights,On Track,top,2026-09-15,2026-10-21,2026-10-05,290,Support,21
+Enablement Phase 30,Execution window for program,Program,At Risk,bottom,2026-09-24,2026-11-05,2026-10-17,300,Growth,28
+Readiness 31,Decision point for growth,Growth,Blocked,top,,,2026-10-13,310,PMO,35
+Stabilization 32,Execution window for scale,Scale,Done,bottom,2026-10-12,2026-11-05,2026-10-25,320,Design,42
+Implementation Sprint 33,Execution window for platform,Platform,On Track,top,2026-10-21,2026-11-20,2026-11-07,330,Engineering,49
+Review 34,Decision point for experience,Experience,At Risk,bottom,,,2026-11-19,340,Backend,56
+Optimization Sprint 35,Execution window for core services,Core Services,Blocked,top,2026-11-08,2026-12-20,2026-12-01,350,Frontend,63
+Hypercare 36,Execution window for intelligence,Intelligence,On Track,bottom,2026-11-17,2026-12-05,2026-11-27,360,Data,9
+Launch Gate 37,Decision point for insights,Insights,At Risk,top,,,2026-12-09,370,QA,16
+Enablement Phase 38,Execution window for program,Program,Blocked,bottom,2026-12-05,2027-01-04,2026-12-22,380,Operations,23
+Validation Cycle 39,Execution window for growth,Growth,Done,top,2026-12-14,2027-01-19,2027-01-03,390,Support,30
+Rollout 40,Decision point for scale,Scale,On Track,bottom,,,2027-01-15,400,Growth,37
+Implementation Sprint 41,Execution window for platform,Platform,At Risk,top,2027-01-01,2027-01-19,2027-01-11,410,PMO,44
+Integration Window 42,Execution window for experience,Experience,Blocked,bottom,2027-01-10,2027-02-03,2027-01-23,420,Design,51
+Checkpoint 43,Decision point for core services,Core Services,On Track,top,,,2027-02-05,430,Engineering,58
+Hypercare 44,Execution window for intelligence,Intelligence,At Risk,bottom,2027-01-28,2027-03-05,2027-02-17,440,Backend,65
+Migration Track 45,Execution window for insights,Insights,Blocked,top,2027-02-06,2027-03-20,2027-03-01,450,Frontend,11
+Pilot 46,Decision point for program,Program,Done,bottom,,,2027-02-25,460,Data,18
+Validation Cycle 47,Execution window for growth,Growth,On Track,top,2027-02-24,2027-03-20,2027-03-09,470,QA,25
+Stabilization 48,Execution window for scale,Scale,At Risk,bottom,2027-03-05,2027-04-04,2027-03-22,480,Operations,32
+Kickoff 49,Decision point for platform,Platform,Blocked,top,,,2027-04-03,490,Support,39
+Integration Window 50,Execution window for experience,Experience,On Track,bottom,2027-03-23,2027-05-04,2027-04-15,500,Growth,46
+Optimization Sprint 51,Execution window for core services,Core Services,At Risk,top,2027-04-01,2027-04-19,2027-04-11,510,PMO,53
+Approval 52,Decision point for intelligence,Intelligence,Blocked,bottom,,,2027-04-23,520,Design,60
+Migration Track 53,Execution window for insights,Insights,Done,top,2027-04-19,2027-05-19,2027-05-06,530,Engineering,67
+Enablement Phase 54,Execution window for program,Program,On Track,bottom,2027-04-28,2027-06-03,2027-05-18,540,Backend,13
+Readiness 55,Decision point for growth,Growth,At Risk,top,,,2027-05-30,550,Frontend,20
+Stabilization 56,Execution window for scale,Scale,Blocked,bottom,2027-05-16,2027-06-03,2027-05-26,560,Data,27
+Implementation Sprint 57,Execution window for platform,Platform,On Track,top,2027-05-25,2027-06-18,2027-06-07,570,QA,34
+Review 58,Decision point for experience,Experience,At Risk,bottom,,,2027-06-20,580,Operations,41
+Optimization Sprint 59,Execution window for core services,Core Services,Blocked,top,2027-06-12,2027-07-18,2027-07-02,590,Support,48
+Hypercare 60,Execution window for intelligence,Intelligence,Done,bottom,2027-06-21,2027-08-02,2027-07-14,600,Growth,55
+Launch Gate 61,Decision point for insights,Insights,On Track,top,,,2027-07-10,610,PMO,62
+Enablement Phase 62,Execution window for program,Program,At Risk,bottom,2027-07-09,2027-08-02,2027-07-22,620,Design,8
+Validation Cycle 63,Execution window for growth,Growth,Blocked,top,2027-07-18,2027-08-17,2027-08-04,630,Engineering,15
+Rollout 64,Decision point for scale,Scale,On Track,bottom,,,2027-08-16,640,Backend,22
+Implementation Sprint 65,Execution window for platform,Platform,At Risk,top,2027-08-05,2027-09-16,2027-08-28,650,Frontend,29
+Integration Window 66,Execution window for experience,Experience,Blocked,bottom,2027-08-14,2027-09-01,2027-08-24,660,Data,36
+Checkpoint 67,Decision point for core services,Core Services,Done,top,,,2027-09-05,670,QA,43
+Hypercare 68,Execution window for intelligence,Intelligence,On Track,bottom,2027-09-01,2027-10-01,2027-09-18,680,Operations,50
+Migration Track 69,Execution window for insights,Insights,At Risk,top,2027-09-10,2027-10-16,2027-09-30,690,Support,57
+Pilot 70,Decision point for program,Program,Blocked,bottom,,,2027-10-12,700,Growth,64
+Validation Cycle 71,Execution window for growth,Growth,On Track,top,2027-09-28,2027-10-16,2027-10-08,710,PMO,10
+Stabilization 72,Execution window for scale,Scale,At Risk,bottom,2027-10-07,2027-10-31,2027-10-20,720,Design,17
+Kickoff 73,Decision point for platform,Platform,Blocked,top,,,2027-11-02,730,Engineering,24
+Integration Window 74,Execution window for experience,Experience,Done,bottom,2027-10-25,2027-11-30,2027-11-14,740,Backend,31
+Optimization Sprint 75,Execution window for core services,Core Services,On Track,top,2027-11-03,2027-12-15,2027-11-26,750,Frontend,38
+Approval 76,Decision point for intelligence,Intelligence,At Risk,bottom,,,2027-11-22,760,Data,45
+Migration Track 77,Execution window for insights,Insights,Blocked,top,2027-11-21,2027-12-15,2027-12-04,770,QA,52
+Enablement Phase 78,Execution window for program,Program,On Track,bottom,2027-11-30,2027-12-30,2027-12-17,780,Operations,59
+Readiness 79,Decision point for growth,Growth,At Risk,top,,,2027-12-29,790,Support,66
+Stabilization 80,Execution window for scale,Scale,Blocked,bottom,2027-12-18,2028-01-29,2028-01-10,800,Growth,12
+Implementation Sprint 81,Execution window for platform,Platform,Done,top,2027-12-27,2028-01-14,2028-01-06,810,PMO,19
+Review 82,Decision point for experience,Experience,On Track,bottom,,,2028-01-18,820,Design,26
+Optimization Sprint 83,Execution window for core services,Core Services,At Risk,top,2028-01-14,2028-02-13,2028-01-31,830,Engineering,33
+Hypercare 84,Execution window for intelligence,Intelligence,Blocked,bottom,2028-01-23,2028-02-28,2028-02-12,840,Backend,40
+Launch Gate 85,Decision point for insights,Insights,On Track,top,,,2028-02-24,850,Frontend,47
+Enablement Phase 86,Execution window for program,Program,At Risk,bottom,2028-02-10,2028-02-28,2028-02-20,860,Data,54
+Validation Cycle 87,Execution window for growth,Growth,Blocked,top,2028-02-19,2028-03-14,2028-03-03,870,QA,61
+Rollout 88,Decision point for scale,Scale,Done,bottom,,,2028-03-16,880,Operations,68
+Implementation Sprint 89,Execution window for platform,Platform,On Track,top,2028-03-08,2028-04-13,2028-03-28,890,Support,14
+Integration Window 90,Execution window for experience,Experience,At Risk,bottom,2028-03-17,2028-04-28,2028-04-09,900,Growth,21
+Checkpoint 91,Decision point for core services,Core Services,Blocked,top,,,2028-04-05,910,PMO,28
+Hypercare 92,Execution window for intelligence,Intelligence,On Track,bottom,2028-04-04,2028-04-28,2028-04-17,920,Design,35
+Migration Track 93,Execution window for insights,Insights,At Risk,top,2028-04-13,2028-05-13,2028-04-30,930,Engineering,42
+Pilot 94,Decision point for program,Program,Blocked,bottom,,,2028-05-12,940,Backend,49
+Validation Cycle 95,Execution window for growth,Growth,Done,top,2028-05-01,2028-06-12,2028-05-24,950,Frontend,56
+Stabilization 96,Execution window for scale,Scale,On Track,bottom,2028-05-10,2028-05-28,2028-05-20,960,Data,63
+Kickoff 97,Decision point for platform,Platform,At Risk,top,,,2028-06-01,970,QA,9
+Integration Window 98,Execution window for experience,Experience,Blocked,bottom,2028-05-28,2028-06-27,2028-06-14,980,Operations,16
+Optimization Sprint 99,Execution window for core services,Core Services,On Track,top,2028-06-06,2028-07-12,2028-06-26,990,Support,23
+Approval 100,Decision point for intelligence,Intelligence,At Risk,bottom,,,2028-07-08,1000,Growth,30
+Migration Track 101,Execution window for insights,Insights,Blocked,top,2028-06-24,2028-07-12,2028-07-04,1010,PMO,37
+Enablement Phase 102,Execution window for program,Program,Done,bottom,2028-07-03,2028-07-27,2028-07-16,1020,Design,44
+Readiness 103,Decision point for growth,Growth,On Track,top,,,2028-07-29,1030,Engineering,51
+Stabilization 104,Execution window for scale,Scale,At Risk,bottom,2028-07-21,2028-08-26,2028-08-10,1040,Backend,58
+Implementation Sprint 105,Execution window for platform,Platform,Blocked,top,2028-07-30,2028-09-10,2028-08-22,1050,Frontend,65
+Review 106,Decision point for experience,Experience,On Track,bottom,,,2028-08-18,1060,Data,11
+Optimization Sprint 107,Execution window for core services,Core Services,At Risk,top,2028-08-17,2028-09-10,2028-08-30,1070,QA,18
+Hypercare 108,Execution window for intelligence,Intelligence,Blocked,bottom,2028-08-26,2028-09-25,2028-09-12,1080,Operations,25
+Launch Gate 109,Decision point for insights,Insights,Done,top,,,2028-09-24,1090,Support,32
+Enablement Phase 110,Execution window for program,Program,On Track,bottom,2028-09-13,2028-10-25,2028-10-06,1100,Growth,39
+Validation Cycle 111,Execution window for growth,Growth,At Risk,top,2028-09-22,2028-10-10,2028-10-02,1110,PMO,46
+Rollout 112,Decision point for scale,Scale,Blocked,bottom,,,2028-10-14,1120,Design,53
+Implementation Sprint 113,Execution window for platform,Platform,On Track,top,2028-10-10,2028-11-09,2028-10-27,1130,Engineering,60
+Integration Window 114,Execution window for experience,Experience,At Risk,bottom,2028-10-19,2028-11-24,2028-11-08,1140,Backend,67
+Checkpoint 115,Decision point for core services,Core Services,Blocked,top,,,2028-11-20,1150,Frontend,13
+Hypercare 116,Execution window for intelligence,Intelligence,Done,bottom,2028-11-06,2028-11-24,2028-11-16,1160,Data,20
+Migration Track 117,Execution window for insights,Insights,On Track,top,2028-11-15,2028-12-09,2028-11-28,1170,QA,27
+Pilot 118,Decision point for program,Program,At Risk,bottom,,,2028-12-11,1180,Operations,34
+Validation Cycle 119,Execution window for growth,Growth,Blocked,top,2028-12-03,2029-01-08,2028-12-23,1190,Support,41
+Stabilization 120,Execution window for scale,Scale,On Track,bottom,2028-12-12,2029-01-23,2029-01-04,1200,Growth,48
+Kickoff 121,Decision point for platform,Platform,At Risk,top,,,2028-12-31,1210,PMO,55
+Integration Window 122,Execution window for experience,Experience,Blocked,bottom,2028-12-30,2029-01-23,2029-01-12,1220,Design,62
+Optimization Sprint 123,Execution window for core services,Core Services,Done,top,2029-01-08,2029-02-07,2029-01-25,1230,Engineering,8
+Approval 124,Decision point for intelligence,Intelligence,On Track,bottom,,,2029-02-06,1240,Backend,15
+Migration Track 125,Execution window for insights,Insights,At Risk,top,2029-01-26,2029-03-09,2029-02-18,1250,Frontend,22
+Enablement Phase 126,Execution window for program,Program,Blocked,bottom,2029-02-04,2029-02-22,2029-02-14,1260,Data,29
+Readiness 127,Decision point for growth,Growth,On Track,top,,,2029-02-26,1270,QA,36
+Stabilization 128,Execution window for scale,Scale,At Risk,bottom,2029-02-22,2029-03-24,2029-03-11,1280,Operations,43
+Implementation Sprint 129,Execution window for platform,Platform,Blocked,top,2029-03-03,2029-04-08,2029-03-23,1290,Support,50
+Review 130,Decision point for experience,Experience,Done,bottom,,,2029-04-04,1300,Growth,57
+Optimization Sprint 131,Execution window for core services,Core Services,On Track,top,2029-03-21,2029-04-08,2029-03-31,1310,PMO,64
+Hypercare 132,Execution window for intelligence,Intelligence,At Risk,bottom,2029-03-30,2029-04-23,2029-04-12,1320,Design,10
+Launch Gate 133,Decision point for insights,Insights,Blocked,top,,,2029-04-25,1330,Engineering,17
+Enablement Phase 134,Execution window for program,Program,On Track,bottom,2029-04-17,2029-05-23,2029-05-07,1340,Backend,24
+Validation Cycle 135,Execution window for growth,Growth,At Risk,top,2029-04-26,2029-06-07,2029-05-19,1350,Frontend,31
+Rollout 136,Decision point for scale,Scale,Blocked,bottom,,,2029-05-15,1360,Data,38
+Implementation Sprint 137,Execution window for platform,Platform,Done,top,2029-05-14,2029-06-07,2029-05-27,1370,QA,45
+Integration Window 138,Execution window for experience,Experience,On Track,bottom,2029-05-23,2029-06-22,2029-06-09,1380,Operations,52
+Checkpoint 139,Decision point for core services,Core Services,At Risk,top,,,2029-06-21,1390,Support,59
+Hypercare 140,Execution window for intelligence,Intelligence,Blocked,bottom,2029-06-10,2029-07-22,2029-07-03,1400,Growth,66
